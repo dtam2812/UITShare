@@ -1,7 +1,8 @@
 import "./App.css";
+import App from "./App";
 
 function RootLayout() {
-  return <></>;
+  return <App />;
 }
 
 export default RootLayout;
