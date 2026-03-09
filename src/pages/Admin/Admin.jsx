@@ -121,7 +121,7 @@ export default function Admin({
   const [documents, setDocuments] = useState(INITIAL_DOCUMENTS);
   return <div className="flex flex-col min-h-screen bg-[#2b2d42] font-sans">
       <Header />
-      <div className="flex flex-1">
+      <div className="h-[800px] flex">
         {/* Sidebar */}
         <div className="w-64 bg-[#1c1e2f] text-gray-300 flex flex-col shadow-xl z-10 shrink-0">
           <nav className="flex-1 py-4 space-y-1">
