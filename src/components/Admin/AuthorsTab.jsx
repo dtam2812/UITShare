@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-import SearchBar from './SearchBar';
+import SearchBar from './AdminSearchBar';
 import DataTable from './DataTable';
 import ModalOverlay from './ModalOverlay';
 export default function AuthorsTab({

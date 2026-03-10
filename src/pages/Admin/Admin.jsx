@@ -119,44 +119,69 @@ export default function Admin({
   const [users, setUsers] = useState(INITIAL_USERS);
   const [authors, setAuthors] = useState(INITIAL_AUTHORS);
   const [documents, setDocuments] = useState(INITIAL_DOCUMENTS);
-  return <div className="flex flex-col min-h-screen bg-[#2b2d42] font-sans">
+  return (
+    <div className="flex flex-col min-h-screen bg-[#2b2d42] font-sans">
       <Header />
       <div className="h-[800px] flex">
         {/* Sidebar */}
         <div className="w-64 bg-[#1c1e2f] text-gray-300 flex flex-col shadow-xl z-10 shrink-0">
           <nav className="flex-1 py-4 space-y-1">
-            <button onClick={() => setActiveTab('overview')} className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === 'overview' ? 'bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4' : 'hover:bg-white/5'}`}>
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "overview" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+            >
               <LayoutDashboard size={20} />
               <span>Overview</span>
             </button>
-          <button onClick={() => setActiveTab('users')} className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === 'users' ? 'bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4' : 'hover:bg-white/5'}`}>
-            <Users size={20} />
-            <span>Users</span>
-          </button>
-          <button onClick={() => setActiveTab('authors')} className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === 'authors' ? 'bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4' : 'hover:bg-white/5'}`}>
-            <UserCheck size={20} />
-            <span>Authors</span>
-          </button>
-          <button onClick={() => setActiveTab('documents')} className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === 'documents' ? 'bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4' : 'hover:bg-white/5'}`}>
-            <BookOpen size={20} />
-            <span>Documents</span>
-          </button>
-          
-          <button onClick={onSignOut} className="w-full flex items-center space-x-3 px-6 py-3 transition-colors hover:bg-white/5">
-            <LogOut size={20} />
-            <span>Sign Out</span>
-          </button>
-        </nav>
-      </div>
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "users" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+            >
+              <Users size={20} />
+              <span>Users</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("authors")}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "authors" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+            >
+              <UserCheck size={20} />
+              <span>Authors</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("documents")}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+            >
+              <BookOpen size={20} />
+              <span>Documents</span>
+            </button>
 
-      {/* Main Content */}
-      <div className="flex-1 p-8">
-        {activeTab === 'overview' && <Overview users={users} authors={authors} documents={documents} />}
-        {activeTab === 'users' && <UsersTab users={users} setUsers={setUsers} />}
-        {activeTab === 'authors' && <AuthorsTab authors={authors} setAuthors={setAuthors} />}
-        {activeTab === 'documents' && <DocumentsTab documents={documents} setDocuments={setDocuments} />}
-      </div>
+            <button
+              onClick={onSignOut}
+              className="w-full flex items-center space-x-3 px-6 py-3 transition-colors hover:bg-white/5"
+            >
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          {activeTab === "overview" && (
+            <Overview users={users} authors={authors} documents={documents} />
+          )}
+          {activeTab === "users" && (
+            <UsersTab users={users} setUsers={setUsers} />
+          )}
+          {activeTab === "authors" && (
+            <AuthorsTab authors={authors} setAuthors={setAuthors} />
+          )}
+          {activeTab === "documents" && (
+            <DocumentsTab documents={documents} setDocuments={setDocuments} />
+          )}
+        </div>
       </div>
       <Footer />
-    </div>;
-}
+    </div>
+  );
+} 

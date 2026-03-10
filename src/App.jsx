@@ -1,11 +1,11 @@
 import React from 'react'
 import Admin from './pages/Admin/Admin.jsx'
-import Header from './components/Header/Header'
+import Contact from './pages/Contact.jsx'
 
 function App() {
         return (
                 <div>
-                        <Admin />
+                        <Contact />
                 </div>
         )
         }
