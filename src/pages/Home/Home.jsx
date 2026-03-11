@@ -2,14 +2,22 @@ import React from 'react'
 import DocumentCard from '../../components/DocumentCard/DocumentCard'
 import Header from '../../components/Header/Header'
 import Hero from '../../components/Home/HeroBanner'
+import FeaturedDocuments from '../../components/Home/FeaturedDocument'
+import HowItWorks from '../../components/Home/HowItWorks'
 
 const Home = () => {
   return (
-    <div>
+    <div className="relative">
+        <div className="fixed w-150 h-150 bg-purple-600/20 blur-[120px] top-0 -left-40 pointer-events-none" style={{zIndex: 0}} />
+        <div className="fixed w-150 h-150 bg-blue-500/40 blur-[120px] top-1/2 -right-40 pointer-events-none" style={{zIndex: 0}} />
+        <div className="fixed w-150 h-150 bg-purple-600/30 blur-[120px] bottom-0 -left-40 pointer-events-none" style={{zIndex: 0}} />
+
+      <div className="relative" style={{zIndex: 1}}>
         <Header />
         <Hero />
-        <DocumentCard />
-
+        <HowItWorks />
+        <FeaturedDocuments />
+      </div>
     </div>
   )
 }
