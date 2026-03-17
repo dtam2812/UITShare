@@ -24,6 +24,10 @@ const Home = () => {
         <Hero />
         <HowItWorks />
         <FeaturedDocuments />
+        <FeaturedDocuments
+          badge="✦ Mới nhất"
+          title="Tài liệu mới tải lên"
+        />
       </div>
     </div>
   );
