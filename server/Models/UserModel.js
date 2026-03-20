@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
 const UserSchema = mongoose.Schema({
-  username: { type: String, required: true },
+  userName: { type: String, required: true },
+
   email: { type: String, unique: true, required: true },
+
   password: { type: String },
 
   walletAddress: { type: String, unique: true },
@@ -13,6 +15,12 @@ const UserSchema = mongoose.Schema({
     default: "user",
   },
 
+  status: {
+    type: String,
+    enum: ["active", "banned"],
+    default: "active",
+  },
+
   avatar: String,
 
   createdAt: {
@@ -21,6 +29,4 @@ const UserSchema = mongoose.Schema({
   },
 });
 
-const UserModel = mongoose.model("User", UserSchema);
-
-module.exports = UserModel;
+module.exports = mongoose.model("User", UserSchema);

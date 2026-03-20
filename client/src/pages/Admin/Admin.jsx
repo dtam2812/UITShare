@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import Overview from "../../components/Admin/Overview";
 import UsersTab from "../../components/Admin/UsersTab";
-import AuthorsTab from "../../components/Admin/AuthorsTab";
 import DocumentsTab from "../../components/Admin/DocumentsTab";
 const INITIAL_USERS = [
   {
@@ -158,13 +157,6 @@ export default function Admin({ onSignOut }) {
               <span>Users</span>
             </button>
             <button
-              onClick={() => setActiveTab("authors")}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "authors" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
-            >
-              <UserCheck size={20} />
-              <span>Authors</span>
-            </button>
-            <button
               onClick={() => setActiveTab("documents")}
               className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
             >
@@ -189,9 +181,6 @@ export default function Admin({ onSignOut }) {
           )}
           {activeTab === "users" && (
             <UsersTab users={users} setUsers={setUsers} />
-          )}
-          {activeTab === "authors" && (
-            <AuthorsTab authors={authors} setAuthors={setAuthors} />
           )}
           {activeTab === "documents" && (
             <DocumentsTab documents={documents} setDocuments={setDocuments} />

@@ -1,10 +1,13 @@
 const express = require("express");
 const app = express();
+const cors = require("cors");
 require("dotenv").config();
 const userRouter = require("./Router/UserRoute");
-const userControlleer = require("./Controllers/UserController");
+const authRoute = require("./Router/AuthRoute");
 
-const port = 5000;
+//cors middleware for all request
+app.use(cors());
+app.use(express.json());
 
 //connect database
 const connectDb = require("./Services/ConnectDbService");
@@ -12,8 +15,7 @@ connectDb();
 
 //middleware router
 app.use("/users", userRouter);
-
-//router
+app.use("/api/auth", authRoute);
 
 app.listen(process.env.PORT, function () {
   console.log("server is running");

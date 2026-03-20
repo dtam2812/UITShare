@@ -5,7 +5,6 @@ const DocumentSchema = mongoose.Schema({
   description: String,
 
   fileUrl: { type: String, required: true },
-  previewUrl: String,
 
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +12,7 @@ const DocumentSchema = mongoose.Schema({
     required: true,
   },
 
-  category: String,
+  subject: String,
 
   price: { type: Number, default: 0 },
 
