@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import loginImg from "../../assets/login-img.jpg";
 import AuthButton from "../../components/Auth/AuthButton";
 import AuthSelect from "../../components/Auth/AuthSelect";
@@ -14,43 +14,50 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorPassword, setErrorPassword] = useState("");
   const [errorConfirm, setErrorConfirm] = useState("");
+  const navigate = useNavigate();
 
-  const handleRegister = (e) => {
-    e.preventDefault();
+  const handleRegister = async (e) => {
+    try {
+      e.preventDefault();
 
-    const userName = document.getElementById("userName").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
+      const userName = document.getElementById("userName").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
-    if (!userName || !email || !password || !confirmPassword) {
-      alert("Chưa nhập đủ thông tin");
-      return;
+      if (!userName || !email || !password || !confirmPassword) {
+        alert("Chưa nhập đủ thông tin");
+        return;
+      }
+
+      if (password.length < 6) {
+        setErrorPassword("Mật khẩu ít hơn 6 ký tự!");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        setErrorConfirm("Mật khẩu xác nhận không đúng!");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        {
+          userName: userName,
+          email: email,
+          password: password,
+        },
+      );
+      if (response.status === 200) {
+        navigate("/login");
+        setUserName("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error) {
+      console.log(error);
     }
-
-    if (password.length < 6) {
-      setErrorPassword("Mật khẩu ít hơn 6 ký tự!");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setErrorConfirm("Mật khẩu xác nhận không đúng!");
-      return;
-    }
-
-    axios
-      .post("http://localhost:5000/api/auth/register", {
-        userName: userName,
-        email: email,
-        password: password,
-      })
-      .then(() => {})
-      .catch((error) => console.log(error));
-
-    setUserName("");
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
   };
 
   return (

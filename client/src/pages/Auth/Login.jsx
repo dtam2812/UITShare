@@ -1,24 +1,43 @@
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import loginImg from "../../assets/login-img.jpg";
 import AuthButton from "../../components/Auth/AuthButton";
 import AuthSelect from "../../components/Auth/AuthSelect";
 import Input from "../../components/UI/Input";
 import { useState } from "react";
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleLogin = async (e) => {
+    try {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
-    if (!email || !password) {
-      alert("Chưa nhập đủ thông tin!");
-      return;
+      if (!email || !password) {
+        alert("Chưa nhập đủ thông tin!");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email: email,
+          password: password,
+        },
+      );
+
+      if (response.status === 200) {
+        navigate("/");
+        setEmail("");
+        setPassword("");
+      }
+    } catch (error) {
+      console.log(error);
     }
-
-    setEmail("");
-    setPassword("");
   };
 
   return (
@@ -46,7 +65,7 @@ const Login = () => {
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={handleLogin}>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Địa chỉ email

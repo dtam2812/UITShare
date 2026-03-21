@@ -7,7 +7,7 @@ const UserSchema = mongoose.Schema({
 
   password: { type: String },
 
-  walletAddress: { type: String, unique: true },
+  walletAddress: String,
 
   role: {
     type: String,
