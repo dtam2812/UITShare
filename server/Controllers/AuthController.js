@@ -41,9 +41,9 @@ const login = async (req, res) => {
         avatar: user.avatar,
         walletAddress: user.walletAddress,
       },
-      prccess.env.SECRET_JWT,
+      process.env.SECRET_JWT,
       {
-        expiresIn: 10,
+        expiresIn: 300,
       },
     );
 

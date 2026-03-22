@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.6",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.575.0",
     "pdfjs-dist": "^5.5.207",
     "react": "^19.2.0",

@@ -4,7 +4,8 @@ import AuthButton from "../../components/Auth/AuthButton";
 import AuthSelect from "../../components/Auth/AuthSelect";
 import Input from "../../components/UI/Input";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../common";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -22,16 +23,20 @@ const Login = () => {
         return;
       }
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        {
-          email: email,
-          password: password,
-        },
-      );
+      const response = await axios.post("api/auth/login", {
+        email: email,
+        password: password,
+      });
 
       if (response.status === 200) {
-        navigate("/");
+        const accessToken = response.data.accessToken;
+        const payloadDedoded = jwtDecode(accessToken);
+
+        if (payloadDedoded.role === "admin") navigate("/admin");
+        else navigate("/");
+
+        localStorage.setItem("access_token", accessToken);
+
         setEmail("");
         setPassword("");
       }

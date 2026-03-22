@@ -4,8 +4,8 @@ import SearchBar from "./SearchBar";
 import { Link } from "react-router";
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const accessToken = localStorage.getItem("access_token");
 
   return (
     <header className="my-5 w-full flex justify-center z-50">
@@ -57,13 +57,10 @@ const Header = () => {
 
           {!searchOpen && (
             <>
-              {!isLoggedIn ? (
-                <Link to="/register">
-                  <button
-                    onClick={() => setIsLoggedIn(true)}
-                    className="bg-linear-to-r cursor-pointer from-purple-600 to-indigo-600 px-6 py-2 rounded-full text-white transition hover:opacity-90"
-                  >
-                    Đăng ký
+              {!accessToken ? (
+                <Link to="/login">
+                  <button className="bg-linear-to-r cursor-pointer from-purple-600 to-indigo-600 px-6 py-2 rounded-full text-white transition hover:opacity-90">
+                    Đăng nhập
                   </button>
                 </Link>
               ) : (

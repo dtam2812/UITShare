@@ -5,7 +5,7 @@ import AuthSelect from "../../components/Auth/AuthSelect";
 import Input from "../../components/UI/Input";
 import { useState } from "react";
 import { HiExclamationCircle } from "react-icons/hi";
-import axios from "axios";
+import axios from "../../common";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -40,14 +40,11 @@ const Register = () => {
         return;
       }
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        {
-          userName: userName,
-          email: email,
-          password: password,
-        },
-      );
+      const response = await axios.post("api/auth/register", {
+        userName: userName,
+        email: email,
+        password: password,
+      });
       if (response.status === 200) {
         navigate("/login");
         setUserName("");

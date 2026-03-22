@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import SearchBar from "./AdminSearchBar";
 import DataTable from "./DataTable";
 import ModalOverlay from "./ModalOverlay";
+import axios from "../../common";
 
 export default function UsersTab({ users, setUsers }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,7 +32,7 @@ export default function UsersTab({ users, setUsers }) {
   const openAddModal = () => {
     setForm({
       id: "",
-      username: "",
+      userName: "",
       email: "",
       password: "",
       walletAddress: "",
@@ -49,24 +50,32 @@ export default function UsersTab({ users, setUsers }) {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmitAddUser = async (e) => {
     e.preventDefault();
-    if (isEditMode) {
-      setUsers(users.map((u) => (u.id === form.id ? form : u)));
-    } else {
-      const newUser = {
-        ...form,
-        id: `U00${users.length + 1}`,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      setUsers([...users, newUser]);
-    }
+    try {
+      const userName = document.getElementById("userName").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const role = document.getElementById("role").value;
+      const status = document.getElementById("status").value;
+
+      const response = await axios.post("api/auth/register", {
+        userName: userName,
+        email: email,
+        password: password,
+        role: role,
+        status: status,
+      });
+
+      if (response.status === 200) {
+      }
+    } catch (error) {}
     setIsModalOpen(false);
   };
 
   const filteredUsers = users.filter((u) => {
     const matchSearch =
-      (u.username || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (u.userName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (u.id || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchRole =
       roleFilter === "All Roles" || u.role === roleFilter.toLowerCase();
@@ -75,15 +84,20 @@ export default function UsersTab({ users, setUsers }) {
     return matchSearch && matchRole && matchStatus;
   });
 
+  const dataWithIndex = filteredUsers.map((u, index) => ({
+    ...u,
+    no: index + 1,
+  }));
+
   const columns = [
     {
       header: "No.",
-      accessor: "id",
+      accessor: "no",
     },
     {
       header: "Name",
       accessor: (row) => (
-        <span className="font-medium text-gray-800">{row.username}</span>
+        <span className="font-medium text-gray-800">{row.userName}</span>
       ),
     },
     {
@@ -180,7 +194,7 @@ export default function UsersTab({ users, setUsers }) {
         title="Users"
         count={filteredUsers.length}
         columns={columns}
-        data={filteredUsers}
+        data={dataWithIndex}
         emptyMessage="No users found."
       />
 
@@ -189,17 +203,18 @@ export default function UsersTab({ users, setUsers }) {
           <h3 className="text-xl font-bold text-gray-800 mb-4">
             {isEditMode ? "Edit User" : "Add New User"}
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmitAddUser} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Username
               </label>
               <input
+                id="userName"
                 required
                 type="text"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
-                value={form.username}
-                onChange={(e) => setForm({ ...form, username: e.target.value })}
+                value={form.userName}
+                onChange={(e) => setForm({ ...form, userName: e.target.value })}
               />
             </div>
 
@@ -208,6 +223,7 @@ export default function UsersTab({ users, setUsers }) {
                 Email
               </label>
               <input
+                id="email"
                 required
                 type="email"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
@@ -221,6 +237,7 @@ export default function UsersTab({ users, setUsers }) {
                 Password
               </label>
               <input
+                id="password"
                 type="password"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
                 value={form.password}
@@ -233,6 +250,7 @@ export default function UsersTab({ users, setUsers }) {
                 Role
               </label>
               <select
+                id="role"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
@@ -247,6 +265,7 @@ export default function UsersTab({ users, setUsers }) {
                 Status
               </label>
               <select
+                id="status"
                 className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -268,7 +287,7 @@ export default function UsersTab({ users, setUsers }) {
                 type="submit"
                 className="px-4 py-2 bg-[#1c1e2f] text-white rounded-md hover:bg-gray-800"
               >
-                Save User
+                Save
               </button>
             </div>
           </form>

@@ -14,7 +14,7 @@ const connectDb = require("./Services/ConnectDbService");
 connectDb();
 
 //middleware router
-app.use("/users", userRouter);
+app.use("/auth/admin", userRouter);
 app.use("/api/auth", authRoute);
 
 app.listen(process.env.PORT, function () {

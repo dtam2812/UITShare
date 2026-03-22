@@ -9,66 +9,10 @@ import {
 import Overview from "../../components/Admin/Overview";
 import UsersTab from "../../components/Admin/UsersTab";
 import DocumentsTab from "../../components/Admin/DocumentsTab";
-const INITIAL_USERS = [
-  {
-    id: "U001",
-    name: "Đinh Nguyễn Đức Tâm",
-    email: "tamdinh@gmail.com",
-    role: "User",
-    status: "Active",
-    joinDate: "2026-01-15",
-  },
-  {
-    id: "U002",
-    name: "Đỗ Tấn Tường",
-    email: "tuongdob@gmail.com",
-    role: "User",
-    status: "Active",
-    joinDate: "2026-01-02",
-  },
-  {
-    id: "U003",
-    name: "Trần Thành Vinh",
-    email: "vinhtran@gmail.com",
-    role: "User",
-    status: "Banned",
-    joinDate: "2026-03-06",
-  },
-  {
-    id: "U004",
-    name: "Nguyễn Phước Thịnh",
-    email: "thinhtu@gmail.com",
-    role: "User",
-    status: "Active",
-    joinDate: "2026-01-05",
-  },
-];
-const INITIAL_AUTHORS = [
-  {
-    id: "A001",
-    name: "PGS.TS Nguyễn X",
-    email: "nguyenx@university.edu.vn",
-    docsCount: 45,
-    revenue: "15,000,000đ",
-    status: "Verified",
-  },
-  {
-    id: "A002",
-    name: "ThS. Trần Y",
-    email: "trany@university.edu.vn",
-    docsCount: 12,
-    revenue: "3,500,000đ",
-    status: "Verified",
-  },
-  {
-    id: "A003",
-    name: "Lê Z (Sinh viên giỏi)",
-    email: "lez@student.edu.vn",
-    docsCount: 5,
-    revenue: "800,000đ",
-    status: "Pending",
-  },
-];
+import axios from "../../common";
+import { useNavigate } from "react-router";
+import { useEffect } from "react";
+
 const INITIAL_DOCUMENTS = [
   {
     id: "D001",
@@ -133,9 +77,27 @@ const INITIAL_DOCUMENTS = [
 ];
 export default function Admin({ onSignOut }) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [users, setUsers] = useState(INITIAL_USERS);
-  const [authors, setAuthors] = useState(INITIAL_AUTHORS);
+  const [users, setUsers] = useState([]);
   const [documents, setDocuments] = useState(INITIAL_DOCUMENTS);
+  const navigate = useNavigate();
+
+  const getListUser = async () => {
+    try {
+      const response = await axios.get("/auth/admin/user");
+
+      if (response.status === 200) {
+        setUsers(response.data);
+      }
+    } catch (error) {
+      if (error.response.status === 401) {
+        navigate("/login");
+      }
+    }
+  };
+  useEffect(() => {
+    getListUser();
+  }, []);
+
   return (
     <div className=" bg-[#2b2d42] font-sans">
       <div className="h-[800px] flex">
@@ -177,7 +139,7 @@ export default function Admin({ onSignOut }) {
         {/* Main Content */}
         <div className="flex-1 p-8">
           {activeTab === "overview" && (
-            <Overview users={users} authors={authors} documents={documents} />
+            <Overview users={users} documents={documents} />
           )}
           {activeTab === "users" && (
             <UsersTab users={users} setUsers={setUsers} />
