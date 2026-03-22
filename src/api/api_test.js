@@ -19,23 +19,28 @@ export const fetchSubjects = async () => {
     { id: 'IE103', name: 'Quản lý thông tin', category: 'Cơ sở ngành' },
     { id: 'IE104', name: 'Internet và công nghệ Web', category: 'Cơ sở ngành' },
     { id: 'IE106', name: 'Thiết kế giao diện người dùng', category: 'Cơ sở ngành' },
-    { id: 'IE105', name: 'Nhập môn đảm bảo và an ninh thông tin', category: 'Cơ sở ngành' },
-    { id: 'IE108', name: 'Phân tích thiết kế phần mềm', category: 'Cơ sở ngành' },
-    { id: 'IS402', name: 'Điện toán đám mây', category: 'Cơ sở ngành' },
-    { id: 'DS107', name: 'Tư duy tính toán cho KHDL', category: 'Chuyên ngành' },
-    { id: 'DS102', name: 'Học máy thống kê', category: 'Chuyên ngành' },
-    { id: 'IE212', name: 'Công nghệ Dữ liệu lớn', category: 'Chuyên ngành' },
-    { id: 'IS254', name: 'Hệ hỗ trợ ra quyết định', category: 'Chuyên ngành' },
-    { id: 'IE213', name: 'Kỹ thuật phát triển hệ thống Web', category: 'Chuyên ngành' },
-    { id: 'IE204', name: 'Tối ưu hóa công cụ tìm kiếm', category: 'Chuyên ngành' },
-    { id: 'IS353', name: 'Mạng xã hội', category: 'Chuyên ngành' },
-    { id: 'IS334', name: 'Thương mại điện tử', category: 'Chuyên ngành' },
-    { id: 'SE113', name: 'Kiểm chứng phần mềm', category: 'Chuyên ngành' },
-    { id: 'IE225', name: 'Mạng kết nối', category: 'Chuyên ngành' },
-    { id: 'IE226', name: 'Đồ họa và trực quan hóa máy tính', category: 'Chuyên ngành' },
-    { id: 'IE227', name: 'Xử lý tín hiệu số', category: 'Chuyên ngành' },
-    { id: 'IE232', name: 'Nhập môn trí tuệ nhân tạo', category: 'Chuyên ngành' },
+    { id: 'IE105', name: 'Nhập môn đảm bảo và an ninh thông tin', category: 'Chuyên ngành' },
+    { id: 'IE108', name: 'Phân tích thiết kế phần mềm', category: 'Chuyên ngành' },
+    { id: 'IS402', name: 'Điện toán đám mây', category: 'Chuyên ngành' }
   ];
+};
+
+export const searchDocuments = async (query) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const allDocs = await fetchDocuments();
+  
+  if (!query || query.trim() === '') return [];
+  
+  const lowerQuery = query.toLowerCase();
+  return allDocs.filter(doc => 
+    doc.id.toString() === lowerQuery ||
+    doc.subject.toLowerCase().includes(lowerQuery) ||
+    doc.title.toLowerCase().includes(lowerQuery) || 
+    doc.subjectName.toLowerCase().includes(lowerQuery) ||
+    doc.author.toLowerCase().includes(lowerQuery)
+  );
 };
 
 export const fetchDocuments = async () => {

@@ -14,6 +14,7 @@ import Contact from "./pages/Contact.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 import DocumentPage from "./pages/DocumentPage.jsx";
+import SearchResultsPage from "./pages/SearchResultPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       {
         path: "Document*",
         element: <DocumentPage />,
+      },
+       {
+        path: '/search',
+        element: <SearchResultsPage />,
       },
     ],
   },
