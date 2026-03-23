@@ -32,7 +32,7 @@ const Header = () => {
               href="#"
               className="hover:text-purple-300 transition-colors duration-200"
             >
-              Tài liệu
+               <Link to="/Document">Tài liệu</Link>
             </a>
             <a
               href="#"

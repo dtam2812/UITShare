@@ -1,39 +1,40 @@
 import React from 'react';
 import { FaTelegram, FaDiscord, FaXTwitter, FaFacebookF, FaTiktok, FaYoutube, FaThreads, FaInstagram } from 'react-icons/fa6';
+import { Link } from 'react-router';
 
 export default function Footer({ onNavigate }) {
-  return <footer className="bg-[#0b0f19] text-gray-300 py-10 px-6 md:px-12 border-t border-gray-800 mt-auto">
+  return <footer className="relative z-20 bg-black  text-gray-300 py-10 px-6 md:px-12 border-t border-gray-800 mt-auto z-10">
       <div className="max-w-7xl ml-0 mr-auto">
         {/* Top section: Logo and Socials */}
         <div className="flex flex-col md:flex-row items-start md:items-center mb-8 gap-6">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center mx-auto md:mx-0 gap-4">
             <img src="../public/UIT-Share-Logo-2.svg" alt="UITShare Logo" className="h-20 object-contain" />
             <div className="h-10 w-px bg-gray-700 hidden md:block"></div>
           </div>
           
           <div className="flex items-center gap-3 flex-wrap">
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaTelegram size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaDiscord size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaXTwitter size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaFacebookF size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaTiktok size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaYoutube size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaThreads size={18} />
             </a>
-            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white">
+            <a href="#" className="w-10 h-10 rounded-full bg-[#1c1e2f] flex items-center justify-center hover:bg-gray-600 transition-colors text-white hover:text-purple-300">
               <FaInstagram size={18} />
             </a>
           </div>
@@ -41,11 +42,11 @@ export default function Footer({ onNavigate }) {
 
         {/* Links */}
         <div className="flex flex-wrap gap-6 mb-6 text-sm font-medium">
-          <button onClick={() => onNavigate && onNavigate('faq')} className="hover:text-white transition-colors">Hỏi-Đáp</button>
-          <button onClick={() => onNavigate && onNavigate('privacy')} className="hover:text-white transition-colors">Chính sách bảo mật</button>
-          <button onClick={() => onNavigate && onNavigate('home')} className="hover:text-white transition-colors">Điều khoản sử dụng</button>
-          <button onClick={() => onNavigate && onNavigate('home')} className="hover:text-white transition-colors">Giới thiệu</button>
-          <button onClick={() => onNavigate && onNavigate('contact')} className="hover:text-white transition-colors">Liên hệ</button>
+          <Link to="/faq" className="hover:text-purple-300 transition-colors">Hỏi-Đáp</Link>
+          <Link to="/privacy" className="hover:text-purple-300 transition-colors">Chính sách bảo mật</Link>
+          <Link to="/terms" className="hover:text-purple-300 transition-colors">Điều khoản sử dụng</Link>
+          <Link to="/about" className="hover:text-purple-300 transition-colors">Giới thiệu</Link>
+          <Link to="/contact" className="hover:text-purple-300 transition-colors">Liên hệ</Link>
         </div>
 
         {/* Description */}

@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
-import {
-  Info,
-  Database,
-  Target,
-  Shield,
-  Share2,
-  UserCheck,
-  Cookie,
-  RefreshCw,
-  Mail,
-} from "lucide-react";
+import { Info, Database, Target, Shield, Share2, UserCheck, Cookie, RefreshCw, Mail } from 'lucide-react';
+import { Link } from 'react-router';
 
 const policyData = [
   {
@@ -63,19 +52,12 @@ const policyData = [
     content:
       "UITShare có thể sử dụng cookies để cải thiện trải nghiệm người dùng, ghi nhớ thông tin đăng nhập và phân tích cách người dùng sử dụng nền tảng.",
   },
-  {
-    id: "contact",
-    title: "8. Liên hệ",
-    icon: Mail,
-    content:
-      "Nếu bạn có bất kỳ câu hỏi nào về Chính sách bảo mật, vui lòng liên hệ với chúng tôi qua:\n\n- Email: support@uitshare.com\n- Trang liên hệ trên website UITShare",
-  },
 ];
 
-export default function PrivacyPolicy({ onNavigate }) {
+export default function Privacy({ onNavigate }) {
   const [activeSection, setActiveSection] = useState(policyData[0].id);
 
-  // Tự động cuộn lên đầu trang khi component mount
+  // Tự động cuộn lên đầu trang 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -83,16 +65,15 @@ export default function PrivacyPolicy({ onNavigate }) {
   const activeData = policyData.find((item) => item.id === activeSection);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fa] font-sans flex flex-col">
+    <div className="w-full font-sans flex flex-col overflow-hidden">
+      {/* Background Blurs */}
+      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+      {/* Main Content */}
       <div className="flex-1">
-        {/* Hero Banner */}
-        <div className="bg-[#1c1e2f] pt-40 pb-20 px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text mb-4">
-            Chính sách bảo mật
+        <div className="pt-8 pb-6 md:pt-25 md:pb-20 px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 text-transparent bg-clip-text pb-2">
+            CHÍNH SÁCH BẢO MẬT
           </h1>
-          <p className="text-gray-400 text-sm max-w-2xl mx-auto">
-            Dữ liệu của bạn, Cam kết của chúng tôi về sự Minh bạch và Bảo mật
-          </p>
         </div>
 
         {/* Main Content */}
@@ -106,19 +87,15 @@ export default function PrivacyPolicy({ onNavigate }) {
                   <button
                     key={item.id}
                     onClick={() => {
-                      if (item.id === "contact") {
-                        onNavigate && onNavigate("contact");
-                      } else {
-                        setActiveSection(item.id);
-                        if (window.innerWidth < 768) {
-                          window.scrollTo({ top: 400, behavior: "smooth" });
-                        }
+                      setActiveSection(item.id);
+                      if (window.innerWidth < 768) {
+                        window.scrollTo({ top: 400, behavior: 'smooth' });
                       }
                     }}
                     className={`px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 border text-left w-full ${
                       isActive
-                        ? "bg-purple-100 text-gray-800 border-[#8b5cf6]"
-                        : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                        ? "bg-purple-600/20 text-purple-400 border-purple-500/50"
+                        : "bg-[#131722] text-gray-400 border-gray-800 hover:bg-[#1c1e2f] hover:text-gray-300"
                     }`}
                   >
                     {item.title}
@@ -130,20 +107,36 @@ export default function PrivacyPolicy({ onNavigate }) {
 
           {/* Content Area */}
           <div className="w-full md:w-2/3 lg:w-3/4">
-            <div className="bg-white rounded-2xl p-8 md:p-10 shadow-sm border border-gray-100 min-h-[400px]">
-              <h2 className="text-3xl font-bold text-[#1e1b4b] mb-8 pb-4 border-b border-gray-100">
+            <div className="bg-[#131722] rounded-2xl p-8 md:p-10 shadow-sm border border-gray-800 min-h-[400px]">
+              <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b border-gray-800">
                 {activeData.title}
               </h2>
               <div className="prose prose-purple max-w-none">
-                <p className="text-gray-600 leading-relaxed whitespace-pre-line text-[15px]">
+                <p className="text-gray-300 leading-relaxed whitespace-pre-line text-[15px]">
                   {activeData.content}
                 </p>
               </div>
             </div>
           </div>
         </div>
+        
+        
+        {/* Contact Section */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-12">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-t border-gray-800 pt-12  px-4 md:px-8 ">
+            <div className="max-w-xl">
+              <h3 className="text-xl font-bold text-white mb-2">Câu hỏi khác?</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Nếu bạn còn bất kỳ thắc mắc nào hoặc cần thêm thông tin, đừng ngần
+                ngại liên hệ với chúng tôi. Chúng tôi luôn sẵn sàng hỗ trợ bạn!
+              </p>
+            </div>
+            <Link to="/contact" className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3.5 rounded-md font-medium transition-colors shrink-0 text-sm inline-block">
+              Liên hệ với chúng tôi
+            </Link>
+          </div>
+        </div>
       </div>
-      <div className="w-full h-24 sm:h-32 bg-[#1c1e2f]"></div>
     </div>
   );
 }

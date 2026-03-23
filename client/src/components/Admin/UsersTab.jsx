@@ -177,7 +177,7 @@ export default function UsersTab({ users, setUsers }) {
       <select
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
-        className="border border-gray-200 bg-gray-50 text-gray-600 text-sm rounded-md px-4 py-2 outline-none"
+        className="border border-gray-800 bg-[#1c1e2f] text-gray-300 text-sm rounded-md px-4 py-2 outline-none focus:border-purple-500"
       >
         <option>All Status</option>
         <option>Active</option>

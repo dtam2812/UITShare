@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import Header from "../components/Header/Header";
-import Footer from "../components/Footer/Footer";
+import { Link } from 'react-router';
 
 const tabs = ["Sản phẩm", "Thanh toán", "Mua hàng & Hoàn trả"];
 
@@ -72,17 +71,25 @@ export default function FAQ({ onNavigate }) {
   const [activeTab, setActiveTab] = useState("Sản phẩm");
   const [activeFaq, setActiveFaq] = useState(1);
 
+  // Tự động cuộn lên đầu trang 
+  useEffect(() => {
+  window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col">
+    <div className="w-full font-sans flex flex-col overflow-hidden">
+      {/* Background Blurs */}
+      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+      {/* Main Content */}
       <div className="flex-1">
-        <div className="bg-[#1c1e2f] pt-40 pb-20 px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">
+        <div className="pt-8 pb-6 md:pt-25 md:pb-20 px-4 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold  bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 text-transparent bg-clip-text  pb-2">
             CÂU HỎI THƯỜNG GẶP
           </h1>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mt-10">
+        <div className="flex flex-wrap justify-center gap-3 mt-10 ">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -92,8 +99,8 @@ export default function FAQ({ onNavigate }) {
               }}
               className={`px-6 py-2.5 rounded-md text-sm font-medium transition-all duration-200 border ${
                 activeTab === tab
-                  ? "bg-purple-100 text-gray-800 border-[#8b5cf6]"
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  ? "bg-purple-600/20 text-purple-400 border-purple-500/50"
+                  : "bg-[#131722] text-gray-400 border-gray-800 hover:bg-[#1c1e2f] hover:text-gray-300"
               }`}
             >
               {tab}
@@ -102,7 +109,7 @@ export default function FAQ({ onNavigate }) {
         </div>
 
         {/* Accordion List */}
-        <div className="max-w-4xl mx-auto mt-12 space-y-4">
+        <div className="max-w-4xl mx-auto mt-12 space-y-3 md:space-y-0 px-4 md:px-8">
           {faqData[activeTab]?.map((faq) => {
             const isActive = activeFaq === faq.id;
             return (
@@ -111,21 +118,21 @@ export default function FAQ({ onNavigate }) {
                 onClick={() => setActiveFaq(isActive ? null : faq.id)}
                 className={`cursor-pointer rounded-2xl p-6 transition-all duration-300 border ${
                   isActive
-                    ? "bg-purple-600 border-[#8b5cf6] text-white shadow-md"
-                    : "bg-[#fcfcfd] border-gray-100 text-[#1e1b4b] hover:bg-gray-50 hover:border-gray-200"
+                    ? "bg-purple-600/10 border-purple-500/50 text-white shadow-md"
+                    : "bg-[#131722] border-gray-800 text-gray-300 hover:bg-[#1c1e2f] hover:border-gray-700"
                 }`}
               >
                 <div className="flex justify-between items-center gap-4">
                   <h3
-                    className={`font-bold text-lg ${isActive ? "text-white" : "text-[#1e1b4b]"}`}
+                    className={`font-bold text-lg ${isActive ? "text-white" : "text-gray-200"}`}
                   >
                     {faq.question}
                   </h3>
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
                       isActive
-                        ? "bg-white text-[#8b5cf6]"
-                        : "bg-white text-gray-500 shadow-sm border border-gray-100"
+                        ? "bg-purple-600 text-white border-transparent"
+                        : "bg-[#1c1e2f] text-gray-400 border border-gray-700"
                     }`}
                   >
                     {isActive ? (
@@ -154,25 +161,22 @@ export default function FAQ({ onNavigate }) {
         </div>
 
         {/* Contact Section */}
-        <div className="max-w-4xl mx-auto mt-24 mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-t border-gray-100 pt-12">
+        <div className="max-w-4xl mx-auto mt-24 mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-t border-gray-800 pt-12 px-4 md:px-8">
           <div className="max-w-xl">
-            <h3 className="text-xl font-bold text-[#1e1b4b] mb-2">
-              Câu hỏi khác?
-            </h3>
-            <p className="text-gray-900 text-sm leading-relaxed">
+            <h3 className="text-xl font-bold text-white mb-2">Câu hỏi khác?</h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
               Nếu bạn còn bất kỳ thắc mắc nào hoặc cần thêm thông tin, đừng ngần
               ngại liên hệ với chúng tôi. Chúng tôi luôn sẵn sàng hỗ trợ bạn!
             </p>
           </div>
-          <button
-            onClick={() => onNavigate && onNavigate("contact")}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3.5 rounded-md font-medium transition-colors shrink-0 text-sm"
+          <Link
+            to="/contact"
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3.5 rounded-md font-medium transition-colors shrink-0 text-sm inline-block"
           >
             Liên hệ với chúng tôi
-          </button>
+          </Link>
         </div>
       </div>
-      <div className="w-full h-24 sm:h-32 bg-[#1c1e2f]"></div>
     </div>
   );
 }

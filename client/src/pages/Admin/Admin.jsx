@@ -106,21 +106,22 @@ export default function Admin({ onSignOut }) {
   };
 
   return (
-    <div className=" bg-[#2b2d42] font-sans">
+    <div className=" bg-[#0b0f19] font-sans">
+      {/* Background Blurs */}
       <div className="h-[800px] flex">
         {/* Sidebar */}
-        <div className="w-64 bg-[#1c1e2f] text-gray-300 flex flex-col shadow-xl z-10 shrink-0">
-          <nav className="flex-1 py-4 space-y-1">
+        <div className="w-64 text-gray-300 flex flex-col shadow-xl z-10 shrink-0">
+          <nav className="flex-1 py-8 space-y-1">
             <button
               onClick={() => setActiveTab("overview")}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "overview" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "overview" ? "bg-purple-600/20 text-purple-400 border-r-4 border-purple-500 font-medium" : "hover:bg-white/5"}`}
             >
               <LayoutDashboard size={20} />
               <span>Overview</span>
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "users" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "users" ? "bg-purple-600/20 text-purple-400 border-r-4 border-purple-500 font-medium" : "hover:bg-white/5"}`}
             >
               <Users size={20} />
               <span>Users</span>
