@@ -12,6 +12,7 @@ import DocumentsTab from "../../components/Admin/DocumentsTab";
 import axios from "../../common";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
+import { jwtDecode } from "jwt-decode";
 
 const INITIAL_DOCUMENTS = [
   {
@@ -90,13 +91,19 @@ export default function Admin({ onSignOut }) {
       }
     } catch (error) {
       if (error.response.status === 401) {
+        localStorage.removeItem("access_token");
         navigate("/login");
       }
     }
   };
   useEffect(() => {
     getListUser();
-  }, []);
+  }, [users]);
+
+  const handleLogOut = () => {
+    localStorage.removeItem("access_token");
+    navigate("/login");
+  };
 
   return (
     <div className=" bg-[#2b2d42] font-sans">
@@ -120,7 +127,7 @@ export default function Admin({ onSignOut }) {
             </button>
             <button
               onClick={() => setActiveTab("documents")}
-              className={`w-full flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
+              className={`w-full cursor-pointer flex items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "bg-white text-[#1c1e2f] font-medium rounded-r-full mr-4" : "hover:bg-white/5"}`}
             >
               <BookOpen size={20} />
               <span>Documents</span>
@@ -128,10 +135,12 @@ export default function Admin({ onSignOut }) {
 
             <button
               onClick={onSignOut}
-              className="w-full flex items-center space-x-3 px-6 py-3 transition-colors hover:bg-white/5"
+              className="w-full cursor-pointer flex items-center space-x-3 px-6 py-3 transition-colors hover:bg-white/5"
             >
               <LogOut size={20} />
-              <span>Sign Out</span>
+              <span onClick={handleLogOut} className="cursor-pointer">
+                Sign Out
+              </span>
             </button>
           </nav>
         </div>

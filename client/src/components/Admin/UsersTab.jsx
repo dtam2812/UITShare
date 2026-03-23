@@ -4,6 +4,7 @@ import SearchBar from "./AdminSearchBar";
 import DataTable from "./DataTable";
 import ModalOverlay from "./ModalOverlay";
 import axios from "../../common";
+import { useNavigate } from "react-router";
 
 export default function UsersTab({ users, setUsers }) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,6 +12,7 @@ export default function UsersTab({ users, setUsers }) {
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     id: "",
@@ -23,9 +25,20 @@ export default function UsersTab({ users, setUsers }) {
     status: "active",
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
-      setUsers(users.filter((u) => u.id !== id));
+  const handleDelete = async (userId) => {
+    try {
+      if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
+        const response = await axios.delete(
+          `/auth/admin/user/delete/${userId}`,
+        );
+        if (response.status === 200) {
+          setUsers(users.filter((element) => element._id !== userId));
+        }
+      }
+    } catch (error) {
+      if (error.response.status === 401) {
+        navigate("/login");
+      }
     }
   };
 
@@ -59,7 +72,7 @@ export default function UsersTab({ users, setUsers }) {
       const role = document.getElementById("role").value;
       const status = document.getElementById("status").value;
 
-      const response = await axios.post("api/auth/register", {
+      const response = await axios.post("auth/admin/user/create", {
         userName: userName,
         email: email,
         password: password,
@@ -68,9 +81,11 @@ export default function UsersTab({ users, setUsers }) {
       });
 
       if (response.status === 200) {
+        setIsModalOpen(false);
       }
-    } catch (error) {}
-    setIsModalOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const filteredUsers = users.filter((u) => {
@@ -139,7 +154,7 @@ export default function UsersTab({ users, setUsers }) {
       className: "text-center",
       accessor: (row) => (
         <button
-          onClick={() => handleDelete(row.id)}
+          onClick={() => handleDelete(row._id)}
           className="text-gray-400 hover:text-red-600 transition-colors"
         >
           <Trash2 size={18} className="mx-auto" />
@@ -177,7 +192,7 @@ export default function UsersTab({ users, setUsers }) {
         <h2 className="text-3xl font-bold text-white">Users</h2>
         <button
           onClick={openAddModal}
-          className="bg-[#1c1e2f] hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-gray-700"
+          className="bg-[#1c1e2f] cursor-pointer hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-gray-700"
         >
           <Plus size={18} /> Add User
         </button>
@@ -287,7 +302,7 @@ export default function UsersTab({ users, setUsers }) {
                 type="submit"
                 className="px-4 py-2 bg-[#1c1e2f] text-white rounded-md hover:bg-gray-800"
               >
-                Save
+                Add
               </button>
             </div>
           </form>
