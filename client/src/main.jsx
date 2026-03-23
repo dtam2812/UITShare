@@ -10,7 +10,7 @@ import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
 import Admin from "./pages/Admin/Admin.jsx";
 import FAQ from "./pages/FAQ.jsx";
 import Privacy from "./pages/PrivacyPolicy.jsx";
-import Contact from "./pages/Contact.jsx";  
+import Contact from "./pages/Contact.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 import DocumentPage from "./pages/DocumentPage.jsx";
@@ -26,15 +26,15 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-        path: "/Document/:id",
+        path: "/document/:id",
         element: <DocumentDetail />,
       },
       {
-        path: "Login",
+        path: "login",
         element: <Login />,
       },
       {
-        path: "Register",
+        path: "register",
         element: <Register />,
       },
       {
@@ -60,17 +60,17 @@ const router = createBrowserRouter([
       {
         path: "terms",
         element: <TermsOfService />,
-      },  
+      },
       {
         path: "about",
-        element: <AboutUs />, 
-      }, 
+        element: <AboutUs />,
+      },
       {
-        path: "Document*",
+        path: "document",
         element: <DocumentPage />,
       },
-       {
-        path: '/search',
+      {
+        path: "search",
         element: <SearchResultsPage />,
       },
     ],
