@@ -1,166 +1,145 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.24;
 
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/common/ERC2981.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 
-interface IDocumentNFT {
-    function getCreator(uint256 tokenId) external view returns (address);
-}
-
-contract Marketplace1155 is Ownable, ERC1155Holder, ReentrancyGuard {
+contract UITShareMarketplace is Ownable, ReentrancyGuard {
+    using ERC165Checker for address;
 
     struct Order {
         address seller;
         uint256 tokenId;
-        uint256 price;
         uint256 amount;
+        uint256 price; 
+        bool active;
     }
 
-    uint256 public currentOrderId;
-    IDocumentNFT public immutable nftContract;
-
+    // Mapping from Order ID to Order details
     mapping(uint256 => Order) public orders;
+    uint256 private orderIdCount = 1;
+    
+    IERC1155 public immutable nftContract;
+    bytes4 private constant _INTERFACE_ID_ERC2981 = 0x2a55205a;
 
-    uint256 public feeRate;
-    uint256 public feeDecimal;
+    uint256 public feeRate;      
+    uint256 public constant FEE_DENOMINATOR = 10000;
     address public feeRecipient;
 
-    event OrderAdded(uint256 indexed orderId, address indexed seller, uint256 tokenId, uint256 price, uint256 amount);
-    event OrderExecuted(uint256 indexed orderId, address indexed buyer, uint256 buyAmount, uint256 totalPrice);
+    // Events 
+    event OrderAdded(uint256 indexed orderId, address indexed seller, uint256 indexed tokenId, uint256 amount, uint256 price);
     event OrderCancelled(uint256 indexed orderId);
-    event Donated(address indexed donor, address indexed author, uint256 tokenId, uint256 amount);
-    event FeeUpdated(uint256 newRate, uint256 newDecimal);
-    event FeeRecipientUpdated(address indexed newRecipient);
+    
+    // Emits detailed cash flow information for transparency
+    event OrderMatched(
+        uint256 indexed orderId, 
+        address indexed seller, 
+        address indexed buyer, 
+        uint256 price, 
+        uint256 marketplaceFee, 
+        uint256 royaltyAmount
+    );
 
-    constructor(
-        address _nftAddress,
-        uint256 _feeRate,
-        uint256 _feeDecimal,
-        address _feeRecipient
-    ) {
-        require(_nftAddress != address(0), "Invalid NFT address");
-        require(_feeRecipient != address(0), "Invalid fee recipient");
-
-        nftContract = IDocumentNFT(_nftAddress);
-        feeRate = _feeRate;
-        feeDecimal = _feeDecimal;
-        feeRecipient = _feeRecipient;
+    constructor(address nftAddress_, uint256 feeRate_, address feeRecipient_) Ownable(msg.sender) {
+        require(nftAddress_ != address(0), "Invalid NFT address");
+        nftContract = IERC1155(nftAddress_);
+        feeRate = feeRate_;
+        feeRecipient = feeRecipient_;
     }
 
-    // ===== ADMIN =====
+    function addOrder(uint256 tokenId_, uint256 amount_, uint256 price_) external {
+        require(amount_ > 0, "Amount must be > 0");
+        require(price_ > 0, "Price must be > 0");
+        
+        // VALIDATE NFT BALANCE: Ensure seller owns enough tokens
+        require(nftContract.balanceOf(msg.sender, tokenId_) >= amount_, "Insufficient NFT balance");
+        require(nftContract.isApprovedForAll(msg.sender, address(this)), "Not approved");
 
-    function setFee(uint256 _feeRate, uint256 _feeDecimal) external onlyOwner {
-        require(_feeRate <= 10 * (10 ** _feeDecimal), "Fee too high");
-        feeRate = _feeRate;
-        feeDecimal = _feeDecimal;
-        emit FeeUpdated(_feeRate, _feeDecimal);
+        uint256 _orderId = orderIdCount++;
+        orders[_orderId] = Order(msg.sender, tokenId_, amount_, price_, true);
+
+        // Transfer NFT to contract escrow
+        nftContract.safeTransferFrom(msg.sender, address(this), tokenId_, amount_, "");
+        emit OrderAdded(_orderId, msg.sender, tokenId_, amount_, price_);
     }
 
-    function setFeeRecipient(address _newRecipient) external onlyOwner {
-        require(_newRecipient != address(0), "Invalid address");
-        feeRecipient = _newRecipient;
-        emit FeeRecipientUpdated(_newRecipient);
-    }
-
-    // ===== CORE =====
-
-    function addOrder(uint256 tokenId, uint256 price, uint256 amount) external nonReentrant {
-        require(price > 0, "Price must be > 0");
-        require(amount > 0, "Amount must be > 0");
-
-        currentOrderId++;
-
-        orders[currentOrderId] = Order({
-            seller: msg.sender,
-            tokenId: tokenId,
-            price: price,
-            amount: amount
-        });
-
-        IERC1155(address(nftContract)).safeTransferFrom(
-            msg.sender,
-            address(this),
-            tokenId,
-            amount,
-            ""
-        );
-
-        emit OrderAdded(currentOrderId, msg.sender, tokenId, price, amount);
-    }
-
-    function cancelOrder(uint256 orderId) external nonReentrant {
-        Order storage order = orders[orderId];
-
+    function cancelOrder(uint256 orderId_) external nonReentrant {
+        Order storage order = orders[orderId_];
+        
+        // CHECK ORDER EXISTENCE: Verify the order is valid and active
+        require(order.seller != address(0) && order.active, "Order not found or inactive");
         require(order.seller == msg.sender, "Not seller");
-        require(order.amount > 0, "Invalid order");
 
-        uint256 amount = order.amount;
-        uint256 tokenId = order.tokenId;
-
-        delete orders[orderId];
-
-        IERC1155(address(nftContract)).safeTransferFrom(
-            address(this),
-            msg.sender,
-            tokenId,
-            amount,
-            ""
-        );
-
-        emit OrderCancelled(orderId);
+        order.active = false;
+        uint256 _tid = order.tokenId;
+        uint256 _amt = order.amount;
+        
+        // Delete order from mapping to free up gas and clean state
+        delete orders[orderId_]; 
+        
+        nftContract.safeTransferFrom(address(this), msg.sender, _tid, _amt, "");
+        emit OrderCancelled(orderId_);
     }
 
-    function executeOrder(uint256 orderId, uint256 buyAmount) external payable nonReentrant {
-        Order storage order = orders[orderId];
+    function executeOrder(uint256 orderId_) external payable nonReentrant {
+        Order storage order = orders[orderId_];
+        
+        // VALIDATION: Check existence, payment, and prevent self-buying
+        require(order.seller != address(0) && order.active, "Order not found or inactive");
+        require(msg.value >= order.price, "Insufficient ETH");
+        require(order.seller != msg.sender, "Seller cannot buy");
 
-        require(order.amount >= buyAmount, "Not enough NFT");
+        order.active = false;
+        uint256 totalPrice = order.price;
 
-        uint256 totalPrice = order.price * buyAmount;
-        require(msg.value == totalPrice, "Wrong ETH");
+        // Fee & Royalty Calculations 
+        uint256 marketplaceFee = (totalPrice * feeRate) / FEE_DENOMINATOR;
+        uint256 royaltyAmount = 0;
+        address author = address(0);
 
-        uint256 fee = (totalPrice * feeRate) / (10 ** (feeDecimal + 2));
-        uint256 sellerAmount = totalPrice - fee;
-
-        order.amount -= buyAmount;
-
-        uint256 tokenId = order.tokenId;
-        address seller = order.seller;
-
-        if (order.amount == 0) {
-            delete orders[orderId];
+        // Check if the NFT contract supports ERC2981 Royalties
+        if (address(nftContract).supportsInterface(_INTERFACE_ID_ERC2981)) {
+            (author, royaltyAmount) = IERC2981(address(nftContract)).royaltyInfo(order.tokenId, totalPrice);
         }
 
-        IERC1155(address(nftContract)).safeTransferFrom(
-            address(this),
-            msg.sender,
-            tokenId,
-            buyAmount,
-            ""
-        );
+        require(totalPrice >= (marketplaceFee + royaltyAmount), "Fees exceed price");
+        uint256 sellerProceeds = totalPrice - marketplaceFee - royaltyAmount;
 
-        if (fee > 0) {
-            (bool successFee, ) = payable(feeRecipient).call{value: fee}("");
-            require(successFee, "Fee failed");
+        // ETH Distribution 
+        _sendValue(feeRecipient, marketplaceFee);
+        _sendValue(author, royaltyAmount);
+        _sendValue(order.seller, sellerProceeds);
+
+        // Refund excess ETH back to the buyer
+        if (msg.value > totalPrice) {
+            _sendValue(msg.sender, msg.value - totalPrice);
         }
 
-        (bool successSeller, ) = payable(seller).call{value: sellerAmount}("");
-        require(successSeller, "Seller failed");
-
-        emit OrderExecuted(orderId, msg.sender, buyAmount, totalPrice);
+        // Finalize NFT transfer from escrow to buyer
+        nftContract.safeTransferFrom(address(this), msg.sender, order.tokenId, order.amount, "");
+        
+        // LOG TRANSACTION DETAILS
+        emit OrderMatched(orderId_, order.seller, msg.sender, totalPrice, marketplaceFee, royaltyAmount);
+        
+        // Clear storage to prevent double execution and save gas
+        delete orders[orderId_];
     }
 
-    function donateToAuthor(uint256 tokenId) external payable nonReentrant {
-        require(msg.value > 0, "Must donate > 0");
+    function _sendValue(address recipient, uint256 amount) internal {
+        if (amount > 0 && recipient != address(0)) {
+            (bool success, ) = payable(recipient).call{value: amount}("");
+            require(success, "Transfer failed");
+        }
+    }
 
-        address author = nftContract.getCreator(tokenId);
-        require(author != address(0), "No author");
+    function onERC1155Received(address, address, uint256, uint256, bytes memory) public pure returns (bytes4) {
+        return this.onERC1155Received.selector;
+    }
 
-        (bool success, ) = payable(author).call{value: msg.value}("");
-        require(success, "Donate failed");
-
-        emit Donated(msg.sender, author, tokenId, msg.value);
+    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public pure returns (bytes4) {
+        return this.onERC1155BatchReceived.selector;
     }
 }
