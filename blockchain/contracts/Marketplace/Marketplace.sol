@@ -18,7 +18,6 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         bool active;
     }
 
-    // Mapping from Order ID to Order details
     mapping(uint256 => Order) public orders;
     uint256 private orderIdCount = 1;
     
@@ -29,19 +28,12 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
     uint256 public constant FEE_DENOMINATOR = 10000;
     address public feeRecipient;
 
-    // Events 
     event OrderAdded(uint256 indexed orderId, address indexed seller, uint256 indexed tokenId, uint256 amount, uint256 price);
     event OrderCancelled(uint256 indexed orderId);
-    
-    // Emits detailed cash flow information for transparency
-    event OrderMatched(
-        uint256 indexed orderId, 
-        address indexed seller, 
-        address indexed buyer, 
-        uint256 price, 
-        uint256 marketplaceFee, 
-        uint256 royaltyAmount
-    );
+    event OrderMatched(uint256 indexed orderId, address indexed seller, address indexed buyer, uint256 price, uint256 marketplaceFee, uint256 royaltyAmount);
+    event Donated(address indexed donor, address indexed recipient, uint256 amount);
+    event FeeRateUpdated(uint256 newRate);
+    event FeeRecipientUpdated(address indexed newRecipient);
 
     constructor(address nftAddress_, uint256 feeRate_, address feeRecipient_) Ownable(msg.sender) {
         require(nftAddress_ != address(0), "Invalid NFT address");
@@ -50,89 +42,131 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         feeRecipient = feeRecipient_;
     }
 
+    // --- Marketplace Core ---
+
     function addOrder(uint256 tokenId_, uint256 amount_, uint256 price_) external {
-        require(amount_ > 0, "Amount must be > 0");
-        require(price_ > 0, "Price must be > 0");
-        
-        // VALIDATE NFT BALANCE: Ensure seller owns enough tokens
-        require(nftContract.balanceOf(msg.sender, tokenId_) >= amount_, "Insufficient NFT balance");
+        require(amount_ > 0, "Amount > 0");
+        require(price_ > 0, "Price > 0");
+        require(nftContract.balanceOf(msg.sender, tokenId_) >= amount_, "Insufficient balance");
         require(nftContract.isApprovedForAll(msg.sender, address(this)), "Not approved");
 
         uint256 _orderId = orderIdCount++;
         orders[_orderId] = Order(msg.sender, tokenId_, amount_, price_, true);
-
-        // Transfer NFT to contract escrow
         nftContract.safeTransferFrom(msg.sender, address(this), tokenId_, amount_, "");
+        
         emit OrderAdded(_orderId, msg.sender, tokenId_, amount_, price_);
     }
 
     function cancelOrder(uint256 orderId_) external nonReentrant {
         Order storage order = orders[orderId_];
-        
-        // CHECK ORDER EXISTENCE: Verify the order is valid and active
-        require(order.seller != address(0) && order.active, "Order not found or inactive");
-        require(order.seller == msg.sender, "Not seller");
+        require(order.active && order.seller == msg.sender, "Unauthorized or inactive");
 
         order.active = false;
         uint256 _tid = order.tokenId;
         uint256 _amt = order.amount;
-        
-        // Delete order from mapping to free up gas and clean state
         delete orders[orderId_]; 
-        
+
         nftContract.safeTransferFrom(address(this), msg.sender, _tid, _amt, "");
         emit OrderCancelled(orderId_);
     }
 
     function executeOrder(uint256 orderId_) external payable nonReentrant {
         Order storage order = orders[orderId_];
-        
-        // VALIDATION: Check existence, payment, and prevent self-buying
-        require(order.seller != address(0) && order.active, "Order not found or inactive");
+        require(order.active, "Order inactive");
         require(msg.value >= order.price, "Insufficient ETH");
         require(order.seller != msg.sender, "Seller cannot buy");
 
         order.active = false;
         uint256 totalPrice = order.price;
 
-        // Fee & Royalty Calculations 
         uint256 marketplaceFee = (totalPrice * feeRate) / FEE_DENOMINATOR;
         uint256 royaltyAmount = 0;
         address author = address(0);
 
-        // Check if the NFT contract supports ERC2981 Royalties
         if (address(nftContract).supportsInterface(_INTERFACE_ID_ERC2981)) {
             (author, royaltyAmount) = IERC2981(address(nftContract)).royaltyInfo(order.tokenId, totalPrice);
         }
 
         require(totalPrice >= (marketplaceFee + royaltyAmount), "Fees exceed price");
-        uint256 sellerProceeds = totalPrice - marketplaceFee - royaltyAmount;
-
-        // ETH Distribution 
+        
         _sendValue(feeRecipient, marketplaceFee);
         _sendValue(author, royaltyAmount);
-        _sendValue(order.seller, sellerProceeds);
+        _sendValue(order.seller, totalPrice - marketplaceFee - royaltyAmount);
 
-        // Refund excess ETH back to the buyer
         if (msg.value > totalPrice) {
             _sendValue(msg.sender, msg.value - totalPrice);
         }
 
-        // Finalize NFT transfer from escrow to buyer
         nftContract.safeTransferFrom(address(this), msg.sender, order.tokenId, order.amount, "");
-        
-        // LOG TRANSACTION DETAILS
         emit OrderMatched(orderId_, order.seller, msg.sender, totalPrice, marketplaceFee, royaltyAmount);
-        
-        // Clear storage to prevent double execution and save gas
         delete orders[orderId_];
     }
+
+    // --- Donation Logic ---
+
+    function donate() external payable {
+        require(msg.value > 0, "Must send ETH");
+        emit Donated(msg.sender, address(this), msg.value);
+    }
+
+    function donateToSeller(address seller) external payable nonReentrant {
+        require(msg.value > 0 && seller != address(0), "Invalid input");
+        _sendValue(seller, msg.value);
+        emit Donated(msg.sender, seller, msg.value);
+    }
+
+    function donateToAuthor(uint256 tokenId) external payable nonReentrant {
+        require(msg.value > 0, "Must send ETH");
+        address author;
+        if (address(nftContract).supportsInterface(_INTERFACE_ID_ERC2981)) {
+            (author, ) = IERC2981(address(nftContract)).royaltyInfo(tokenId, msg.value);
+        }
+        require(author != address(0), "Author not found");
+        _sendValue(author, msg.value);
+        emit Donated(msg.sender, author, msg.value);
+    }
+
+    // --- Admin & Recovery ---
+
+    /**
+     * @dev QUAN TRỌNG: Rút tiền donate hoặc phí kẹt trong contract về ví Owner
+     */
+    function withdrawFunds() external onlyOwner nonReentrant {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds");
+        (bool success, ) = payable(owner()).call{value: balance}("");
+        require(success, "Transfer failed");
+    }
+
+    function setFeeRate(uint256 newRate) external onlyOwner {
+    require(newRate <= 2000, "Fee too high");
+    feeRate = newRate;
+    
+    // Phát sự kiện để Frontend nhận biết sự thay đổi
+    emit FeeRateUpdated(newRate);
+}
+
+/**
+ * @dev Thay đổi địa chỉ nhận phí sàn
+ */
+    function setFeeRecipient(address newRecipient) external onlyOwner {
+        require(newRecipient != address(0), "Invalid address");
+        feeRecipient = newRecipient;
+    
+        emit FeeRecipientUpdated(newRecipient);
+    }
+
+    // --- Helpers ---
 
     function _sendValue(address recipient, uint256 amount) internal {
         if (amount > 0 && recipient != address(0)) {
             (bool success, ) = payable(recipient).call{value: amount}("");
             require(success, "Transfer failed");
         }
+    }
+
+    receive() external payable {
+        if (msg.value > 0) emit Donated(msg.sender, address(this), msg.value);
     }
 
     function onERC1155Received(address, address, uint256, uint256, bytes memory) public pure returns (bytes4) {
