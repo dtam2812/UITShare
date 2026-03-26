@@ -42,8 +42,6 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         feeRecipient = feeRecipient_;
     }
 
-    // --- Marketplace Core ---
-
     function addOrder(uint256 tokenId_, uint256 amount_, uint256 price_) external {
         require(amount_ > 0, "Amount > 0");
         require(price_ > 0, "Price > 0");
@@ -102,8 +100,6 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         delete orders[orderId_];
     }
 
-    // --- Donation Logic ---
-
     function donate() external payable {
         require(msg.value > 0, "Must send ETH");
         emit Donated(msg.sender, address(this), msg.value);
@@ -126,11 +122,7 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         emit Donated(msg.sender, author, msg.value);
     }
 
-    // --- Admin & Recovery ---
 
-    /**
-     * @dev QUAN TRỌNG: Rút tiền donate hoặc phí kẹt trong contract về ví Owner
-     */
     function withdrawFunds() external onlyOwner nonReentrant {
         uint256 balance = address(this).balance;
         require(balance > 0, "No funds");
@@ -142,13 +134,9 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
     require(newRate <= 2000, "Fee too high");
     feeRate = newRate;
     
-    // Phát sự kiện để Frontend nhận biết sự thay đổi
     emit FeeRateUpdated(newRate);
 }
 
-/**
- * @dev Thay đổi địa chỉ nhận phí sàn
- */
     function setFeeRecipient(address newRecipient) external onlyOwner {
         require(newRecipient != address(0), "Invalid address");
         feeRecipient = newRecipient;
@@ -156,7 +144,6 @@ contract UITShareMarketplace is Ownable, ReentrancyGuard {
         emit FeeRecipientUpdated(newRecipient);
     }
 
-    // --- Helpers ---
 
     function _sendValue(address recipient, uint256 amount) internal {
         if (amount > 0 && recipient != address(0)) {

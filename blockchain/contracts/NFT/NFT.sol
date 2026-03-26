@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/common/ERC2981.sol";
 
-contract UITShareDocs is ERC1155, ERC2981, Ownable {
+contract UITShareNFT is ERC1155, ERC2981, Ownable {
     using Strings for uint256;
 
     uint256 private _tokenIdCounter;
@@ -16,7 +16,6 @@ contract UITShareDocs is ERC1155, ERC2981, Ownable {
     mapping(uint256 => uint256) public totalSupply;
     mapping(uint256 => string) private _tokenURIs; 
 
-    // KHAI BÁO EVENT (Fix lỗi số 5)
     event DocumentMinted(uint256 indexed tokenId, address indexed creator, uint256 amount, string tokenURI);
     event DocumentBurned(uint256 indexed tokenId, address indexed burner, uint256 amount);
 
@@ -26,7 +25,6 @@ contract UITShareDocs is ERC1155, ERC2981, Ownable {
         public 
         returns (uint256) 
     {
-        // VALIDATE (Fix lỗi số 3)
         require(amount_ > 0 && amount_ <= MAX_SUPPLY_LIMIT, "Invalid amount");
         require(bytes(tokenURI_).length > 0, "URI cannot be empty");
 
@@ -44,13 +42,12 @@ contract UITShareDocs is ERC1155, ERC2981, Ownable {
     }
 
     function burn(address account, uint256 id, uint256 value) public {
-        // KIỂM TRA TỒN TẠI (Fix lỗi số 4 trong burn)
+    
         require(creators[id] != address(0), "Token does not exist");
         require(
             account == msg.sender || isApprovedForAll(account, msg.sender),
             "Not owner nor approved"
         );
-        // KIỂM TRA SỐ DƯ (Fix lỗi số 1 - Chuyển Panic thành Revert reason)
         require(balanceOf(account, id) >= value, "Burn amount exceeds balance");
 
         totalSupply[id] -= value;
@@ -60,12 +57,11 @@ contract UITShareDocs is ERC1155, ERC2981, Ownable {
     }
 
     function uri(uint256 tokenId) public view override returns (string memory) {
-        // KIỂM TRA TỒN TẠI (Fix lỗi số 4)
+
         require(creators[tokenId] != address(0), "URI query for nonexistent token");
         return _tokenURIs[tokenId];
     }
 
-    // FIX LỖI SỐ 2: Khai báo các Interface hỗ trợ
     function supportsInterface(bytes4 interfaceId) 
         public 
         view 
