@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
+<<<<<<< HEAD
 pragma solidity ^0.8.9;
+=======
+pragma solidity ^0.8.24;
+>>>>>>> 0911c5ab3bc1245cca1f048d26fbec846685ae52
 
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
