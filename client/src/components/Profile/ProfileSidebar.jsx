@@ -48,7 +48,7 @@ const ProfileSidebar = () => {
           Thông tin cá nhân
         </NavLink>
 
-        <NavLink to="/profile/uploaded-docs" className={navLinkClass}>
+        <NavLink to="/profile/uploadedDocs" className={navLinkClass}>
           <FiFileText className="w-5 h-5" />
           Tài liệu đã tải lên
         </NavLink>
@@ -63,12 +63,12 @@ const ProfileSidebar = () => {
           Lịch sử giao dịch
         </NavLink>
 
-        <NavLink to="/profile/reviews-management" className={navLinkClass}>
+        <NavLink to="/profile/reviewsManagement" className={navLinkClass}>
           <FiStar className="w-5 h-5" />
           Đánh giá nhận được
         </NavLink>
 
-        <NavLink to="/profile/donated-received" className={navLinkClass}>
+        <NavLink to="/profile/donationsReceived" className={navLinkClass}>
           <FiGift className="w-5 h-5" />
           Donate nhận được
         </NavLink>

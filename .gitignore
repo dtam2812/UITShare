@@ -1,0 +1,14 @@
+node_modules/
+client/node_modules/
+server/node_modules/
+blockchain/node_modules/
+
+client/.env
+server/.env
+blockchain/.env
+
+# Hardhat & Blockchain Artifacts
+blockchain/artifacts/
+blockchain/cache/
+blockchain/ignition/deployments/
+

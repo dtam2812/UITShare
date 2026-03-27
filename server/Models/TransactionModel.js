@@ -1,34 +1,28 @@
 const mongoose = require("mongoose");
 
 const TransactionSchema = new mongoose.Schema({
-  buyer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-
-  document: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Document",
-  },
+  buyer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  seller: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  document: { type: mongoose.Schema.Types.ObjectId, ref: "Document" },
 
   tokenId: Number,
+  orderId: Number, // ID từ Smart Contract Marketplace
+  price: Number, // Giá tại thời điểm giao dịch (ETH)
+  quantity: { type: Number, default: 1 },
 
-  price: Number,
-
-  txHash: { type: String, required: true },
-
+  txHash: { type: String, required: true, unique: true },
+  type: {
+    type: String,
+    enum: ["mint", "buy", "list", "cancel"],
+    default: "buy",
+  },
   status: {
     type: String,
     enum: ["pending", "success", "failed"],
-    default: "pending",
+    default: "success",
   },
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: { type: Date, default: Date.now },
 });
 
-const TransactionModel = mongoose.model("Transaction", TransactionSchema);
-
-module.exports = TransactionModel;
+module.exports = mongoose.model("Transaction", TransactionSchema);

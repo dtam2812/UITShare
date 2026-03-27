@@ -58,7 +58,7 @@ const Register = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 h-screen bg-white">
+    <div className="grid grid-cols-1 md:grid-cols-2 h-max bg-white">
       <div className="hidden md:block p-2">
         <div className="h-full w-full rounded-2xl overflow-hidden relative">
           <img
@@ -103,28 +103,6 @@ const Register = () => {
             <p className="text-gray-500 text-sm">
               Bắt đầu hành trình chia sẻ tri thức của bạn.
             </p>
-          </div>
-
-          <div className="flex flex-col gap-3 mb-6">
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/475656/google-color.svg"
-              text="Đăng ký với Google"
-            />
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/511330/apple-173.svg"
-              text="Đăng ký với Apple"
-            />
-          </div>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 bg-white text-gray-400">
-                Hoặc dùng Email
-              </span>
-            </div>
           </div>
 
           <form className="space-y-4" onSubmit={handleRegister}>

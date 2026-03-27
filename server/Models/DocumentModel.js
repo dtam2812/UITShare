@@ -1,10 +1,10 @@
 const mongoose = require("mongoose");
 
-const DocumentSchema = mongoose.Schema({
+const DocumentSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
-
-  fileUrl: { type: String, required: true },
+  fileUrl: { type: String, required: true }, // Link tải file (thường là private S3 hoặc IPFS)
+  cid: { type: String }, // Content ID trên IPFS để lưu vào Metadata NFT
 
   author: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,8 +13,7 @@ const DocumentSchema = mongoose.Schema({
   },
 
   subject: String,
-
-  price: { type: Number, default: 0 },
+  price: { type: Number, default: 0 }, // Giá niêm yết (đơn vị ETH)
 
   accessType: {
     type: String,
@@ -22,20 +21,16 @@ const DocumentSchema = mongoose.Schema({
     default: "free",
   },
 
-  tokenId: Number,
+  // Kết nối với Blockchain
+  tokenId: { type: Number, unique: true, sparse: true },
   contractAddress: String,
+  isMinted: { type: Boolean, default: false },
 
-  totalSupply: { type: Number, default: 0 },
-
+  totalSupply: { type: Number, default: 0 }, // Tổng số lượng NFT được tạo ra (Max Supply)
   downloadCount: { type: Number, default: 0 },
-  totalDonations: { type: Number, default: 0 },
+  totalDonations: { type: Number, default: 0 }, // Tổng ETH nhận được từ Donate
 
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  createdAt: { type: Date, default: Date.now },
 });
 
-const DocumentModel = mongoose.model("Document", DocumentSchema);
-
-module.exports = DocumentModel;
+module.exports = mongoose.model("Document", DocumentSchema);

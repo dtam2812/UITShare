@@ -121,23 +121,6 @@ const Login = () => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/475656/google-color.svg"
-              text="Tiếp tục với Google"
-            />
-
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/511330/apple-173.svg"
-              text="Tiếp tục với Apple"
-            />
-
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/473558/binance.svg"
-              text="Tiếp tục với Binance"
-            />
-          </div>
-
           <p className="text-center text-gray-500 text-sm mt-8">
             Bạn chưa có tài khoản?{" "}
             <Link

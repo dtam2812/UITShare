@@ -107,7 +107,7 @@ const router = createBrowserRouter([
             element: <UploadedDocs />,
           },
           {
-            path: "donatedReceived",
+            path: "donationsReceived",
             element: <DonationsReceived />,
           },
         ],

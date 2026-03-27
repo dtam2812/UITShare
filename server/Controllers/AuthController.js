@@ -10,7 +10,13 @@ const register = async (req, res) => {
       email,
       password: bcrypt.hashSync(password, 10),
       walletAddress: "",
+      studentId: null,
+      bio: "",
+      facebookLink: "",
+      avatar: "",
+      coverImage: "",
       role: "user",
+      profileCompletion: 50,
     });
 
     return res.status(200).send("register user");
@@ -39,6 +45,10 @@ const login = async (req, res) => {
         role: user.role,
         status: user.status,
         avatar: user.avatar,
+        coverImage: user.coverImage,
+        studentId: user.studentId,
+        bio: user.bio,
+        facebookLink: user.facebookLink,
         walletAddress: user.walletAddress,
       },
       process.env.SECRET_JWT,
