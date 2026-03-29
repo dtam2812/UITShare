@@ -7,79 +7,90 @@ import {
   FiLogOut,
   FiGift,
 } from "react-icons/fi";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useNavigate, useParams } from "react-router";
 
-const ProfileSidebar = () => {
+const ProfileSidebar = ({ avatar, userName, email }) => {
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 py-3 px-4 font-medium transition-all rounded-r-xl border-l-4 
     ${isActive ? "bg-purple-500/10 text-purple-400 border-purple-400" : "text-gray-400 hover:bg-white/5 hover:text-white border-transparent"}`;
 
   const navigate = useNavigate();
+  const { userId } = useParams();
 
   const handleLogout = () => {
     navigate("/");
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/5 backdrop-blur-md px-4 py-6">
-      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/10">
+    <div className="flex h-full flex-col bg-white/5 px-4 py-6 backdrop-blur-md">
+      <div className="mb-8 flex items-center gap-3 border-b border-white/10 pb-6">
         <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9PgSNNHXLS4qXp-bYah7sjA6a89rLXdrBURyNVEYnVg&s"
+          src={avatar}
           alt="Avatar"
-          className="w-12 h-12 rounded-full object-cover border border-white/20"
+          className="h-12 w-12 rounded-full border border-white/20 object-cover"
         />
         <div className="flex flex-col overflow-hidden">
-          <span className="text-sm font-semibold text-white truncate">
-            Trần Thành Vinh
+          <span className="truncate text-sm font-semibold text-white">
+            {userName}
           </span>
-          <span className="text-xs text-gray-400 truncate">
-            tranthanhvinh@gmail.com
-          </span>
+          <span className="truncate text-xs text-gray-400">{email}</span>
         </div>
       </div>
 
       <nav className="flex-1 space-y-1.5 overflow-y-auto">
-        <p className="px-4 text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 mt-2 flex justify-center">
+        <p className="mt-2 mb-4 flex justify-center px-4 text-xs font-bold tracking-wider text-gray-500 uppercase">
           Quản lý tài khoản
         </p>
 
-        <NavLink to="/profile" end className={navLinkClass}>
-          <FiUser className="w-5 h-5" />
+        <NavLink to={`/profile/${userId}`} end className={navLinkClass}>
+          <FiUser className="h-5 w-5" />
           Thông tin cá nhân
         </NavLink>
 
-        <NavLink to="/profile/uploadedDocs" className={navLinkClass}>
-          <FiFileText className="w-5 h-5" />
+        <NavLink
+          to={`/profile/${userId}/uploadedDocs`}
+          className={navLinkClass}
+        >
+          <FiFileText className="h-5 w-5" />
           Tài liệu đã tải lên
         </NavLink>
 
-        <NavLink to="/profile/financials" className={navLinkClass}>
-          <FiCreditCard className="w-5 h-5" />
+        <NavLink to={`/profile/${userId}/financials`} className={navLinkClass}>
+          <FiCreditCard className="h-5 w-5" />
           Tài chính & Ví NFT
         </NavLink>
 
-        <NavLink to="/profile/purchase-history" className={navLinkClass}>
-          <FiClock className="w-5 h-5" />
+        <NavLink
+          to={`/profile//${userId}/purchase-history`}
+          className={navLinkClass}
+        >
+          <FiClock className="h-5 w-5" />
           Lịch sử giao dịch
         </NavLink>
 
-        <NavLink to="/profile/reviewsManagement" className={navLinkClass}>
-          <FiStar className="w-5 h-5" />
+        <NavLink
+          to={`/profile//${userId}/reviewsManagement`}
+          className={navLinkClass}
+        >
+          <FiStar className="h-5 w-5" />
           Đánh giá nhận được
         </NavLink>
 
-        <NavLink to="/profile/donationsReceived" className={navLinkClass}>
-          <FiGift className="w-5 h-5" />
+        <NavLink
+          to={`/profile//${userId}/donationsReceived`}
+          className={navLinkClass}
+        >
+          <FiGift className="h-5 w-5" />
           Donate nhận được
         </NavLink>
       </nav>
 
-      <div className="pt-6 mt-4 border-t border-white/10">
+      <div className="mt-4 border-t border-white/10 pt-6">
         <button
           onClick={handleLogout}
-          className="flex justify-center items-center gap-3 w-full px-4 py-2.5 text-red-400 hover:bg-red-500/10 rounded-lg font-medium transition-colors cursor-pointer"
+          className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg px-4 py-2.5 font-medium text-red-400 transition-colors hover:bg-red-500/10"
         >
-          <FiLogOut className="w-5 h-5 text-red-400" />
+          <FiLogOut className="h-5 w-5 text-red-400" />
           Đăng xuất
         </button>
       </div>

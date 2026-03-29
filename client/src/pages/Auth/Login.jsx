@@ -46,33 +46,33 @@ const Login = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 h-screen bg-white">
-      <div className="flex flex-col justify-center items-center p-6 md:p-12 overflow-y-auto">
+    <div className="grid h-auto grid-cols-1 bg-white md:grid-cols-2">
+      <div className="flex flex-col items-center justify-center overflow-y-auto p-6 md:p-12">
         <div className="w-full max-w-100">
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 p-1 rounded-full flex items-center">
-              <button className="bg-white text-gray-900 shadow-sm px-6 py-1.5 rounded-full text-sm font-semibold transition-all">
+          <div className="mb-8 flex justify-center">
+            <div className="flex items-center rounded-full bg-gray-100 p-1">
+              <button className="rounded-full bg-white px-6 py-1.5 text-sm font-semibold text-gray-900 shadow-sm transition-all">
                 Đăng nhập
               </button>
               <Link
                 to="/register"
-                className="text-gray-500 hover:text-gray-900 px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                className="rounded-full px-6 py-1.5 text-sm font-medium text-gray-500 transition-all hover:text-gray-900"
               >
                 Đăng ký
               </Link>
             </div>
           </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Xin chào</h1>
-            <p className="text-gray-500 text-sm">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 text-3xl font-bold text-gray-900">Xin chào</h1>
+            <p className="text-sm text-gray-500">
               Vui lòng nhập thông tin của bạn để đăng nhập
             </p>
           </div>
 
           <form className="space-y-5" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="mb-1.5 block text-sm font-semibold text-gray-700">
                 Địa chỉ email
               </label>
               <Input
@@ -88,13 +88,13 @@ const Login = () => {
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-1.5">
+              <div className="mb-1.5 flex items-center justify-between">
                 <label className="block text-sm font-semibold text-gray-700">
                   Mật khẩu
                 </label>
                 <Link
                   to="/forgotpassword"
-                  className="text-xs text-gray-500 hover:text-gray-900 font-medium"
+                  className="text-xs font-medium text-gray-500 hover:text-gray-900"
                 >
                   Quên mật khẩu?
                 </Link>
@@ -117,15 +117,15 @@ const Login = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 bg-white text-gray-400">Hoặc</span>
+              <span className="bg-white px-2 text-gray-400">Hoặc</span>
             </div>
           </div>
 
-          <p className="text-center text-gray-500 text-sm mt-8">
+          <p className="mt-8 text-center text-sm text-gray-500">
             Bạn chưa có tài khoản?{" "}
             <Link
               to="/register"
-              className="text-gray-900 font-bold hover:underline"
+              className="font-bold text-gray-900 hover:underline"
             >
               Đăng ký
             </Link>
@@ -133,19 +133,19 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="hidden md:block p-2">
-        <div className="h-full w-full rounded-2xl overflow-hidden relative">
+      <div className="hidden p-2 md:block">
+        <div className="relative h-full w-full overflow-hidden rounded-2xl">
           <img
             src={loginImg}
             alt="Login Banner"
             className="h-full w-full object-cover object-right"
           />
 
-          <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"></div>
+          <div className="absolute right-0 bottom-0 left-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"></div>
 
-          <div className="absolute bottom-10 left-6 right-6 text-white z-10">
-            <h3 className="text-3xl font-bold mb-2 drop-shadow-md">UITShare</h3>
-            <p className="text-gray-200 text-sm leading-relaxed drop-shadow-sm">
+          <div className="absolute right-6 bottom-10 left-6 z-10 text-white">
+            <h3 className="mb-2 text-3xl font-bold drop-shadow-md">UITShare</h3>
+            <p className="text-sm leading-relaxed text-gray-200 drop-shadow-sm">
               Nền tảng chia sẻ tài liệu số 1 dành cho sinh viên UIT.
               <br />
               Học tập hiệu quả, chia sẻ đam mê.

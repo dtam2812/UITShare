@@ -3,9 +3,24 @@ import { FiImage, FiEdit2, FiBook, FiShield } from "react-icons/fi";
 import Input from "../../components/UI/Input";
 import { useParams } from "react-router";
 import axios from "../../common";
+import toast from "react-hot-toast";
 
 const PersonalInfo = () => {
   const [user, setUser] = useState(null);
+
+  const initialForm = {
+    userName: "",
+    studentId: "",
+    bio: "",
+    facebookLink: "",
+  };
+  const initialImg = {
+    avatar: "",
+    coverImage: "",
+  };
+
+  const [formInput, setFormInput] = useState(initialForm);
+  const [img, setImg] = useState(initialImg);
 
   const { userId } = useParams();
 
@@ -16,7 +31,23 @@ const PersonalInfo = () => {
     const getUserId = async () => {
       try {
         const response = await axios.get(`/api/personal/userDetail/${userId}`);
-        setUser(response.data);
+        if (response.status === 200) {
+          setUser(response.data);
+
+          setFormInput({
+            userName: response.data.userName || "",
+            studentId: response.data.studentId || "",
+            bio: response.data.bio || "",
+            facebookLink: response.data.facebookLink || "",
+          });
+
+          setImg({
+            avatar: response.data.avatar || "",
+            coverImage: response.data.coverImage || "",
+          });
+
+          toast.success("Cập nhật thông tin thành công");
+        }
       } catch (error) {
         console.log(error);
       }
@@ -29,23 +60,49 @@ const PersonalInfo = () => {
     clickInput.current.click();
   };
 
-  const inittialForm = {
-    userName: "",
-    studentId: "",
-    bio: "",
-    socialLink: "",
-  };
-
-  const handleSubmit = (e) => {
+  const handleUpdateUser = async (e) => {
     e.preventDefault();
-    setFormInput(inittialForm);
+
+    try {
+      const formData = new FormData();
+
+      formData.append("userName", formInput.userName);
+      formData.append("studentId", formInput.studentId);
+      formData.append("bio", formInput.bio);
+      formData.append("facebookLink", formInput.facebookLink);
+
+      if (img.avatar instanceof File) formData.append("avatar", img.avatar);
+      if (img.coverImage instanceof File)
+        formData.append("coverImage", img.coverImage);
+
+      const response = await axios.put(
+        `/api/personal/updateUserInfo/${userId}`,
+        formData,
+      );
+
+      if (response.status === 200) {
+        setImg({
+          avatar: response.data.avatar,
+          coverImage: response.data.coverImage,
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleCancel = () => {
-    setFormInput(inittialForm);
+    setFormInput({
+      userName: user?.userName || "",
+      studentId: user?.studentId || "",
+      bio: user?.bio || "",
+      facebookLink: user?.facebookLink || "",
+    });
+    setImg({
+      avatar: user?.avatar || "",
+      coverImage: user?.coverImage || "",
+    });
   };
-
-  const [formInput, setFormInput] = useState(inittialForm);
 
   const handleChangeForm = (e) => {
     const { id, value } = e.target;
@@ -56,17 +113,28 @@ const PersonalInfo = () => {
     }));
   };
 
+  const handleChangeImage = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setImg((prev) => ({
+      ...prev,
+      [typeUpload.current]: file,
+      [`${typeUpload.current}Preview`]: URL.createObjectURL(file),
+    }));
+  };
+
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm backdrop-blur-md">
       <div className="relative h-48 rounded-t-2xl bg-white/10">
         <img
-          src={user?.coverImage}
+          src={img.coverImagePreview || img.coverImage}
           alt="Cover"
           className="h-full w-full object-cover"
         />
         <button
           className="absolute top-4 right-4 flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-sm font-medium text-white shadow-sm backdrop-blur-md transition-colors hover:cursor-pointer hover:bg-black/60"
-          onClick={() => handleClick("cover")}
+          onClick={() => handleClick("coverImage")}
         >
           <FiImage className="h-4 w-4" />
           Cập nhật ảnh bìa
@@ -74,7 +142,7 @@ const PersonalInfo = () => {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="relative">
             <img
-              src={user?.avatar}
+              src={img.avatarPreview || img.avatar}
               alt="Profile avatar"
               className="h-24 w-24 rounded-full border-4 border-[#050816] object-cover shadow-md hover:cursor-pointer"
               onClick={() => handleClick("avatar")}
@@ -87,7 +155,13 @@ const PersonalInfo = () => {
             </button>
           </div>
         </div>
-        <input type="file" accept="image/*" hidden ref={clickInput} />
+        <input
+          onChange={handleChangeImage}
+          type="file"
+          accept="image/*"
+          hidden
+          ref={clickInput}
+        />
       </div>
 
       <div className="mt-14 border-b border-white/10 px-6 pb-8 text-center">
@@ -118,7 +192,7 @@ const PersonalInfo = () => {
       </div>
 
       <div className="mx-auto max-w-4xl p-6 md:p-8">
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleUpdateUser}>
           <div className="mb-10">
             <h3 className="mb-6 text-lg font-semibold text-white">
               Thông tin cá nhân cơ bản:
@@ -131,7 +205,7 @@ const PersonalInfo = () => {
                 <Input
                   className="text-white"
                   id="userName"
-                  value={user?.userName}
+                  value={formInput?.userName}
                   placeholder="Tên"
                   onChange={handleChangeForm}
                 />
@@ -141,8 +215,9 @@ const PersonalInfo = () => {
                   MSSV
                 </label>
                 <Input
+                  className="text-white"
                   id="studentId"
-                  value={user?.studentId}
+                  value={formInput?.studentId}
                   placeholder="Mã số sinh viên (MSSV)"
                   onChange={handleChangeForm}
                 />
@@ -154,9 +229,9 @@ const PersonalInfo = () => {
                 <textarea
                   id="bio"
                   rows="4"
-                  value={user?.bio}
+                  value={formInput?.bio}
                   placeholder="Giới thiệu ngắn gọn (VD: Chuyên share tài liệu điểm cao môn Đại cương...)"
-                  className="w-full resize-y rounded-xl border border-white/10 bg-transparent px-4 py-3 text-sm text-white transition-all outline-none placeholder:text-gray-500 focus:border-purple-400 focus:ring-0"
+                  className="w-full resize-y rounded-xl border border-purple-400 bg-transparent px-4 py-3 text-sm text-white transition-all outline-none placeholder:text-gray-500 focus:border-purple-400 focus:ring-0"
                   onChange={handleChangeForm}
                 ></textarea>
               </div>
@@ -172,7 +247,7 @@ const PersonalInfo = () => {
                 </label>
                 <Input
                   id="socialLink"
-                  value={user?.facebookLink}
+                  value={formInput?.facebookLink}
                   placeholder="Link Facebook (Hỗ trợ người mua tài liệu)"
                   onChange={handleChangeForm}
                 />
