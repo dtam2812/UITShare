@@ -11,19 +11,7 @@ const Input = ({ type, placeholder, className, ...rest }) => {
       <input
         type={inputType}
         placeholder={placeholder}
-        className={`w-full px-4 py-3 pr-10 rounded-xl 
-  border border-purple-400 
-text-black
-placeholder:text-gray-400 
-text-sm 
-outline-none 
-focus:bg-white/10 
-focus:border-2 focus:border-purple-400 
-focus:ring-0
-transition-colors 
-duration-300
-
-${className}`}
+        className={`w-full rounded-xl border border-purple-400 px-4 py-3 pr-10 text-sm text-black transition-colors duration-300 outline-none placeholder:text-gray-400 focus:border-2 focus:border-purple-400 focus:bg-white/10 focus:ring-0 ${className}`}
         {...rest}
       />
 
@@ -31,7 +19,7 @@ ${className}`}
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors cursor-pointer"
+          className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400 transition-colors hover:text-white"
         >
           {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
         </button>
