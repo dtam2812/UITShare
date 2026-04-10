@@ -6,6 +6,7 @@ import axios from "../../common";
 const Step2Detail = ({ file, prevStep, onSubmit }) => {
   const [formData, setFormData] = useState(() =>
     file.map(() => ({
+      title: "",
       subject: "",
       category: "",
       description: "",
@@ -41,6 +42,7 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
 
     const isValid = formData.every(
       (item) =>
+        item.title.trim() !== "" &&
         item.subject.trim() !== "" &&
         item.category.trim() !== "" &&
         item.price.toString().trim() !== "",
@@ -53,6 +55,7 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
 
       const data = new FormData();
       data.append("file", file[0]);
+      data.append("title", formData[0].title);
       data.append("subject", formData[0].subject);
       data.append("category", formData[0].category);
       data.append("description", formData[0].description);

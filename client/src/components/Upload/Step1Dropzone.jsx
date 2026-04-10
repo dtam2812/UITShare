@@ -80,7 +80,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
   return (
     <div className="w-full">
       <div
-        className={`w-full border-2 border-dashed ${isDragging ? "border-purple-400 bg-white/10" : "border-white/20 bg-white/5"} backdrop-blur-md rounded-2xl hover:bg-white/10 hover:border-purple-400 transition-colors cursor-pointer flex flex-col items-center justify-center py-16 px-4 text-center relative overflow-hidden`}
+        className={`w-full border-2 border-dashed ${isDragging ? "border-purple-400 bg-white/10" : "border-white/20 bg-white/5"} relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl px-4 py-16 text-center backdrop-blur-md transition-colors hover:border-purple-400 hover:bg-white/10`}
         onClick={() => fileInputRef.current.click()}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
@@ -90,31 +90,31 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
         <div
           className={`flex flex-col items-center transition-opacity duration-200 ${isDragging ? "opacity-0" : "opacity-100"}`}
         >
-          <div className="w-16 h-16 bg-purple-500/10 text-purple-400 rounded-full flex items-center justify-center mb-4">
-            <FiUploadCloud className="w-8 h-8" />
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-purple-500/10 text-purple-400">
+            <FiUploadCloud className="h-8 w-8" />
           </div>
-          <h3 className="text-lg font-semibold text-white mb-1">
+          <h3 className="mb-1 text-lg font-semibold text-white">
             Kéo thả tài liệu vào đây
           </h3>
-          <p className="text-sm text-gray-400 mb-6">
+          <p className="mb-6 text-sm text-gray-400">
             hoặc click để chọn file từ máy tính của bạn
           </p>
 
           <button
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer pointer-events-none"
+            className="pointer-events-none cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors"
             type="button"
           >
             Chọn tập tin
           </button>
 
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="mt-4 text-xs text-gray-500">
             Hỗ trợ: PDF, DOC, DOCX (Tối đa 200MB)
           </p>
         </div>
 
         {isDragging && (
-          <div className="absolute inset-0 bg-[#050816]/80 backdrop-blur-md flex flex-col items-center justify-center z-10 animate-in fade-in duration-200 pointer-events-none">
-            <FiUploadCloud className="w-12 h-12 text-purple-400 mb-3 animate-bounce" />
+          <div className="animate-in fade-in pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#050816]/80 backdrop-blur-md duration-200">
+            <FiUploadCloud className="mb-3 h-12 w-12 animate-bounce text-purple-400" />
             <h3 className="text-2xl font-bold text-purple-400">
               Thả file vào đây luôn đi!
             </h3>
@@ -132,7 +132,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
       </div>
 
       <div className="mt-8">
-        <h4 className="text-sm font-semibold text-white mb-4">
+        <h4 className="mb-4 text-sm font-semibold text-white">
           Tài liệu đã chọn ({fileUploaded.length})
         </h4>
 
@@ -140,14 +140,14 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
           {fileUploaded.map((item, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl hover:shadow-sm transition-shadow relative"
+              className="relative flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md transition-shadow hover:shadow-sm"
             >
               <div className="flex items-center gap-4 overflow-hidden">
-                <div className="w-10 h-10 bg-purple-500/10 text-purple-400 rounded-lg flex items-center justify-center shrink-0">
-                  <FiFile className="w-5 h-5" />
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
+                  <FiFile className="h-5 w-5" />
                 </div>
                 <div className="truncate">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="truncate text-sm font-medium text-white">
                     {item.name}
                   </p>
                   <p className="text-xs text-gray-400">
@@ -160,30 +160,30 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
 
               <div className="flex items-center">
                 <button
-                  className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0 cursor-pointer"
+                  className="shrink-0 cursor-pointer rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
                   onClick={() => setShowMenu(showMenu === index ? null : index)}
                 >
-                  <FiTrash2 className="w-5 h-5" />
+                  <FiTrash2 className="h-5 w-5" />
                 </button>
 
                 {showMenu === index && (
-                  <div className="absolute right-4 top-[70%] mt-1 w-48 bg-[#050816] rounded-lg shadow-2xl border border-white/10 py-1 z-50 animate-in fade-in zoom-in duration-200 origin-top-right">
+                  <div className="animate-in fade-in zoom-in absolute top-[70%] right-4 z-50 mt-1 w-48 origin-top-right rounded-lg border border-white/10 bg-[#050816] py-1 shadow-2xl duration-200">
                     <button
-                      className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 font-medium cursor-pointer"
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm font-medium text-red-400 hover:bg-red-500/10"
                       onClick={() => {
                         handleDeleteFile(item);
                         setShowMenu(null);
                       }}
                     >
-                      <FiTrash2 className="w-4 h-4" />
+                      <FiTrash2 className="h-4 w-4" />
                       Xoá tài liệu
                     </button>
 
                     <button
-                      className="w-full px-4 py-2 text-left text-sm text-gray-300 hover:bg-white/10 flex items-center gap-2 cursor-pointer"
+                      className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-left text-sm text-gray-300 hover:bg-white/10"
                       onClick={() => setShowMenu(null)}
                     >
-                      <FiX className="w-4 h-4" />
+                      <FiX className="h-4 w-4" />
                       Huỷ
                     </button>
                   </div>
@@ -196,7 +196,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
 
       <div className="mt-8 flex justify-end">
         <button
-          className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          className="cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => onNextStep(fileUploaded)}
         >
           Tiếp tục điền chi tiết &rarr;

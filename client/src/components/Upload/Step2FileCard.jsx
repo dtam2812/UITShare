@@ -121,6 +121,37 @@ const Step2FileCard = ({
             )}
           </div>
 
+          {/*Tên tài liệu*/}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">
+              Tên tài liệu
+            </label>
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <FiBook className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                name="title"
+                value={formData.title}
+                className={`w-full rounded-xl border py-3 pr-4 pl-10 text-sm text-white transition-all outline-none ${
+                  submit && !formData.title
+                    ? "border-red-400 bg-red-500/10 focus:border-red-400 focus:ring-2 focus:ring-red-400"
+                    : "border-white/20 bg-white/5 focus:border-purple-400 focus:ring-2 focus:ring-purple-400"
+                }`}
+                placeholder="Nhập tên tài liệu..."
+                onChange={(e) =>
+                  updateForm(index, e.target.name, e.target.value)
+                }
+              />
+            </div>
+            {submit && !formData.title && (
+              <span className="mt-1 block text-xs text-red-400">
+                Tên tài liệu không được để trống
+              </span>
+            )}
+          </div>
+
           {/* Mô tả */}
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">

@@ -40,7 +40,6 @@ const DocumentSchema = new mongoose.Schema({
   downloadCount: { type: Number, default: 0 },
   totalDonations: { type: Number, default: 0 },
 
-  previewUrl: { type: String, default: null },
   pageCount: { type: Number, default: null },
 
   createdAt: { type: Date, default: Date.now },

@@ -1,6 +1,7 @@
 ﻿const PinataSDK = require("@pinata/sdk");
 const fs = require("fs");
 const { ethers } = require("ethers");
+const { PDFDocument } = require("pdf-lib");
 const documentModel = require("../Models/DocumentModel");
 const nftModel = require("../Models/NFTModel");
 const userModel = require("../Models/UserModel");
@@ -44,9 +45,7 @@ const uploadMetadataToPinata = async (metadata, name) => {
 };
 
 const uploadDocument = async (req, res) => {
-  // req.files vì giờ nhận 2 file: file chính + preview
   const tempFilePath = req.files?.file?.[0]?.path;
-  const previewFilePath = req.files?.preview?.[0]?.path;
 
   try {
     if (!req.files?.file?.[0]) {
@@ -54,15 +53,21 @@ const uploadDocument = async (req, res) => {
     }
 
     const mainFile = req.files.file[0];
-    const { subject, category, description, price, royaltyPercent, amount } =
-      req.body;
+    const {
+      title,
+      subject,
+      category,
+      description,
+      price,
+      royaltyPercent,
+      amount,
+    } = req.body;
 
-    if (!subject?.trim() || !category?.trim()) {
+    if (!title?.trim() || !subject?.trim() || !category?.trim()) {
       cleanupTempFile(tempFilePath);
-      cleanupTempFile(previewFilePath);
       return res
         .status(400)
-        .json({ message: "Thiếu môn học hoặc loại tài liệu" });
+        .json({ message: "Thiếu tiêu đề, môn học hoặc loại tài liệu" });
     }
 
     const parsedPrice = Math.max(parseFloat(price) || 0, 0);
@@ -71,44 +76,46 @@ const uploadDocument = async (req, res) => {
       50,
     );
     const parsedAmount = Math.min(Math.max(parseInt(amount) || 1, 1), 1000);
-    const parsedPageCount = parseInt(req.body.pageCount) || null; // ← từ frontend
+
+    let parsedPageCount = null;
+
+    if (mainFile.mimetype === "application/pdf") {
+      try {
+        const pdfBytes = fs.readFileSync(mainFile.path);
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        parsedPageCount = pdfDoc.getPageCount();
+      } catch (err) {
+        console.error("[pdf-lib error]", err.message);
+        parsedPageCount = null;
+      }
+    } else {
+      console.log("Not a PDF file, mimetype:", mainFile.mimetype);
+    }
+
     const royaltyBps = parsedRoyalty * 100;
 
     const user = await userModel.findById(req.userId);
     if (!user) {
       cleanupTempFile(tempFilePath);
-      cleanupTempFile(previewFilePath);
       return res.status(404).json({ message: "Không tìm thấy user" });
     }
     if (!user.walletAddress) {
       cleanupTempFile(tempFilePath);
-      cleanupTempFile(previewFilePath);
       return res
         .status(400)
         .json({ message: "Bạn cần liên kết ví trước khi đăng tài liệu" });
     }
 
-    // 1. Upload preview lên IPFS nếu có
-    let previewUrl = null;
-    if (previewFilePath) {
-      const previewResult = await uploadFileToPinata(
-        previewFilePath,
-        `${mainFile.originalname}_preview.png`,
-      );
-      previewUrl = previewResult.fileUrl;
-      cleanupTempFile(previewFilePath);
-    }
-
-    // 2. Upload file chính lên IPFS
+    // 1. Upload file chính lên IPFS
     const { cid, fileUrl } = await uploadFileToPinata(
       mainFile.path,
       mainFile.originalname,
     );
     cleanupTempFile(tempFilePath);
 
-    // 3. Upload metadata lên IPFS
+    // 2. Upload metadata lên IPFS
     const metadata = {
-      name: mainFile.originalname,
+      name: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
       file: fileUrl,
       subject: subject.trim(),
@@ -122,12 +129,20 @@ const uploadDocument = async (req, res) => {
         { trait_type: "Royalty (%)", value: String(parsedRoyalty) },
       ],
     };
+
+    if (parsedPageCount) {
+      metadata.attributes.push({
+        trait_type: "Pages",
+        value: String(parsedPageCount),
+      });
+    }
+
     const metadataUri = await uploadMetadataToPinata(
       metadata,
-      `${mainFile.originalname}_metadata`,
+      `${title?.trim() || mainFile.originalname}_metadata`,
     );
 
-    // 4. Setup provider + contract
+    // 3. Setup provider + contract
     const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(
@@ -136,10 +151,10 @@ const uploadDocument = async (req, res) => {
       signer,
     );
 
-    // 5. Lấy tokenId hiện tại
+    // 4. Lấy tokenId hiện tại
     const currentId = await nftContract.getCurrentTokenId();
 
-    // 6. Mint NFT
+    // 5. Mint NFT
     const tx = await nftContract.mint(
       parsedAmount,
       metadataUri,
@@ -148,7 +163,7 @@ const uploadDocument = async (req, res) => {
     );
     const receipt = await tx.wait();
 
-    // 7. Lấy tokenId thực từ event
+    // 6. Lấy tokenId thực từ event
     const iface = new ethers.Interface(NFT_ABI);
     let tokenId = Number(currentId) + 1;
 
@@ -162,13 +177,12 @@ const uploadDocument = async (req, res) => {
       } catch (_) {}
     }
 
-    // 8. Lưu Document vào MongoDB
+    // 7. Lưu Document vào MongoDB
     const newDocument = await documentModel.create({
-      title: mainFile.originalname,
+      title: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
       fileUrl,
-      previewUrl, // ← từ frontend
-      pageCount: parsedPageCount, // ← từ frontend
+      pageCount: parsedPageCount,
       cid,
       author: req.userId,
       authorWallet: user.walletAddress,
@@ -185,7 +199,7 @@ const uploadDocument = async (req, res) => {
       isMinted: true,
     });
 
-    // 9. Lưu NFT ownership
+    // 8. Lưu NFT ownership
     await nftModel.create({
       user: req.userId,
       document: newDocument._id,
@@ -201,7 +215,6 @@ const uploadDocument = async (req, res) => {
     });
   } catch (error) {
     cleanupTempFile(tempFilePath);
-    cleanupTempFile(previewFilePath);
     console.error("[uploadDocument]", error);
     return res.status(500).json({ message: error.message || "Lỗi server" });
   }
