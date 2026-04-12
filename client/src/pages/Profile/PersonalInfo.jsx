@@ -172,23 +172,6 @@ const PersonalInfo = () => {
             Sinh viên UIT
           </span>
         </p>
-
-        <div className="mx-auto mt-6 flex max-w-3xl flex-col items-center justify-center gap-6 md:flex-row">
-          <div className="w-full md:w-2/3">
-            <div className="mb-2 flex justify-between text-sm font-medium">
-              <span className="text-gray-300">Hoàn thành hồ sơ</span>
-              <span className="text-purple-400">
-                {user?.profileCompletion}%
-              </span>
-            </div>
-            <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
-              <div
-                className="h-2.5 rounded-full bg-purple-600"
-                style={{ width: `${user?.profileCompletion}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="mx-auto max-w-4xl p-6 md:p-8">
@@ -199,6 +182,7 @@ const PersonalInfo = () => {
             </h3>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
+                <p className="py-3 text-sm text-gray-400">Tên</p>
                 <label htmlFor="userName" className="sr-only">
                   Tên
                 </label>
@@ -211,6 +195,7 @@ const PersonalInfo = () => {
                 />
               </div>
               <div>
+                <p className="py-3 text-sm text-gray-400">Mã số sinh viên</p>
                 <label htmlFor="studentId" className="sr-only">
                   MSSV
                 </label>
@@ -223,6 +208,7 @@ const PersonalInfo = () => {
                 />
               </div>
               <div className="md:col-span-2">
+                <p className="py-3 text-sm text-gray-400">Tiểu sử</p>
                 <label htmlFor="bio" className="sr-only">
                   Tiểu sử
                 </label>

@@ -2,6 +2,7 @@ node_modules/
 client/node_modules/
 server/node_modules/
 blockchain/node_modules/
+.vite
 
 client/.env
 server/.env

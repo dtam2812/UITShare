@@ -57,9 +57,11 @@ const DocumentCard = ({
                   <img className="rounded-full" src={author?.avatar} />
                 </div>
                 <span className="text-xs text-gray-400">
-                  <span className="font-semibold text-gray-300">
-                    {author?.userName}
-                  </span>
+                  <Link to={`/author/${author?._id}`}>
+                    <span className="font-semibold text-gray-300 hover:text-yellow-400">
+                      {author?.userName}
+                    </span>
+                  </Link>
                 </span>
               </div>
 

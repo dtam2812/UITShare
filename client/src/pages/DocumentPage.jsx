@@ -73,7 +73,7 @@ export default function DocumentsPage() {
         : [...prev, category],
     );
   };
-  console.log(documents);
+
   // Filter logic
   const filteredDocuments = documents.filter((doc) => {
     const matchSubject =

@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const userModel = require("../Models/UserModel");
+const documentModel = require("../Models/DocumentModel");
 const bcrypt = require("bcrypt");
 
 const getUserDetail = async (req, res) => {
@@ -67,8 +68,34 @@ const updateWallet = async (req, res) => {
   }
 };
 
+const getMyDocuments = async (req, res) => {
+  try {
+    const documents = await documentModel
+      .find({ author: req.userId, isMinted: true })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const totalDownloads = documents.reduce(
+      (sum, d) => sum + (d.downloadCount || 0),
+      0,
+    );
+
+    return res.status(200).json({
+      documents,
+      stats: {
+        totalDocs: documents.length,
+        totalDownloads,
+      },
+    });
+  } catch (error) {
+    console.error("[getMyDocuments]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
 module.exports = {
   getUserDetail,
   updateUserInfo,
   updateWallet,
+  getMyDocuments,
 };

@@ -43,4 +43,10 @@ router.put(
   personalController.updateUserInfo,
 );
 
+router.get(
+  "/documents",
+  [AuthMiddleware.isAuthentication],
+  personalController.getMyDocuments,
+);
+
 module.exports = router;

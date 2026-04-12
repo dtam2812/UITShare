@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
   walletAddress: {
     type: String,
     unique: true,
-    sparse: true, // Cho phép null cho đến khi user liên kết ví
+    sparse: true,
     lowercase: true,
     trim: true,
   },
@@ -22,15 +22,11 @@ const UserSchema = new mongoose.Schema({
   studentId: {
     type: Number,
     unique: true,
-    trim: true,
+    sparse: true,
   },
 
-  bio: {
-    type: String,
-  },
-
+  bio: { type: String },
   facebookLink: { type: String, trim: true },
-
   avatar: { type: String, default: "" },
   coverImage: { type: String, default: "" },
 
@@ -45,7 +41,12 @@ const UserSchema = new mongoose.Schema({
     default: "active",
   },
 
-  profileCompletion: { type: Number, default: 0 },
+  purchasedDocuments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Document",
+    },
+  ],
 
   createdAt: {
     type: Date,

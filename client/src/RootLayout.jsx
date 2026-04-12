@@ -15,9 +15,7 @@ function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <CartProvider>
           <div>
-            <Header />
             <Outlet />
-            <Footer />
           </div>
         </CartProvider>
       </QueryClientProvider>

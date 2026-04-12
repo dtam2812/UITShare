@@ -6,6 +6,7 @@ const userRouter = require("./Router/UserRoute");
 const authRoute = require("./Router/AuthRoute");
 const documentRoute = require("./Router/DocumentRoute");
 const personalRoute = require("./Router/PersonalRoute");
+const authorRoute = require("./Router/AuthorRoute");
 
 //cors middleware for all request
 app.use(cors());
@@ -21,6 +22,7 @@ app.use("/auth/admin", userRouter);
 app.use("/api/personal", personalRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/documents", documentRoute);
+app.use("/api/author", authorRoute);
 
 app.listen(process.env.PORT, function () {
   console.log("server is running");
