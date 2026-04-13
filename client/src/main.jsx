@@ -25,6 +25,7 @@ import AuthorDetail from "./pages/Author/AuthorDetail.jsx";
 import UploadPage from "./pages/Document/UploadPage.jsx";
 import DonationsReceived from "./pages/Profile/DonationsReceived.jsx";
 import MainLayout from "./MainLayout.jsx";
+import Cart from "./pages/Cart.jsx";
 
 const router = createBrowserRouter([
   {
@@ -77,6 +78,10 @@ const router = createBrowserRouter([
           {
             path: "author/:authorId",
             element: <AuthorDetail />,
+          },
+          {
+            path: "/cart",
+            element: <Cart />,
           },
           {
             path: "profile/:userId",

@@ -108,10 +108,12 @@ const Header = () => {
                         onMouseLeave={() => setCartHovered(false)}
                       >
                         <div className="relative cursor-pointer">
-                          <HiOutlineShoppingCart
-                            size={24}
-                            className="text-white transition hover:text-purple-300"
-                          />
+                          <Link to="/cart">
+                            <HiOutlineShoppingCart
+                              size={24}
+                              className="text-white transition hover:text-purple-300"
+                            />
+                          </Link>
                           {cartItems.length > 0 && (
                             <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-purple-500 text-[10px] font-bold text-white">
                               {cartItems.length}
@@ -120,7 +122,7 @@ const Header = () => {
                         </div>
 
                         {cartHovered && (
-                          <div className="absolute top-8 right-0 z-50 w-72 overflow-hidden rounded-xl border border-white/10 bg-[#1a1a2e]/95 shadow-xl backdrop-blur-md">
+                          <div className="absolute top-6 right-0 z-50 w-72 overflow-hidden rounded-xl border border-white/10 bg-[#1a1a2e]/95 shadow-xl backdrop-blur-md">
                             <div className="border-b border-white/10 px-4 py-3">
                               <p className="text-sm font-semibold text-white">
                                 Giỏ hàng ({cartItems.length})
@@ -146,11 +148,13 @@ const Header = () => {
                                           {item.title}
                                         </p>
                                         <p className="mt-1 text-xs font-bold text-purple-400">
-                                          {item.nft.price} {item.nft.currency}
+                                          {item.price > 0
+                                            ? `${item.price} ETH`
+                                            : "Free"}
                                         </p>
                                       </div>
                                       <button
-                                        onClick={() => removeFromCart(item.id)}
+                                        onClick={() => removeFromCart(item._id)}
                                         className="mt-0.5 shrink-0 text-gray-600 transition hover:text-red-400"
                                       >
                                         <HiX size={14} />
@@ -159,9 +163,11 @@ const Header = () => {
                                   ))}
                                 </ul>
                                 <div className="border-t border-white/10 px-4 py-3">
-                                  <button className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600">
-                                    Thanh toán
-                                  </button>
+                                  <Link to="/cart">
+                                    <button className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600">
+                                      Thanh toán
+                                    </button>
+                                  </Link>
                                 </div>
                               </>
                             )}
@@ -328,11 +334,11 @@ const Header = () => {
                           {item.title}
                         </p>
                         <p className="mt-1 text-xs font-bold text-purple-400">
-                          {item.nft.price} {item.nft.currency}
+                          {item.price > 0 ? `${item.price} ETH` : "Free"}
                         </p>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id)}
                         className="mt-0.5 shrink-0 text-gray-600 transition hover:text-red-400"
                       >
                         <HiX size={14} />
@@ -341,7 +347,10 @@ const Header = () => {
                   ))}
                 </ul>
                 <div className="border-t border-white/10 px-5 py-3">
-                  <button className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600">
+                  <button
+                    onClick={() => navigate("/cart")}
+                    className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
+                  >
                     Thanh toán
                   </button>
                 </div>

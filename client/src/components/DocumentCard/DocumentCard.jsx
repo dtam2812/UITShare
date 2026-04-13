@@ -12,10 +12,11 @@ const DocumentCard = ({
   commentCount,
 }) => {
   const navigate = useNavigate();
+  const documentId = _id;
 
   return (
     <>
-      <Link to={`/documentDetail/${_id}`}>
+      <Link to={`/documentDetail/${documentId}`}>
         <div className="pt-4 pl-4">
           <div className="w-64 cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
             {/*Ảnh*/}

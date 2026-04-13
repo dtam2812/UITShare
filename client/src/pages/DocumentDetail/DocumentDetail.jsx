@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import {
   ArrowLeft,
   ExternalLink,
@@ -228,10 +228,12 @@ export default function DocumentDetail() {
                   </p>
                 </div>
               </div>
-              <button className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
-                <User className="h-3.5 w-3.5" />
-                Xem trang tác giả
-              </button>
+              <Link to={`/author/${doc.author?._id}`}>
+                <button className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-white transition hover:bg-white/10">
+                  <User className="h-3.5 w-3.5" />
+                  Xem trang tác giả
+                </button>
+              </Link>
             </div>
           </div>
         </div>
