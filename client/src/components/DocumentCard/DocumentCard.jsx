@@ -10,6 +10,7 @@ const DocumentCard = ({
   title,
   averageRating,
   commentCount,
+  pageCount,
 }) => {
   const navigate = useNavigate();
   const documentId = _id;
@@ -76,7 +77,7 @@ const DocumentCard = ({
                   <span className="text-xs text-white">({commentCount})</span>
                 </div>
                 <span className="text-xs text-white">
-                  10 trang · {new Date(createdAt)?.getFullYear()}
+                  {pageCount} trang · {new Date(createdAt)?.getFullYear()}
                 </span>
               </div>
             </div>

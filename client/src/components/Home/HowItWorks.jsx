@@ -25,7 +25,7 @@ const STEPS = [
 export default function HowItWorks() {
   return (
     <Link to="/document">
-      <section className="relative overflow-hidden px-6 text-white">
+      <section className="relative overflow-hidden px-6 pt-6 pb-16 text-white">
         <div className="mx-auto max-w-6xl">
           {/* section title */}
           <div className="mb-12">
