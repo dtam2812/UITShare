@@ -9,7 +9,10 @@ const personalRoute = require("./Router/PersonalRoute");
 const authorRoute = require("./Router/AuthorRoute");
 
 //cors middleware for all request
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
