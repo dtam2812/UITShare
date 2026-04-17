@@ -30,6 +30,7 @@ export default function DocumentDetail() {
   const [error, setError] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [nftHistory, setNftHistory] = useState([]);
 
   const { cartItems, addToCart, removeFromCart } = useCart();
   const isInCart = cartItems.some((item) => item._id === doc?._id);
@@ -44,6 +45,17 @@ export default function DocumentDetail() {
         );
         if (response.status === 200) {
           setDoc(response.data);
+
+          if (response.data.tokenId) {
+            try {
+              const historyRes = await axios.get(
+                `/api/documents/nft-history/${response.data.tokenId}`,
+              );
+              setNftHistory(historyRes.data);
+            } catch {
+              setNftHistory([]);
+            }
+          }
         }
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tài liệu");
@@ -114,7 +126,7 @@ export default function DocumentDetail() {
           {/* Left */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             <DocumentInfo doc={doc} reviewCount={doc.commentCount} />
-            <NFTInfo nft={doc} />
+            <NFTInfo nft={doc} nftHistory={nftHistory} />
             <DocumentReviews />
           </div>
 

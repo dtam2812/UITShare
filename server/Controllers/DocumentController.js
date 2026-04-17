@@ -6,6 +6,8 @@ const documentModel = require("../Models/DocumentModel");
 const nftModel = require("../Models/NFTModel");
 const userModel = require("../Models/UserModel");
 const commentModel = require("../Models/CommentModel");
+const transactionModel = require("../Models/TransactionModel");
+const { createHash } = require("node:crypto");
 
 const pinata = new PinataSDK(
   process.env.PINATA_API_KEY,
@@ -77,19 +79,28 @@ const uploadDocument = async (req, res) => {
     );
     const parsedAmount = Math.min(Math.max(parseInt(amount) || 1, 1), 1000);
 
-    let parsedPageCount = null;
+    // Check fileHash TRƯỚC khi upload Pinata — tiết kiệm băng thông
+    const fileBuffer = fs.readFileSync(mainFile.path);
+    const fileHash = createHash("sha256").update(fileBuffer).digest("hex");
 
+    const existingDoc = await documentModel.findOne({ fileHash });
+    if (existingDoc) {
+      cleanupTempFile(tempFilePath);
+      return res.status(409).json({
+        message: "Tài liệu này đã tồn tại trên hệ thống",
+        existingDocumentId: existingDoc._id,
+        existingTitle: existingDoc.title,
+      });
+    }
+
+    let parsedPageCount = null;
     if (mainFile.mimetype === "application/pdf") {
       try {
-        const pdfBytes = fs.readFileSync(mainFile.path);
-        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const pdfDoc = await PDFDocument.load(fileBuffer); // dùng lại buffer đã đọc
         parsedPageCount = pdfDoc.getPageCount();
       } catch (err) {
         console.error("[pdf-lib error]", err.message);
-        parsedPageCount = null;
       }
-    } else {
-      console.log("Not a PDF file, mimetype:", mainFile.mimetype);
     }
 
     const royaltyBps = parsedRoyalty * 100;
@@ -106,14 +117,14 @@ const uploadDocument = async (req, res) => {
         .json({ message: "Bạn cần liên kết ví trước khi đăng tài liệu" });
     }
 
-    // 1. Upload file chính lên IPFS
+    // 1. Upload file lên IPFS
     const { cid, fileUrl } = await uploadFileToPinata(
       mainFile.path,
       mainFile.originalname,
     );
     cleanupTempFile(tempFilePath);
 
-    // 2. Upload metadata lên IPFS
+    // 2. Upload metadata
     const metadata = {
       name: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
@@ -127,22 +138,18 @@ const uploadDocument = async (req, res) => {
         { trait_type: "Category", value: category.trim() },
         { trait_type: "Price (ETH)", value: String(parsedPrice) },
         { trait_type: "Royalty (%)", value: String(parsedRoyalty) },
+        ...(parsedPageCount
+          ? [{ trait_type: "Pages", value: String(parsedPageCount) }]
+          : []),
       ],
     };
-
-    if (parsedPageCount) {
-      metadata.attributes.push({
-        trait_type: "Pages",
-        value: String(parsedPageCount),
-      });
-    }
 
     const metadataUri = await uploadMetadataToPinata(
       metadata,
       `${title?.trim() || mainFile.originalname}_metadata`,
     );
 
-    // 3. Setup provider + contract
+    // 3. Setup contract
     const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(
@@ -151,10 +158,8 @@ const uploadDocument = async (req, res) => {
       signer,
     );
 
-    // 4. Lấy tokenId hiện tại
+    // 4. Mint
     const currentId = await nftContract.getCurrentTokenId();
-
-    // 5. Mint NFT
     const tx = await nftContract.mint(
       parsedAmount,
       metadataUri,
@@ -163,10 +168,9 @@ const uploadDocument = async (req, res) => {
     );
     const receipt = await tx.wait();
 
-    // 6. Lấy tokenId thực từ event
+    // 5. Lấy tokenId từ event
     const iface = new ethers.Interface(NFT_ABI);
     let tokenId = Number(currentId) + 1;
-
     for (const log of receipt.logs) {
       try {
         const parsed = iface.parseLog(log);
@@ -177,29 +181,28 @@ const uploadDocument = async (req, res) => {
       } catch (_) {}
     }
 
-    // 7. Lưu Document vào MongoDB
+    // 6. Lưu Document — thêm fileHash
     const newDocument = await documentModel.create({
       title: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
       fileUrl,
       pageCount: parsedPageCount,
       cid,
+      fileHash,
       author: req.userId,
       authorWallet: user.walletAddress,
       subject: subject.trim(),
       category: category.trim(),
       price: parsedPrice,
-      accessType: parsedPrice > 0 ? "paid" : "free",
       royaltyPercent: parsedRoyalty,
       royaltyReceiver: user.walletAddress,
-      amount: parsedAmount,
       totalSupply: parsedAmount,
       tokenId,
       contractAddress: process.env.NFT_CONTRACT_ADDRESS,
       isMinted: true,
     });
 
-    // 8. Lưu NFT ownership
+    // 7. Lưu NFT ownership
     await nftModel.create({
       user: req.userId,
       document: newDocument._id,
@@ -314,9 +317,30 @@ const getDocumentDetail = async (req, res) => {
   }
 };
 
+const getNFTTransactionHistory = async (req, res) => {
+  try {
+    const { tokenId } = req.params;
+
+    const transactions = await transactionModel
+      .find({
+        tokenId,
+        status: "success",
+      })
+      .sort({ createdAt: -1 })
+      .populate("fromUser", "userName")
+      .populate("toUser", "userName")
+      .lean();
+
+    res.json(transactions);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   uploadDocument,
   getListDocument,
   deleteDocument,
   getDocumentDetail,
+  getNFTTransactionHistory,
 };

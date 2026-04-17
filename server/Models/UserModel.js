@@ -41,13 +41,6 @@ const UserSchema = new mongoose.Schema({
     default: "active",
   },
 
-  purchasedDocuments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Document",
-    },
-  ],
-
   createdAt: {
     type: Date,
     default: Date.now,

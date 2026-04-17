@@ -31,6 +31,11 @@ const TransactionSchema = new mongoose.Schema({
     index: true,
   },
 
+  lisitingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Listing",
+  },
+
   tokenId: {
     type: String,
   },

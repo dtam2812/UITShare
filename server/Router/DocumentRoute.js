@@ -39,4 +39,9 @@ router.post(
 
 router.get("/documentList", documentController.getListDocument);
 
+router.get(
+  "/transactionHistory/:tokenId",
+  documentController.getNFTTransactionHistory,
+);
+
 module.exports = router;

@@ -2,8 +2,10 @@ import { FiChevronLeft } from "react-icons/fi";
 import Step2FileCard from "./Step2Filecard";
 import { useState } from "react";
 import axios from "../../common";
+import { useNavigate } from "react-router";
+import { FiAlertTriangle, FiXCircle } from "react-icons/fi";
 
-const Step2Detail = ({ file, prevStep, onSubmit }) => {
+const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
   const [formData, setFormData] = useState(() =>
     file.map(() => ({
       title: "",
@@ -18,6 +20,7 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadError, setUploadError] = useState(null);
 
   const handleUpdateForm = (index, name, value) => {
     setFormData((prev) =>
@@ -52,6 +55,7 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
 
     try {
       setIsLoading(true);
+      setUploadError(null);
 
       const data = new FormData();
       data.append("file", file[0]);
@@ -69,7 +73,21 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
 
       onSubmit();
     } catch (error) {
-      console.log(error);
+      if (error.response?.status === 409) {
+        setUploadError({
+          type: "duplicate",
+          message: error.response.data.message,
+          existingDocumentId: error.response.data.existingDocumentId,
+          existingTitle: error.response.data.existingTitle,
+        });
+      } else {
+        setUploadError({
+          type: "generic",
+          message:
+            error.response?.data?.message ||
+            "Đã có lỗi xảy ra, vui lòng thử lại",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -101,6 +119,41 @@ const Step2Detail = ({ file, prevStep, onSubmit }) => {
           />
         ))}
       </div>
+
+      {uploadError && (
+        <div
+          className={`mt-3 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm backdrop-blur-md ${
+            uploadError.type === "duplicate"
+              ? "border-yellow-500/30 bg-yellow-500/10 text-yellow-300"
+              : "border-red-500/30 bg-red-500/10 text-red-300"
+          }`}
+        >
+          {uploadError.type === "duplicate" ? (
+            <FiAlertTriangle
+              className="mt-0.5 shrink-0 text-yellow-400"
+              size={16}
+            />
+          ) : (
+            <FiXCircle className="mt-0.5 shrink-0 text-red-400" size={16} />
+          )}
+          <div>
+            <p className="font-semibold">
+              {uploadError.type === "duplicate"
+                ? "Tài liệu đã tồn tại"
+                : "Tải lên thất bại"}
+            </p>
+            <p className="mt-0.5 opacity-80">{uploadError.message}</p>
+            {uploadError.type === "duplicate" && (
+              <button
+                onClick={onReset()}
+                className="mt-1.5 inline-block text-xs font-medium text-yellow-400 underline hover:text-yellow-300"
+              >
+                Tải lên tài liệu khác
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
         <button

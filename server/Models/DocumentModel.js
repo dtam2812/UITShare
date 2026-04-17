@@ -69,12 +69,6 @@ const DocumentSchema = new mongoose.Schema({
     min: 0,
   },
 
-  accessType: {
-    type: String,
-    enum: ["free", "paid"],
-    default: "free",
-  },
-
   royaltyPercent: {
     type: Number,
     default: 10,

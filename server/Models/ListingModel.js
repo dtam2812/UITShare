@@ -16,6 +16,13 @@ const ListingSchema = new mongoose.Schema({
     match: [/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"],
   },
 
+  contractAddress: {
+    type: String,
+    lowercase: true,
+    trim: true,
+    match: [/^0x[a-fA-F0-9]{40}$/, "Invalid Ethereum address"],
+  },
+
   document: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Document",

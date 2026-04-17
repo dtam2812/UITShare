@@ -11,9 +11,22 @@ const DocumentCard = ({
   averageRating,
   commentCount,
   pageCount,
+  category,
 }) => {
   const navigate = useNavigate();
   const documentId = _id;
+
+  const CATEGORY_CONFIG = {
+    exam: { label: "Đề thi", className: "bg-red-500/80 text-white" },
+    slide: { label: "Slide", className: "bg-blue-500/80 text-white" },
+    assignment: { label: "Bài tập", className: "bg-green-500/80 text-white" },
+    project: { label: "Đồ án", className: "bg-yellow-500/80 text-black" },
+  };
+
+  const categoryInfo = CATEGORY_CONFIG[category] ?? {
+    label: "Tài liệu",
+    className: "bg-gray-500/80 text-white",
+  };
 
   return (
     <>
@@ -28,7 +41,7 @@ const DocumentCard = ({
                 className="h-full w-full object-cover"
               />
               <div className="absolute top-2 right-2 rounded-full border border-white/20 bg-black/60 px-2 py-0.5 text-xs font-medium text-white shadow-sm">
-                Preview
+                {categoryInfo.label}
               </div>
             </div>
 
