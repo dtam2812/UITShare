@@ -26,6 +26,7 @@ import UploadPage from "./pages/Document/UploadPage.jsx";
 import DonationsReceived from "./pages/Profile/DonationsReceived.jsx";
 import MainLayout from "./MainLayout.jsx";
 import Cart from "./pages/Cart.jsx";
+import DocumentReading from "./pages/DocumentReading.jsx";
 
 const router = createBrowserRouter([
   {
@@ -82,6 +83,10 @@ const router = createBrowserRouter([
           {
             path: "/cart",
             element: <Cart />,
+          },
+          {
+            path: "/documentReading/:documentId",
+            element: <DocumentReading />,
           },
           {
             path: "profile/:userId",

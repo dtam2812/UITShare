@@ -6,6 +6,8 @@ import {
   User,
   FileText,
   Check,
+  Loader2,
+  BookOpen,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
@@ -21,6 +23,14 @@ import "react-pdf/dist/Page/TextLayer.css";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
+const ACCESS_STATUS = {
+  LOADING: "loading",
+  OWNED: "owned",
+  AUTHOR: "author",
+  NOT_OWNED: "not_owned",
+  GUEST: "guest",
+};
+
 export default function DocumentDetail() {
   const { documentId } = useParams();
   const navigate = useNavigate();
@@ -30,20 +40,38 @@ export default function DocumentDetail() {
   const [error, setError] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [nftHistory, setNftHistory] = useState([]);
 
-  const { cartItems, addToCart, removeFromCart } = useCart();
+  const [accessStatus, setAccessStatus] = useState(ACCESS_STATUS.LOADING);
+
+  const [cartMsg, setCartMsg] = useState(null);
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const { cartItems, addToCart } = useCart();
   const isInCart = cartItems.some((item) => item._id === doc?._id);
 
   useEffect(() => {
     const fetchDocument = async () => {
       setLoading(true);
       setError(null);
+      setAccessStatus(ACCESS_STATUS.LOADING);
       try {
         const response = await axios.get(
           `/api/documents/documentDetail/${documentId}`,
         );
         if (response.status === 200) {
           setDoc(response.data);
+
+          if (response.data.tokenId) {
+            try {
+              const historyRes = await axios.get(
+                `/api/documents/nft-history/${response.data.tokenId}`,
+              );
+              setNftHistory(historyRes.data);
+            } catch {
+              setNftHistory([]);
+            }
+          }
         }
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tài liệu");
@@ -54,9 +82,183 @@ export default function DocumentDetail() {
     fetchDocument();
   }, [documentId]);
 
+  useEffect(() => {
+    if (!doc) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token || token === "undefined") {
+      setAccessStatus(ACCESS_STATUS.GUEST);
+      return;
+    }
+
+    const checkAccess = async () => {
+      try {
+        const res = await axios.get(`/api/marketplace/access/${doc._id}`);
+        const { hasAccess, reason } = res.data;
+        if (!hasAccess) {
+          setAccessStatus(ACCESS_STATUS.NOT_OWNED);
+          return;
+        } else if (reason === "author") setAccessStatus(ACCESS_STATUS.AUTHOR);
+        else if (reason === "owner") setAccessStatus(ACCESS_STATUS.OWNED);
+        else setAccessStatus(ACCESS_STATUS.NOT_OWNED);
+      } catch {
+        setAccessStatus(ACCESS_STATUS.NOT_OWNED);
+      }
+    };
+
+    checkAccess();
+  }, [doc]);
+
   function onLoadSuccess({ numPages }) {
     setNumPages(numPages);
   }
+
+  const showCartMsg = (msg) => {
+    setCartMsg(msg);
+    setTimeout(() => setCartMsg(null), 3000);
+  };
+
+  const handleAddToCart = async () => {
+    if (!doc) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token || token === "undefined") {
+      navigate("/login");
+      return;
+    }
+
+    if (
+      accessStatus === ACCESS_STATUS.OWNED ||
+      accessStatus === ACCESS_STATUS.AUTHOR
+    ) {
+      showCartMsg("already_owned");
+      return;
+    }
+
+    setAddingToCart(true);
+    const result = await addToCart(doc);
+    setAddingToCart(false);
+
+    if (result.success) {
+      showCartMsg("added");
+    } else {
+      showCartMsg(result.reason);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (!doc) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token || token === "undefined") {
+      navigate("/login");
+      return;
+    }
+
+    if (
+      accessStatus === ACCESS_STATUS.OWNED ||
+      accessStatus === ACCESS_STATUS.AUTHOR
+    ) {
+      return;
+    }
+
+    if (!isInCart) {
+      setAddingToCart(true);
+      const result = await addToCart(doc);
+      setAddingToCart(false);
+      if (!result.success && result.reason === "already_owned") {
+        showCartMsg("already_owned");
+        return;
+      }
+    }
+
+    navigate("/cart");
+  };
+
+  const canAccessFull =
+    accessStatus === ACCESS_STATUS.OWNED ||
+    accessStatus === ACCESS_STATUS.AUTHOR;
+
+  const renderActionButtons = () => {
+    if (canAccessFull) {
+      return (
+        <button
+          disabled
+          className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg border border-green-500/30 bg-green-500/20 py-3 font-semibold text-green-400"
+        >
+          <Check className="h-4 w-4" />
+          {accessStatus === ACCESS_STATUS.AUTHOR
+            ? "Tài liệu của bạn"
+            : "Bạn đã sở hữu tài liệu này"}
+        </button>
+      );
+    }
+
+    if (accessStatus === ACCESS_STATUS.GUEST) {
+      return (
+        <button
+          onClick={() => navigate("/login")}
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-purple-500 py-3 font-semibold text-white transition hover:bg-purple-600"
+        >
+          Đăng nhập để mua
+        </button>
+      );
+    }
+
+    if (accessStatus === ACCESS_STATUS.LOADING) {
+      return (
+        <button
+          disabled
+          className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-purple-500/50 py-3 font-semibold text-white"
+        >
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Đang kiểm tra...
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex gap-2">
+        <button
+          onClick={handleBuyNow}
+          disabled={addingToCart}
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-purple-500 py-3 font-semibold text-white transition hover:bg-purple-600 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {addingToCart ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Mua tài liệu ngay
+        </button>
+
+        <button
+          onClick={handleAddToCart}
+          disabled={addingToCart || isInCart}
+          title={isInCart ? "Đã có trong giỏ hàng" : "Thêm vào giỏ hàng"}
+          className={`flex cursor-pointer items-center justify-center rounded-lg border px-4 py-3 transition disabled:cursor-not-allowed ${
+            isInCart
+              ? "border-green-500/40 bg-green-500/10 text-green-400"
+              : "border-white/10 bg-white/5 text-white hover:bg-white/10"
+          }`}
+        >
+          {isInCart ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <ShoppingCart className="h-5 w-5" />
+          )}
+        </button>
+      </div>
+    );
+  };
+
+  const cartMsgMap = {
+    added: { text: "Đã thêm vào giỏ hàng ✓", color: "text-green-400" },
+    already_in_cart: {
+      text: "Tài liệu đã có trong giỏ hàng",
+      color: "text-yellow-400",
+    },
+    already_owned: {
+      text: "Bạn đã sở hữu tài liệu này",
+      color: "text-yellow-400",
+    },
+  };
 
   if (loading) {
     return (
@@ -94,7 +296,6 @@ export default function DocumentDetail() {
           style={{ zIndex: 0 }}
         />
 
-        {/* Back */}
         <button
           onClick={() => navigate(-1)}
           className="mb-8 flex cursor-pointer items-center gap-2 text-gray-400 transition-colors hover:text-white"
@@ -103,26 +304,20 @@ export default function DocumentDetail() {
           <span className="text-sm">Quay lại</span>
         </button>
 
-        {/* Page title */}
         <p className="mb-2 text-sm font-semibold text-cyan-400">
           ✦ Chi tiết tài liệu
         </p>
         <h2 className="mb-12 text-3xl font-bold md:text-4xl">{doc.title}</h2>
 
-        {/* Main */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Left */}
           <div className="flex flex-col gap-6 lg:col-span-2">
             <DocumentInfo doc={doc} reviewCount={doc.commentCount} />
-            <NFTInfo nft={doc} />
+            <NFTInfo nft={doc} nftHistory={nftHistory} />
             <DocumentReviews />
           </div>
 
-          {/* Right */}
           <div className="flex flex-col gap-4 self-start lg:sticky lg:top-24">
-            {/* Buy card */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-              {/* PDF preview */}
               <div className="mb-5 flex h-80 w-full flex-col items-center gap-4 overflow-y-auto rounded-lg bg-black/40 p-3">
                 <Document
                   file={doc.fileUrl}
@@ -151,7 +346,6 @@ export default function DocumentDetail() {
                 </Document>
               </div>
 
-              {/* Price */}
               <div className="mb-1 flex items-end gap-2">
                 <span className="text-3xl font-black text-white">
                   {doc.price > 0 ? doc.price : "Free"}
@@ -161,38 +355,33 @@ export default function DocumentDetail() {
                 )}
               </div>
 
-              {/* Buy + Cart row */}
-              <div className="mb-3 flex gap-2">
-                <button className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-purple-500 py-3 font-semibold text-white transition hover:bg-purple-600">
-                  Mua tài liệu ngay
-                </button>
-                <button
-                  onClick={() =>
-                    isInCart ? removeFromCart(doc._id) : addToCart(doc)
-                  }
-                  title={isInCart ? "Xóa khỏi giỏ hàng" : "Thêm vào giỏ hàng"}
-                  className={`flex cursor-pointer items-center justify-center rounded-lg border px-4 py-3 transition ${
-                    isInCart
-                      ? "border-green-500/40 bg-green-500/10 text-green-400"
-                      : "border-white/10 bg-white/5 text-white hover:bg-white/10"
-                  }`}
-                >
-                  {isInCart ? (
-                    <Check className="h-5 w-5" />
-                  ) : (
-                    <ShoppingCart className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
+              <div className="mb-1">{renderActionButtons()}</div>
 
-              {/* Preview button */}
-              <button
-                onClick={() => setShowPreview(true)}
-                className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-3 font-semibold text-white transition hover:bg-white/10"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Xem trước tài liệu
-              </button>
+              {cartMsg && cartMsgMap[cartMsg] && (
+                <p
+                  className={`mt-2 text-center text-xs ${cartMsgMap[cartMsg].color}`}
+                >
+                  {cartMsgMap[cartMsg].text}
+                </p>
+              )}
+
+              {canAccessFull ? (
+                <button
+                  onClick={() => navigate(`/documentReading/${doc._id}`)}
+                  className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-purple-500/40 bg-purple-500/10 py-3 font-semibold text-purple-300 transition hover:bg-purple-500/20"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Đọc tài liệu
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowPreview(true)}
+                  className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 py-3 font-semibold text-white transition hover:bg-white/10"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Xem trước tài liệu
+                </button>
+              )}
 
               <div className="my-5 border-t border-white/10" />
 
@@ -213,7 +402,6 @@ export default function DocumentDetail() {
               </div>
             </div>
 
-            {/* Author card */}
             <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
               <div className="mb-4 flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-blue-500 font-bold text-white">

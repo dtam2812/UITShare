@@ -13,12 +13,14 @@ import axios from "../../common";
 import { useNavigate } from "react-router";
 import { useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useCart } from "../../context/CartContext";
 
 export default function Admin({ onSignOut }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const { reloadCartForCurrentUser } = useCart();
   const navigate = useNavigate();
 
   const getListUser = async () => {
@@ -69,6 +71,7 @@ export default function Admin({ onSignOut }) {
   const handleLogOut = () => {
     localStorage.removeItem("access_token");
     navigate("/login");
+    reloadCartForCurrentUser();
   };
 
   return (

@@ -39,15 +39,6 @@ export default function DocumentInfo({ doc, reviewCount }) {
             {doc.subject}
           </span>
         )}
-        {doc.accessType && (
-          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs text-gray-300">
-            {doc.accessType === "nft-gated"
-              ? "NFT Gated"
-              : doc.accessType === "paid"
-                ? "Paid"
-                : "Free"}
-          </span>
-        )}
       </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-6">

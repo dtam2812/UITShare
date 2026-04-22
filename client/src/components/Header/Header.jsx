@@ -23,6 +23,8 @@ const Header = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { cartItems, removeFromCart } = useCart();
 
+  const { reloadCartForCurrentUser } = useCart();
+
   const navigate = useNavigate();
 
   let userId = null;
@@ -214,6 +216,7 @@ const Header = () => {
                                   onClick={() => {
                                     localStorage.removeItem("access_token");
                                     navigate("/login");
+                                    reloadCartForCurrentUser();
                                   }}
                                   className="w-full cursor-pointer px-4 py-2 text-left transition hover:bg-white/5 hover:text-red-400"
                                 >

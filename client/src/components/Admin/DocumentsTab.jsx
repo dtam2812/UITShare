@@ -42,7 +42,7 @@ export default function DocumentsTab({
       header: "Title",
       accessor: (row) => (
         <span
-          className="block max-w-[200px] truncate font-medium text-gray-800"
+          className="block max-w-[200px] truncate font-medium text-white"
           title={row.title}
         >
           {row.title}
@@ -70,22 +70,6 @@ export default function DocumentsTab({
       accessor: (row) => (
         <span className="font-medium text-green-600">
           {row.price > 0 ? `${row.price} ETH` : "Free"}
-        </span>
-      ),
-    },
-    {
-      header: "Access Type",
-      accessor: (row) => (
-        <span
-          className={`rounded-md px-2 py-1 text-xs font-medium ${
-            row.accessType === "free"
-              ? "bg-green-100 text-green-700"
-              : row.accessType === "paid"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-purple-100 text-purple-700"
-          }`}
-        >
-          {row.accessType}
         </span>
       ),
     },

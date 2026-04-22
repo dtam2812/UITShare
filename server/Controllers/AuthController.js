@@ -9,8 +9,6 @@ const register = async (req, res) => {
       userName,
       email,
       password: bcrypt.hashSync(password, 10),
-      walletAddress: "",
-      studentId: null,
       bio: "",
       facebookLink: "",
       avatar: "http://localhost:5000/uploads/avatar/default.jpg",

@@ -1,4 +1,5 @@
-﻿const PinataSDK = require("@pinata/sdk");
+﻿const mongoose = require("mongoose");
+const PinataSDK = require("@pinata/sdk");
 const fs = require("fs");
 const { ethers } = require("ethers");
 const { PDFDocument } = require("pdf-lib");
@@ -6,6 +7,9 @@ const documentModel = require("../Models/DocumentModel");
 const nftModel = require("../Models/NFTModel");
 const userModel = require("../Models/UserModel");
 const commentModel = require("../Models/CommentModel");
+const transactionModel = require("../Models/TransactionModel");
+const { createHash } = require("node:crypto");
+const { createListing } = require("./MarketplaceController");
 
 const pinata = new PinataSDK(
   process.env.PINATA_API_KEY,
@@ -15,6 +19,8 @@ const pinata = new PinataSDK(
 const NFT_ABI = [
   "function mint(uint256 amount_, string memory tokenURI_, uint96 royaltyBps_, bytes memory data_) public returns (uint256)",
   "function getCurrentTokenId() view returns (uint256)",
+  "function setApprovalForAll(address operator, bool approved) external",
+  "function isApprovedForAll(address account, address operator) view returns (bool)",
   "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)",
 ];
 
@@ -77,19 +83,28 @@ const uploadDocument = async (req, res) => {
     );
     const parsedAmount = Math.min(Math.max(parseInt(amount) || 1, 1), 1000);
 
-    let parsedPageCount = null;
+    // Check fileHash TRƯỚC khi upload Pinata — tiết kiệm băng thông
+    const fileBuffer = fs.readFileSync(mainFile.path);
+    const fileHash = createHash("sha256").update(fileBuffer).digest("hex");
 
+    const existingDoc = await documentModel.findOne({ fileHash });
+    if (existingDoc) {
+      cleanupTempFile(tempFilePath);
+      return res.status(409).json({
+        message: "Tài liệu này đã tồn tại trên hệ thống",
+        existingDocumentId: existingDoc._id,
+        existingTitle: existingDoc.title,
+      });
+    }
+
+    let parsedPageCount = null;
     if (mainFile.mimetype === "application/pdf") {
       try {
-        const pdfBytes = fs.readFileSync(mainFile.path);
-        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const pdfDoc = await PDFDocument.load(fileBuffer);
         parsedPageCount = pdfDoc.getPageCount();
       } catch (err) {
         console.error("[pdf-lib error]", err.message);
-        parsedPageCount = null;
       }
-    } else {
-      console.log("Not a PDF file, mimetype:", mainFile.mimetype);
     }
 
     const royaltyBps = parsedRoyalty * 100;
@@ -106,14 +121,14 @@ const uploadDocument = async (req, res) => {
         .json({ message: "Bạn cần liên kết ví trước khi đăng tài liệu" });
     }
 
-    // 1. Upload file chính lên IPFS
+    // 1. Upload file lên IPFS
     const { cid, fileUrl } = await uploadFileToPinata(
       mainFile.path,
       mainFile.originalname,
     );
     cleanupTempFile(tempFilePath);
 
-    // 2. Upload metadata lên IPFS
+    // 2. Upload metadata
     const metadata = {
       name: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
@@ -127,22 +142,18 @@ const uploadDocument = async (req, res) => {
         { trait_type: "Category", value: category.trim() },
         { trait_type: "Price (ETH)", value: String(parsedPrice) },
         { trait_type: "Royalty (%)", value: String(parsedRoyalty) },
+        ...(parsedPageCount
+          ? [{ trait_type: "Pages", value: String(parsedPageCount) }]
+          : []),
       ],
     };
-
-    if (parsedPageCount) {
-      metadata.attributes.push({
-        trait_type: "Pages",
-        value: String(parsedPageCount),
-      });
-    }
 
     const metadataUri = await uploadMetadataToPinata(
       metadata,
       `${title?.trim() || mainFile.originalname}_metadata`,
     );
 
-    // 3. Setup provider + contract
+    // 3. Setup provider + signer + contracts
     const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(
@@ -151,10 +162,27 @@ const uploadDocument = async (req, res) => {
       signer,
     );
 
-    // 4. Lấy tokenId hiện tại
-    const currentId = await nftContract.getCurrentTokenId();
+    // 4. Approve marketplace nếu chưa được approve (chỉ tốn gas 1 lần duy nhất)
+    if (parsedPrice > 0) {
+      const isApproved = await nftContract.isApprovedForAll(
+        signer.address,
+        process.env.MARKETPLACE_CONTRACT_ADDRESS,
+      );
+      if (!isApproved) {
+        console.log(
+          "[uploadDocument] Chưa approve, đang gọi setApprovalForAll...",
+        );
+        const approveTx = await nftContract.setApprovalForAll(
+          process.env.MARKETPLACE_CONTRACT_ADDRESS,
+          true,
+        );
+        await approveTx.wait();
+        console.log("[uploadDocument] setApprovalForAll thành công");
+      }
+    }
 
-    // 5. Mint NFT
+    // 5. Mint
+    const currentId = await nftContract.getCurrentTokenId();
     const tx = await nftContract.mint(
       parsedAmount,
       metadataUri,
@@ -163,10 +191,9 @@ const uploadDocument = async (req, res) => {
     );
     const receipt = await tx.wait();
 
-    // 6. Lấy tokenId thực từ event
+    // 6. Lấy tokenId từ event TransferSingle
     const iface = new ethers.Interface(NFT_ABI);
     let tokenId = Number(currentId) + 1;
-
     for (const log of receipt.logs) {
       try {
         const parsed = iface.parseLog(log);
@@ -177,29 +204,29 @@ const uploadDocument = async (req, res) => {
       } catch (_) {}
     }
 
-    // 7. Lưu Document vào MongoDB
+    // 7. Lưu Document
     const newDocument = await documentModel.create({
       title: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
       fileUrl,
       pageCount: parsedPageCount,
       cid,
+      fileHash,
       author: req.userId,
       authorWallet: user.walletAddress,
       subject: subject.trim(),
       category: category.trim(),
       price: parsedPrice,
-      accessType: parsedPrice > 0 ? "paid" : "free",
       royaltyPercent: parsedRoyalty,
       royaltyReceiver: user.walletAddress,
-      amount: parsedAmount,
       totalSupply: parsedAmount,
+      remainingSupply: parsedPrice > 0 ? parsedAmount : 0,
       tokenId,
       contractAddress: process.env.NFT_CONTRACT_ADDRESS,
       isMinted: true,
     });
 
-    // 8. Lưu NFT ownership
+    // 8. Lưu NFT ownership cho tác giả
     await nftModel.create({
       user: req.userId,
       document: newDocument._id,
@@ -207,6 +234,19 @@ const uploadDocument = async (req, res) => {
       amount: parsedAmount,
       ownerAddress: user.walletAddress,
     });
+
+    // 9. Tạo listing trên marketplace (chỉ khi price > 0)
+    if (parsedPrice > 0) {
+      await createListing({
+        sellerId: req.userId,
+        sellerAddress: user.walletAddress,
+        documentId: newDocument._id,
+        tokenId,
+        amount: parsedAmount,
+        price: parsedPrice,
+        isOriginalCreator: true,
+      });
+    }
 
     return res.status(201).json({
       message: "Tải lên và mint NFT thành công",
@@ -280,6 +320,10 @@ const getDocumentDetail = async (req, res) => {
   try {
     const { documentId } = req.params;
 
+    if (!documentId || !mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: "documentId không hợp lệ" });
+    }
+
     const document = await documentModel
       .findById(documentId)
       .populate("author", "userName email avatar");
@@ -314,9 +358,28 @@ const getDocumentDetail = async (req, res) => {
   }
 };
 
+const getNFTTransactionHistory = async (req, res) => {
+  try {
+    const { tokenId } = req.params;
+
+    const transactions = await transactionModel
+      .find({ tokenId, status: "success" })
+      .sort({ createdAt: -1 })
+      .populate("fromUser", "userName")
+      .populate("toUser", "userName")
+      .lean();
+
+    return res.json(transactions);
+  } catch (err) {
+    console.error("[getNFTTransactionHistory]", err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   uploadDocument,
   getListDocument,
   deleteDocument,
   getDocumentDetail,
+  getNFTTransactionHistory,
 };

@@ -15,7 +15,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
 
     const validFile = files.filter((item) => {
       const fileSize = item.size <= 200 * 1024 * 1024;
-      const fileType = item.name.match(/\.(pdf|doc|docx)$/i);
+      const fileType = item.name.match(/\.(pdf)$/i);
 
       if (!fileSize)
         toast.error(`File ${item.name} có dung lượng lớn hơn 200MB`);
@@ -108,7 +108,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
           </button>
 
           <p className="mt-4 text-xs text-gray-500">
-            Hỗ trợ: PDF, DOC, DOCX (Tối đa 200MB)
+            Hỗ trợ: PDF (Tối đa 200MB)
           </p>
         </div>
 
@@ -124,7 +124,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
         <input
           type="file"
           multiple
-          accept=".pdf,.doc,.docx"
+          accept=".pdf"
           className="hidden"
           ref={fileInputRef}
           onChange={(e) => handleInputFile(e.target)}

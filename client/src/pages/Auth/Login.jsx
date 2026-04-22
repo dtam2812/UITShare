@@ -5,11 +5,13 @@ import Input from "../../components/UI/Input";
 import { useState } from "react";
 import axios from "../../common";
 import { jwtDecode } from "jwt-decode";
+import { useCart } from "../../context/CartContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { reloadCartForCurrentUser } = useCart();
 
   const handleLogin = async (e) => {
     try {
@@ -35,7 +37,7 @@ const Login = () => {
         else navigate("/");
 
         localStorage.setItem("access_token", accessToken);
-
+        reloadCartForCurrentUser();
         setEmail("");
         setPassword("");
       }
