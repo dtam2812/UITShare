@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa6"; 
+import { FaEye, FaEyeSlash } from "react-icons/fa6";
 
 const Input = ({ type, placeholder, className, ...rest }) => {
   const [showPassword, setShowPassword] = useState(false);

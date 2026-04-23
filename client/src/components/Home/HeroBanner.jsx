@@ -1,70 +1,64 @@
-    import { FileText, Users, Share2 } from "lucide-react";
+import { FileText, Users, Share2 } from "lucide-react";
+import { Link } from "react-router";
 
-    export default function Hero() {
-      return (
-        <section className="relative min-h-screen pt-32 pb-16 text-white flex flex-col items-center px-6">
-          
-          {/* HERO TEXT */}
-          <div className="relative text-center max-w-4xl">
-
-            {/* BADGE */}
-            <div className="inline-flex items-center gap-2 px-5 py-2 mb-6 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300 text-sm">
-              <span className="w-2 h-2 bg-cyan-400 rounded-full"></span>
-              NỀN TẢNG HỌC LIỆU NFT ĐẦU TIÊN TẠI VIỆT NAM
-            </div>
-
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-              Học liệu số
-              <br />
-              <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 text-transparent bg-clip-text">
-                Dành cho sinh viên UIT
-              </span>
-            </h1>
-
-            <p className="mt-6 text-gray-400 text-lg">
-            Mua tài liệu học tập dưới dạng NFT — xác thực quyền sở hữu, giao dịch tự do, không ai có thể lấy đi.
-            </p>
-
-            {/* BUTTONS */}
-            <div className="mt-8 flex justify-center gap-4 flex-wrap">
-              <button className="w-48 bg-purple-500 hover:bg-purple-600 px-6 py-3 rounded-lg font-medium transition cursor-pointer">
-                Tải lên tài liệu
-              </button>
-
-              <button className="w-48 bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition cursor-pointer">
-                Khám phá tài liệu
-              </button>
-            </div>
-
-          </div>
-
-          {/* STATS */}
-          <div className="relative mt-16 grid grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl w-full">
-
-            <Stat icon={<FileText />} value="50K+" label="Documents Stored" />
-            <Stat icon={<Users />} value="12K+" label="Active Users" />
-            <Stat icon={<Share2 />} value="30K+" label="Files Shared" />
-
-          </div>
-
-        </section>
-      );
-    }
-
-    function Stat({ icon, value, label }) {
-      return (
-        <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6 text-center hover:bg-white/10 transition">
-
-          <div className="flex justify-center text-purple-400 mb-3">
-            {icon}
-          </div>
-
-          <div className="text-2xl font-bold">{value}</div>
-
-          <div className="text-gray-400 text-sm mt-1">
-            {label}
-          </div>
-
+export default function Hero() {
+  return (
+    <section className="relative flex h-screen flex-col items-center px-6 pt-32 text-white">
+      {/* HERO TEXT */}
+      <div className="relative max-w-4xl text-center">
+        {/* BADGE */}
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-5 py-2 text-sm text-cyan-300">
+          <span className="h-2 w-2 rounded-full bg-cyan-400"></span>
+          NỀN TẢNG HỌC LIỆU NFT ĐẦU TIÊN TẠI VIỆT NAM
         </div>
-      );
-    }
+
+        <h1 className="text-5xl leading-tight font-bold md:text-6xl">
+          Học liệu số
+          <br />
+          <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            Dành cho sinh viên UIT
+          </span>
+        </h1>
+
+        <p className="mt-6 text-lg text-gray-400">
+          Mua tài liệu học tập dưới dạng NFT — xác thực quyền sở hữu, giao dịch
+          tự do, không ai có thể lấy đi.
+        </p>
+
+        {/* BUTTONS */}
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <Link to="/upload">
+            <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium transition hover:bg-purple-600">
+              Tải lên tài liệu
+            </button>
+          </Link>
+
+          <Link to="/document">
+            <button className="w-48 cursor-pointer rounded-lg bg-white px-6 py-3 font-medium text-black transition hover:bg-gray-200">
+              Khám phá tài liệu
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* STATS */}
+      <div className="relative mt-16 grid w-full max-w-6xl grid-cols-2 gap-6 md:grid-cols-3">
+        <Stat icon={<FileText />} value="50K+" label="Documents Stored" />
+        <Stat icon={<Users />} value="12K+" label="Active Users" />
+        <Stat icon={<Share2 />} value="30K+" label="Files Shared" />
+      </div>
+    </section>
+  );
+}
+
+function Stat({ icon, value, label }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-md transition hover:bg-white/10">
+      <div className="mb-3 flex justify-center text-purple-400">{icon}</div>
+
+      <div className="text-2xl font-bold">{value}</div>
+
+      <div className="mt-1 text-sm text-gray-400">{label}</div>
+    </div>
+  );
+}

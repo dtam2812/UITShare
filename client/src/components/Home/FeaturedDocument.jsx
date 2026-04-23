@@ -1,29 +1,55 @@
-import React from "react";
+import React, { useEffect } from "react";
 import DocumentCard from "../DocumentCard/DocumentCard";
-
-const documents = [
-  { id: 1 },
-  { id: 2 },
-  { id: 3 },
-  { id: 4 },
-];
+import axios from "../../common";
 
 export default function FeaturedDocuments({
   badge = "✦ Nổi bật",
   title = "Tài liệu được yêu thích",
   showAll = "Xem tất cả →",
 }) {
+  const [documents, setDocuments] = React.useState([]);
+
+  const getListDocument = async () => {
+    try {
+      const response = await axios.get("/api/documents/documentList");
+
+      if (response.status === 200) {
+        if (badge === "✦ Nổi bật") {
+          setDocuments(
+            response.data.sort(
+              (a, b) => (b.downloadCount || 0) - (a.downloadCount || 0),
+            ),
+          );
+        } else {
+          setDocuments(
+            response.data.sort(
+              (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+            ),
+          );
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getListDocument();
+  }, []);
+
   return (
-    <section className="relative py-12 text-white px-6 overflow-hidden">
-      <div className="max-w-6xl mx-auto mb-12">
-        <p className="text-cyan-400 text-sm font-semibold mb-2">{badge}</p>
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <h2 className="text-3xl md:text-4xl font-bold">{title}</h2>
-          <button className="text-cyan-400 text-sm hover:underline">{showAll}</button>
+    <section className="relative overflow-hidden px-6 py-12 text-white">
+      <div className="mx-auto mb-12 max-w-6xl">
+        <p className="mb-2 text-sm font-semibold text-cyan-400">{badge}</p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="text-3xl font-bold md:text-4xl">{title}</h2>
+          <button className="text-sm text-cyan-400 hover:underline">
+            {showAll}
+          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {documents.map((doc) => (
           <DocumentCard key={doc.id} />
         ))}

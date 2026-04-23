@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Check } from "lucide-react";
-import DocumentCard from "../components/DocumentCard";
-import { fetchSubjects, fetchDocuments } from "../api/api_test";
+import DocumentCard from "../components/DocumentCard/DocumentCard";
+import { fetchSubjects } from "../api/api_test";
+import axios from "../common";
 
 export default function DocumentsPage() {
   const [sortBy, setSortBy] = useState("newest");
@@ -18,18 +19,30 @@ export default function DocumentsPage() {
 
   const categories = ["Đại cương", "Cơ sở ngành", "Chuyên ngành"];
 
+  const getListDocument = async () => {
+    try {
+      const response = await axios.get("/api/documents/documentList");
+
+      if (response.status === 200) {
+        setDocuments(response.data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getListDocument();
+  }, []);
+
   useEffect(() => {
     window.scrollTo(0, 0);
 
     const loadData = async () => {
       setLoading(true);
       try {
-        const [subjectsData, docsData] = await Promise.all([
-          fetchSubjects(),
-          fetchDocuments(),
-        ]);
+        const [subjectsData] = await Promise.all([fetchSubjects()]);
         setSubjects(subjectsData);
-        setDocuments(docsData);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -85,23 +98,23 @@ export default function DocumentsPage() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex flex-col md:flex-row gap-8">
+    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-8 md:flex-row">
         {/* Left Sidebar - Filters */}
-        <div className="w-full md:w-64 shrink-0  md:top-24 h-fit max-h  pr-2 mt-10 ">
-          <div className="flex items-center justify-between mb-6">
+        <div className="max-h mt-10 h-fit w-full shrink-0 pr-2 md:top-24 md:w-64">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Danh mục</h2>
             {selectedSubjects.length > 0 && (
               <button
                 onClick={() => setSelectedSubjects([])}
-                className="text-xs text-purple-400 hover:text-purple-300 underline underline-offset-2"
+                className="text-xs text-purple-400 underline underline-offset-2 hover:text-purple-300"
               >
                 Xóa bộ lọc
               </button>
             )}
           </div>
 
-          <div className="space-y-4 mb-8">
+          <div className="mb-8 space-y-4">
             {categories.map((category) => {
               const categorySubjects = subjects.filter(
                 (s) => s.category === category,
@@ -114,18 +127,18 @@ export default function DocumentsPage() {
               return (
                 <div
                   key={category}
-                  className="border border-gray-800 rounded-lg overflow-hidden bg-[#131722]"
+                  className="overflow-hidden rounded-lg border border-gray-800 bg-[#131722]"
                 >
                   <button
                     onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-purple-600 text-purple-400 transition-colors"
+                    className="flex w-full items-center justify-between px-4 py-3 text-purple-400 transition-colors hover:bg-purple-600"
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-200">
                         {category}
                       </span>
                       {selectedInCategory > 0 && (
-                        <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
+                        <span className="rounded-full bg-purple-600 px-2 py-0.5 text-xs text-white">
                           {selectedInCategory}
                         </span>
                       )}
@@ -138,23 +151,23 @@ export default function DocumentsPage() {
                   </button>
 
                   {isExpanded && (
-                    <div className="px-2 pb-3 pt-1 border-t border-gray-800/50">
+                    <div className="border-t border-gray-800/50 px-2 pt-1 pb-3">
                       {categorySubjects.length > 0 ? (
                         categorySubjects.map((subject) => (
                           <button
                             key={subject.id}
                             onClick={() => toggleSubject(subject.id)}
-                            className="w-full flex items-center px-2 py-2 hover:bg-white/5 transition-colors text-left rounded-md group"
+                            className="group flex w-full items-center rounded-md px-2 py-2 text-left transition-colors hover:bg-white/5"
                           >
                             <div
-                              className={`w-4 h-4 rounded border mr-3 flex items-center justify-center shrink-0 transition-colors ${selectedSubjects.includes(subject.id) ? "bg-purple-600 border-purple-600" : "border-gray-600 group-hover:border-gray-500"}`}
+                              className={`mr-3 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${selectedSubjects.includes(subject.id) ? "border-purple-600 bg-purple-600" : "border-gray-600 group-hover:border-gray-500"}`}
                             >
                               {selectedSubjects.includes(subject.id) && (
                                 <Check size={12} className="text-white" />
                               )}
                             </div>
                             <span
-                              className={`text-sm truncate ${selectedSubjects.includes(subject.id) ? "text-white font-medium" : "text-gray-400 group-hover:text-gray-300"}`}
+                              className={`truncate text-sm ${selectedSubjects.includes(subject.id) ? "font-medium text-white" : "text-gray-400 group-hover:text-gray-300"}`}
                             >
                               {subject.name}
                             </span>
@@ -174,10 +187,10 @@ export default function DocumentsPage() {
         </div>
 
         {/* Right Content */}
-        <div className="flex-1 mt-10">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 pl-4">
+        <div className="mt-10 flex-1">
+          <div className="mb-8 flex flex-col items-start justify-between gap-4 pl-4 sm:flex-row sm:items-center">
             <div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-sm text-gray-400">
                 Hiển thị {paginatedDocuments.length} trên tổng số{" "}
                 {filteredDocuments.length} tài liệu
               </p>
@@ -189,7 +202,7 @@ export default function DocumentsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#131722] border border-gray-800 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2.5 outline-none"
+                className="block rounded-lg border border-gray-800 bg-[#131722] p-2.5 text-sm text-white outline-none focus:border-purple-500 focus:ring-purple-500"
               >
                 <option value="newest">Mới nhất</option>
                 <option value="oldest">Cũ nhất</option>
@@ -202,26 +215,26 @@ export default function DocumentsPage() {
 
           {/* Document Grid */}
           {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-500"></div>
+            <div className="flex items-center justify-center py-20">
+              <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-purple-500"></div>
             </div>
           ) : paginatedDocuments.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-10">
-                {paginatedDocuments.map((doc) => (
-                  <DocumentCard key={doc.id} {...doc} />
+              <div className="mb-10 grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+                {paginatedDocuments.map((element) => (
+                  <DocumentCard key={element._id} {...element} />
                 ))}
               </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-8">
+                <div className="mt-8 flex items-center justify-center gap-2">
                   <button
                     onClick={() =>
                       setCurrentPage((prev) => Math.max(prev - 1, 1))
                     }
                     disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg border border-gray-800 text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-lg border border-gray-800 px-4 py-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Trước
                   </button>
@@ -231,10 +244,10 @@ export default function DocumentsPage() {
                       <button
                         key={i}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                        className={`flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
                           currentPage === i + 1
-                            ? "bg-purple-600 text-white font-medium"
-                            : "border border-gray-800 text-gray-400 hover:text-white hover:bg-white/5"
+                            ? "bg-purple-600 font-medium text-white"
+                            : "border border-gray-800 text-gray-400 hover:bg-white/5 hover:text-white"
                         }`}
                       >
                         {i + 1}
@@ -247,7 +260,7 @@ export default function DocumentsPage() {
                       setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                     }
                     disabled={currentPage === totalPages}
-                    className="px-4 py-2 rounded-lg border border-gray-800 text-gray-400 hover:text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="rounded-lg border border-gray-800 px-4 py-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Sau
                   </button>
@@ -255,13 +268,13 @@ export default function DocumentsPage() {
               )}
             </>
           ) : (
-            <div className="text-center py-20 bg-[#131722] rounded-xl border border-gray-800">
+            <div className="rounded-xl border border-gray-800 bg-[#131722] py-20 text-center">
               <p className="text-gray-400">
                 Không tìm thấy tài liệu nào phù hợp với bộ lọc.
               </p>
               <button
                 onClick={() => setSelectedSubjects([])}
-                className="mt-4 text-purple-400 hover:text-purple-300 font-medium"
+                className="mt-4 font-medium text-purple-400 hover:text-purple-300"
               >
                 Xóa bộ lọc
               </button>

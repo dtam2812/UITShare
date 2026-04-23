@@ -1,28 +1,21 @@
 const mongoose = require("mongoose");
 
-const NFTSchema = mongoose.Schema({
+const NFTSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
+    index: true,
   },
-
   document: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Document",
   },
-
-  tokenId: Number,
-
+  tokenId: { type: String, trim: true },
   amount: { type: Number, default: 1 },
-
-  transactionHash: String,
-
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  ownerAddress: { type: String, lowercase: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
-const NFTModel = mongoose.model("NFT", NFTSchema);
+NFTSchema.index({ user: 1, tokenId: 1 }, { unique: true });
 
-module.exports = NFTModel;
+module.exports = mongoose.model("NFT", NFTSchema);

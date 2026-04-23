@@ -15,49 +15,25 @@ export default function Overview({ users, documents }) {
   return (
     <div className="space-y-6">
       <h2 className="text-3xl font-bold text-white">Tổng quan hệ thống</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-[#131722] p-6 rounded-xl shadow-sm border border-gray-800 flex items-center space-x-4">
-          <div className="p-3 bg-blue-500/20 text-blue-400 rounded-lg">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="flex items-center space-x-4 rounded-xl border border-gray-800 bg-[#131722] p-6 shadow-sm">
+          <div className="rounded-lg bg-blue-500/20 p-3 text-blue-400">
             <Users size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-400 font-medium">Tổng người dùng</p>
+            <p className="text-sm font-medium text-gray-400">Tổng người dùng</p>
             <p className="text-2xl font-bold text-white">{totalUsers}</p>
           </div>
         </div>
-        <div className="bg-[#131722] p-6 rounded-xl shadow-sm border border-gray-800 flex items-center space-x-4">
-          <div className="p-3 bg-green-500/20 text-green-400 rounded-lg">
-            <UserCheck size={24} />
-          </div>
-          {/*  <div>
-            <p className="text-sm text-gray-500 font-medium">
-              Tác giả đã duyệt
-            </p>
-            <p className="text-2xl font-bold text-gray-800">
-              {verifiedAuthors}
-            </p>
-          </div> */}
-        </div>
-        <div className="bg-[#131722] p-6 rounded-xl shadow-sm border border-gray-800 flex items-center space-x-4">
-          <div className="p-3 bg-purple-500/20 text-purple-400 rounded-lg">
+        <div className="flex items-center space-x-4 rounded-xl border border-gray-800 bg-[#131722] p-6 shadow-sm">
+          <div className="rounded-lg bg-purple-500/20 p-3 text-purple-400">
             <BookOpen size={24} />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm font-medium text-gray-500">
               Tài liệu hiện có
             </p>
-            <p className="text-2xl font-bold text-gray-800">{totalDocs}</p>
-          </div>
-        </div>
-        <div className="bg-[#131722] p-6 rounded-xl shadow-sm border border-gray-800 flex items-center space-x-4">
-          <div className="p-3 bg-orange-500/20 text-orange-400 rounded-lg">
-            <span className="font-bold text-xl">₫</span>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 font-medium">Doanh thu tháng</p>
-            {/* <p className="text-2xl font-bold text-gray-800">
-              {formatRevenue(totalRevenue)}
-            </p> */}
+            <p className="text-2xl font-bold text-white">{totalDocs}</p>
           </div>
         </div>
       </div>

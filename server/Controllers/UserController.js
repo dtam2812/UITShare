@@ -28,7 +28,13 @@ const addUser = async (req, res) => {
 };
 
 const userDetail = (req, res) => {
-  res.send("list user");
+  try {
+    const userId = req.params.id;
+    const user = userModel.findById(userId);
+    return res.status(200).send(user);
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const deleteUser = async (req, res) => {

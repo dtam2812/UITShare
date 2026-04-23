@@ -19,12 +19,12 @@ const CommentSchema = new mongoose.Schema({
     default: null,
   },
 
-  likes: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: null,
+  },
 
   createdAt: {
     type: Date,

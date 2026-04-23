@@ -6,9 +6,9 @@ function StarRating({ value }) {
       {[1, 2, 3, 4, 5].map((s) => (
         <Star
           key={s}
-          className={`w-3.5 h-3.5 ${
+          className={`h-3.5 w-3.5 ${
             s <= Math.round(value)
-              ? "text-yellow-400 fill-yellow-400"
+              ? "fill-yellow-400 text-yellow-400"
               : "text-white/20"
           }`}
         />
@@ -17,53 +17,92 @@ function StarRating({ value }) {
   );
 }
 
+const CATEGORY_LABELS = {
+  exam: "Đề thi",
+  slide: "Slide",
+  assignment: "Bài tập",
+  project: "Đồ án",
+};
+
 export default function DocumentInfo({ doc, reviewCount }) {
   return (
-    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-      <div className="flex flex-wrap gap-2 mb-4">
-        {doc.tags.map((tag) => (
-          <span
-            key={tag}
-            className="text-xs px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300"
-          >
-            {tag}
+    <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+      {/* Category + AccessType badges */}
+      <div className="mb-4 flex flex-wrap gap-2">
+        {doc.category && (
+          <span className="rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-xs text-purple-300">
+            {CATEGORY_LABELS[doc.category] || doc.category}
           </span>
-        ))}
+        )}
+        {doc.subject && (
+          <span className="rounded-full border border-cyan-400/30 bg-cyan-500/20 px-3 py-1 text-xs text-cyan-300">
+            {doc.subject}
+          </span>
+        )}
       </div>
 
-      <p className="text-cyan-400 text-sm font-semibold mb-5">{doc.school}</p>
-
-      <div className="flex items-center gap-6 flex-wrap mb-5">
+      <div className="mb-5 flex flex-wrap items-center gap-6">
+        {/* Author */}
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-linear-to-br from-purple-400 to-blue-500 flex items-center justify-center text-sm font-bold text-white">
-            {doc.authorAvatar}
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-blue-500 text-sm font-bold text-white">
+            {doc.author?.userName?.[0]?.toUpperCase() || "?"}
           </div>
           <div>
             <p className="text-xs text-gray-500">Tác giả</p>
-            <p className="text-sm font-semibold text-white">{doc.author}</p>
+            <p className="text-sm font-semibold text-white">
+              {doc.author?.userName || "—"}
+            </p>
           </div>
         </div>
-        <div className="w-px h-8 bg-white/10" />
+
+        <div className="h-8 w-px bg-white/10" />
+
+        {/* Pages */}
         <div>
           <p className="text-xs text-gray-500">Số trang</p>
-          <p className="text-sm font-semibold text-white">{doc.pages} trang</p>
+          <p className="text-sm font-semibold text-white">
+            {doc.pageCount ? `${doc.pageCount} trang` : "—"}
+          </p>
         </div>
-        <div className="w-px h-8 bg-white/10" />
+
+        <div className="h-8 w-px bg-white/10" />
+
+        {/* Created year */}
         <div>
-          <p className="text-xs text-gray-500">Năm học</p>
-          <p className="text-sm font-semibold text-white">{doc.year}</p>
+          <p className="text-xs text-gray-500">Năm đăng</p>
+          <p className="text-sm font-semibold text-white">
+            {doc.createdAt ? new Date(doc.createdAt).getFullYear() : "—"}
+          </p>
+        </div>
+
+        <div className="h-8 w-px bg-white/10" />
+
+        {/* Royalty */}
+        <div>
+          <p className="text-xs text-gray-500">Hoa hồng</p>
+          <p className="text-sm font-semibold text-white">
+            {doc.royaltyPercent ? `${doc.royaltyPercent}%` : "—"}
+          </p>
         </div>
       </div>
 
+      {/* Rating */}
       {reviewCount !== undefined && (
-        <div className="flex items-center gap-3 mb-5">
-          <StarRating value={doc.rating} />
-          <span className="text-yellow-400 font-bold text-sm">{doc.rating}</span>
-          <span className="text-gray-500 text-sm">({reviewCount} đánh giá)</span>
+        <div className="mb-5 flex items-center gap-3">
+          <StarRating value={doc.averageRating || 0} />
+          <span className="text-sm font-bold text-yellow-400">
+            {doc.averageRating || "—"}
+          </span>
+          <span className="text-sm text-gray-500">
+            ({reviewCount} đánh giá)
+          </span>
         </div>
       )}
 
-      <p className="text-gray-400 text-sm leading-relaxed">{doc.description}</p>
+      {/* Description */}
+      <p className="text-sm leading-relaxed text-gray-400">
+        {doc.description || "Không có mô tả."}
+      </p>
     </div>
   );
 }

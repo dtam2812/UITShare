@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
-import DocumentCard from "../components/DocumentCard";
+import DocumentCard from "../components/DocumentCard/DocumentCard";
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
@@ -40,9 +40,9 @@ const SearchResultsPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-[#0f0f16] text-white pt-24 pb-12 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+    <div className="min-h-screen bg-[#0f0f16] px-6 pt-24 pb-12 text-white">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <h1 className="text-3xl font-bold">
             Kết quả tìm kiếm cho:{" "}
             <span className="text-purple-400">"{query}"</span>
@@ -50,12 +50,12 @@ const SearchResultsPage = () => {
 
           {/* Sort Dropdown */}
           {!isLoading && results.length > 0 && (
-            <div className="flex items-center gap-3 shrink-0">
+            <div className="flex shrink-0 items-center gap-3">
               <span className="text-sm text-gray-400">Sắp xếp theo:</span>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="bg-[#131722] border border-gray-800 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block p-2.5 outline-none"
+                className="block rounded-lg border border-gray-800 bg-[#131722] p-2.5 text-sm text-white outline-none focus:border-purple-500 focus:ring-purple-500"
               >
                 <option value="newest">Mới nhất</option>
                 <option value="oldest">Cũ nhất</option>
@@ -68,17 +68,17 @@ const SearchResultsPage = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+          <div className="flex h-64 items-center justify-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-purple-500"></div>
           </div>
         ) : sortedDocuments.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {sortedDocuments.map((doc) => (
               <DocumentCard key={doc.id} {...doc} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-gray-800/30 rounded-2xl border border-white/5">
+          <div className="rounded-2xl border border-white/5 bg-gray-800/30 py-20 text-center">
             <p className="text-xl text-gray-400">
               Không tìm thấy tài liệu nào phù hợp với từ khóa của bạn.
             </p>

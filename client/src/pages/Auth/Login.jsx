@@ -1,16 +1,17 @@
 import { Link, useNavigate } from "react-router";
 import loginImg from "../../assets/login-img.jpg";
 import AuthButton from "../../components/Auth/AuthButton";
-import AuthSelect from "../../components/Auth/AuthSelect";
 import Input from "../../components/UI/Input";
 import { useState } from "react";
 import axios from "../../common";
 import { jwtDecode } from "jwt-decode";
+import { useCart } from "../../context/CartContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { reloadCartForCurrentUser } = useCart();
 
   const handleLogin = async (e) => {
     try {
@@ -36,7 +37,7 @@ const Login = () => {
         else navigate("/");
 
         localStorage.setItem("access_token", accessToken);
-
+        reloadCartForCurrentUser();
         setEmail("");
         setPassword("");
       }
@@ -46,33 +47,46 @@ const Login = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 h-screen bg-white">
-      <div className="flex flex-col justify-center items-center p-6 md:p-12 overflow-y-auto">
+    <div className="relative grid h-screen grid-cols-1 bg-transparent text-white md:grid-cols-2">
+      <div className="absolute top-6 left-6 z-50 md:top-8 md:left-8">
+        <Link
+          to="/"
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+        >
+          <img
+            src="/UIT-Share-Logo-2.svg"
+            alt="UITShare Logo"
+            className="h-8 object-contain md:h-10"
+          />
+        </Link>
+      </div>
+
+      <div className="z-10 flex flex-col items-center justify-center overflow-y-auto p-6 md:p-12">
         <div className="w-full max-w-100">
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 p-1 rounded-full flex items-center">
-              <button className="bg-white text-gray-900 shadow-sm px-6 py-1.5 rounded-full text-sm font-semibold transition-all">
+          <div className="mb-8 flex justify-center">
+            <div className="flex items-center rounded-full border border-white/20 bg-white/10 p-1 backdrop-blur-md">
+              <button className="rounded-full bg-purple-600 px-6 py-1.5 text-sm font-semibold text-white shadow-sm transition-all">
                 Đăng nhập
               </button>
               <Link
                 to="/register"
-                className="text-gray-500 hover:text-gray-900 px-6 py-1.5 rounded-full text-sm font-medium transition-all"
+                className="rounded-full px-6 py-1.5 text-sm font-medium text-gray-400 transition-all hover:text-purple-300"
               >
                 Đăng ký
               </Link>
             </div>
           </div>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Xin chào</h1>
-            <p className="text-gray-500 text-sm">
+          <div className="mb-8 text-center">
+            <h1 className="mb-2 text-3xl font-bold text-white">Xin chào</h1>
+            <p className="text-sm text-gray-400">
               Vui lòng nhập thông tin của bạn để đăng nhập
             </p>
           </div>
 
           <form className="space-y-5" onSubmit={handleLogin}>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+              <label className="mb-1.5 block text-sm font-semibold text-gray-300">
                 Địa chỉ email
               </label>
               <Input
@@ -88,13 +102,13 @@ const Login = () => {
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-sm font-semibold text-gray-700">
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="block text-sm font-semibold text-gray-300">
                   Mật khẩu
                 </label>
                 <Link
                   to="/forgotpassword"
-                  className="text-xs text-gray-500 hover:text-gray-900 font-medium"
+                  className="text-xs font-medium text-gray-400 transition-colors hover:text-purple-400"
                 >
                   Quên mật khẩu?
                 </Link>
@@ -114,35 +128,18 @@ const Login = () => {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-white/20"></div>
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="px-2 bg-white text-gray-400">Hoặc</span>
+              <span className="bg-[#050816] px-2 text-gray-400">Hoặc</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/475656/google-color.svg"
-              text="Tiếp tục với Google"
-            />
-
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/511330/apple-173.svg"
-              text="Tiếp tục với Apple"
-            />
-
-            <AuthSelect
-              icon="https://www.svgrepo.com/show/473558/binance.svg"
-              text="Tiếp tục với Binance"
-            />
-          </div>
-
-          <p className="text-center text-gray-500 text-sm mt-8">
+          <p className="mt-8 text-center text-sm text-gray-400">
             Bạn chưa có tài khoản?{" "}
             <Link
               to="/register"
-              className="text-gray-900 font-bold hover:underline"
+              className="font-bold text-purple-400 transition-colors hover:text-purple-300 hover:underline"
             >
               Đăng ký
             </Link>
@@ -150,19 +147,21 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="hidden md:block p-2">
-        <div className="h-full w-full rounded-2xl overflow-hidden relative">
+      <div className="hidden p-2 md:block">
+        <div className="relative h-full w-full overflow-hidden rounded-2xl border border-white/10">
           <img
             src={loginImg}
             alt="Login Banner"
-            className="h-full w-full object-cover object-right"
+            className="h-full w-full object-cover object-right opacity-80"
           />
 
-          <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-linear-to-t from-black/90 via-black/50 to-transparent"></div>
+          <div className="absolute right-0 bottom-0 left-0 h-3/4 bg-linear-to-t from-[#050816] via-[#050816]/70 to-transparent"></div>
 
-          <div className="absolute bottom-10 left-6 right-6 text-white z-10">
-            <h3 className="text-3xl font-bold mb-2 drop-shadow-md">UITShare</h3>
-            <p className="text-gray-200 text-sm leading-relaxed drop-shadow-sm">
+          <div className="absolute right-6 bottom-10 left-6 z-10 text-white">
+            <h3 className="mb-2 bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-3xl font-bold text-transparent drop-shadow-md">
+              UITShare
+            </h3>
+            <p className="text-sm leading-relaxed text-gray-300 drop-shadow-sm">
               Nền tảng chia sẻ tài liệu số 1 dành cho sinh viên UIT.
               <br />
               Học tập hiệu quả, chia sẻ đam mê.

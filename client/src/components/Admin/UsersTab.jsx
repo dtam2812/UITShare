@@ -112,7 +112,7 @@ export default function UsersTab({ users, setUsers }) {
     {
       header: "Name",
       accessor: (row) => (
-        <span className="font-medium text-gray-800">{row.userName}</span>
+        <span className="font-medium text-white">{row.userName}</span>
       ),
     },
     {
@@ -127,7 +127,7 @@ export default function UsersTab({ users, setUsers }) {
       header: "Status",
       accessor: (row) => (
         <span
-          className={`px-2 py-1 rounded-md text-xs font-medium ${
+          className={`rounded-md px-2 py-1 text-xs font-medium ${
             row.status === "active"
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-700"
@@ -143,7 +143,7 @@ export default function UsersTab({ users, setUsers }) {
       accessor: (row) => (
         <button
           onClick={() => openEditModal(row)}
-          className="text-gray-400 hover:text-blue-600 transition-colors"
+          className="text-gray-400 transition-colors hover:text-blue-600"
         >
           <Edit size={18} className="mx-auto" />
         </button>
@@ -155,7 +155,7 @@ export default function UsersTab({ users, setUsers }) {
       accessor: (row) => (
         <button
           onClick={() => handleDelete(row._id)}
-          className="text-gray-400 hover:text-red-600 transition-colors"
+          className="text-gray-400 transition-colors hover:text-red-600"
         >
           <Trash2 size={18} className="mx-auto" />
         </button>
@@ -168,7 +168,7 @@ export default function UsersTab({ users, setUsers }) {
       <select
         value={roleFilter}
         onChange={(e) => setRoleFilter(e.target.value)}
-        className="border border-gray-200 bg-gray-50 text-gray-600 text-sm rounded-md px-4 py-2 outline-none"
+        className="rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600 outline-none"
       >
         <option>All Roles</option>
         <option>User</option>
@@ -177,7 +177,7 @@ export default function UsersTab({ users, setUsers }) {
       <select
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
-        className="border border-gray-800 bg-[#1c1e2f] text-gray-300 text-sm rounded-md px-4 py-2 outline-none focus:border-purple-500"
+        className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
         <option>All Status</option>
         <option>Active</option>
@@ -188,11 +188,11 @@ export default function UsersTab({ users, setUsers }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-white">Users</h2>
         <button
           onClick={openAddModal}
-          className="bg-[#1c1e2f] cursor-pointer hover:bg-gray-800 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-gray-700"
+          className="flex cursor-pointer items-center gap-2 rounded-md border border-gray-700 bg-[#1c1e2f] px-4 py-2 text-white transition-colors hover:bg-gray-800"
         >
           <Plus size={18} /> Add User
         </button>
@@ -215,58 +215,58 @@ export default function UsersTab({ users, setUsers }) {
 
       <ModalOverlay isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <div className="p-6">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">
+          <h3 className="mb-4 text-xl font-bold text-gray-800">
             {isEditMode ? "Edit User" : "Add New User"}
           </h3>
           <form onSubmit={handleSubmitAddUser} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Username
               </label>
               <input
                 id="userName"
                 required
                 type="text"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                 value={form.userName}
                 onChange={(e) => setForm({ ...form, userName: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Email
               </label>
               <input
                 id="email"
                 required
                 type="email"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
                 id="password"
                 type="password"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Role
               </label>
               <select
                 id="role"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                 value={form.role}
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
               >
@@ -276,12 +276,12 @@ export default function UsersTab({ users, setUsers }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Status
               </label>
               <select
                 id="status"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:border-blue-500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
               >
@@ -290,17 +290,17 @@ export default function UsersTab({ users, setUsers }) {
               </select>
             </div>
 
-            <div className="pt-4 flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-4">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                className="rounded-md px-4 py-2 text-gray-600 hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-[#1c1e2f] text-white rounded-md hover:bg-gray-800"
+                className="rounded-md bg-[#1c1e2f] px-4 py-2 text-white hover:bg-gray-800"
               >
                 Add
               </button>
