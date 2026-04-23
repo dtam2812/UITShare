@@ -1,14 +1,47 @@
 import { Outlet } from "react-router";
 import { FiMenu, FiX } from "react-icons/fi";
 import ProfileSidebar from "../../components/Profile/ProfileSidebar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import { useQueryClient } from "@tanstack/react-query";
+import axios from "../../common";
 
 const ProfileLayout = () => {
   const [openSidebar, setOpenSidebar] = useState(false);
 
   const accessToken = localStorage.getItem("access_token");
   const payloadDecode = jwtDecode(accessToken);
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const userId = payloadDecode.id;
+    if (!userId) return;
+
+    queryClient.prefetchQuery({
+      queryKey: ["walletInfo", userId],
+      queryFn: async () => {
+        const { data } = await axios.get(`/api/wallet/walletInfo/${userId}`);
+        if (data.connected) {
+          return {
+            balance: data.balance,
+            nftCount: data.nftCount,
+            nfts: data.nfts,
+            transactions: data.transactions,
+            walletAddress: data.walletAddress,
+          };
+        }
+        return {
+          balance: "0",
+          nftCount: 0,
+          nfts: [],
+          transactions: [],
+          walletAddress: null,
+        };
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  }, []);
 
   const handleClick = () => {
     setOpenSidebar((prev) => !prev);
@@ -33,7 +66,7 @@ const ProfileLayout = () => {
       ></div>
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform border-r border-white/10 bg-[#050816] shadow-xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${openSidebar ? "translate-x-0" : "-translate-x-full"} `}
+        className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform border-r border-white/10 bg-[#050816] shadow-xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
       >
         <ProfileSidebar
           avatar={payloadDecode.avatar}

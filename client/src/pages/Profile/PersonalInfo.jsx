@@ -45,7 +45,6 @@ const PersonalInfo = () => {
             avatar: response.data.avatar || "",
             coverImage: response.data.coverImage || "",
           });
-
         }
       } catch (error) {
         console.log(error);
@@ -53,32 +52,32 @@ const PersonalInfo = () => {
     };
     getUserId();
   }, [userId]);
-  
+
   const handleClick = (type) => {
     typeUpload.current = type;
     clickInput.current.click();
   };
-  
+
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    
+
     try {
       const formData = new FormData();
-      
+
       formData.append("userName", formInput.userName);
       formData.append("studentId", formInput.studentId);
       formData.append("bio", formInput.bio);
       formData.append("facebookLink", formInput.facebookLink);
-      
+
       if (img.avatar instanceof File) formData.append("avatar", img.avatar);
       if (img.coverImage instanceof File)
         formData.append("coverImage", img.coverImage);
-      
+
       const response = await axios.put(
         `/api/personal/updateUserInfo/${userId}`,
         formData,
       );
-      
+
       if (response.status === 200) {
         setImg({
           avatar: response.data.avatar,
@@ -217,7 +216,7 @@ const PersonalInfo = () => {
                   rows="4"
                   value={formInput?.bio}
                   placeholder="Giới thiệu ngắn gọn (VD: Chuyên share tài liệu điểm cao môn Đại cương...)"
-                  className="w-full resize-y rounded-xl border border-purple-400 bg-transparent px-4 py-3 text-sm text-white transition-all outline-none placeholder:text-gray-500 focus:border-purple-400 focus:ring-0"
+                  className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 pr-10 text-sm text-white transition-all outline-none placeholder:text-gray-400 focus:border-purple-400 focus:bg-white/10 focus:ring-1 focus:ring-purple-400/50"
                   onChange={handleChangeForm}
                 ></textarea>
               </div>
@@ -228,11 +227,11 @@ const PersonalInfo = () => {
             <h3 className="mb-6 text-lg font-semibold text-white">Liên hệ:</h3>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label htmlFor="socialLink" className="sr-only">
+                <label htmlFor="facebookLink" className="sr-only">
                   Facebook
                 </label>
                 <Input
-                  id="socialLink"
+                  id="facebookLink"
                   value={formInput?.facebookLink}
                   placeholder="Link Facebook (Hỗ trợ người mua tài liệu)"
                   onChange={handleChangeForm}

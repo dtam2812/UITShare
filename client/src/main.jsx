@@ -4,6 +4,7 @@ import RootLayout from "./RootLayout.jsx";
 import HomePage from "./pages/Homepage/HomePage.jsx";
 import DocumentDetail from "./pages/DocumentDetail/DocumentDetail.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
 import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
@@ -27,6 +28,8 @@ import DonationsReceived from "./pages/Profile/DonationsReceived.jsx";
 import MainLayout from "./MainLayout.jsx";
 import Cart from "./pages/Cart.jsx";
 import DocumentReading from "./pages/DocumentReading.jsx";
+
+const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
   {
@@ -141,5 +144,7 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />,
+  <QueryClientProvider client={queryClient}>
+    <RouterProvider router={router} />
+  </QueryClientProvider>,
 );

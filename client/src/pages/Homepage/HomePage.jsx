@@ -22,9 +22,9 @@ const Home = () => {
 
       <div className="relative" style={{ zIndex: 1 }}>
         <Hero />
+        <HowItWorks />
         <FeaturedDocuments />
         <FeaturedDocuments badge="✦ Mới nhất" title="Tài liệu mới tải lên" />
-        <HowItWorks />
       </div>
     </div>
   );

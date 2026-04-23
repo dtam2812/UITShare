@@ -1,13 +1,7 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import {
-  useConnect,
-  useAccount,
-  useDisconnect,
-  useChainId,
-  useSwitchChain,
-} from "wagmi";
-import { sepolia } from "wagmi/chains";
+import { useState, useEffect } from "react";
+import { useConnect, useAccount } from "wagmi";
 import { injected } from "wagmi/connectors";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BalanceCard from "../../components/Profile/BalanceCard";
 import FinanceStatCard from "../../components/Profile/FinanceStatCard";
 import TransactionTable from "../../components/Profile/TransactionTable";
@@ -15,119 +9,83 @@ import WalletCard from "../../components/Profile/WalletCard";
 import { useParams } from "react-router";
 import axios from "../../common";
 
-// Trạng thái ví mặc định
 const DEFAULT_WALLET_INFO = {
   balance: "0",
   nftCount: 0,
   nfts: [],
   transactions: [],
+  walletAddress: null,
 };
 
 const Financials = () => {
   const { userId } = useParams();
   const { mutate: connect } = useConnect();
-  const { address, isConnected } = useAccount();
-  const { mutate: disconnect } = useDisconnect();
-  const chainId = useChainId();
-  const { mutate: switchChain } = useSwitchChain();
+  const { address } = useAccount();
+  const queryClient = useQueryClient();
 
-  const [walletInfo, setWalletInfo] = useState(DEFAULT_WALLET_INFO);
-  const [isLoadingWallet, setIsLoadingWallet] = useState(false);
   const [walletError, setWalletError] = useState(null);
+  const [isLinking, setIsLinking] = useState(false);
 
-  const [isWalletLinked, setIsWalletLinked] = useState(false);
-
-  const prevAddressRef = useRef(null);
-
-  // Chỉ true khi user bấm nút "Kết nối ví" thủ công
-  // → tránh wagmi auto-reconnect từ localStorage tự link wallet lên server
-  const userInitiatedConnect = useRef(false);
-
-  const shortAddress = address
-    ? `${address.slice(0, 6)}...${address.slice(-4)}`
-    : "Chưa kết nối";
-  const isWrongNetwork = isConnected && chainId !== sepolia.id;
-
-  const fetchWalletInfo = useCallback(async () => {
-    if (!userId) return;
-    setIsLoadingWallet(true);
-    setWalletError(null);
-    try {
+  const {
+    data: walletInfo = DEFAULT_WALLET_INFO,
+    isLoading: isLoadingWallet,
+    refetch,
+  } = useQuery({
+    queryKey: ["walletInfo", userId],
+    queryFn: async () => {
       const { data } = await axios.get(`/api/wallet/walletInfo/${userId}`);
       if (data.connected) {
-        setIsWalletLinked(true);
-        setWalletInfo({
+        return {
           balance: data.balance,
           nftCount: data.nftCount,
           nfts: data.nfts,
           transactions: data.transactions,
-        });
-      } else {
-        setIsWalletLinked(false);
-        setWalletInfo(DEFAULT_WALLET_INFO);
+          walletAddress: data.walletAddress,
+        };
       }
-    } catch (error) {
-      console.error("[fetchWalletInfo]", error);
-      setWalletError("Không thể tải thông tin ví. Vui lòng thử lại.");
-    } finally {
-      setIsLoadingWallet(false);
-    }
-  }, [userId]);
+      return DEFAULT_WALLET_INFO;
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    enabled: !!userId,
+  });
+
+  const isWalletLinked = !!walletInfo.walletAddress;
+  const shortAddress = walletInfo.walletAddress
+    ? `${walletInfo.walletAddress.slice(0, 6)}...${walletInfo.walletAddress.slice(-4)}`
+    : "Chưa kết nối";
 
   useEffect(() => {
-    fetchWalletInfo();
-  }, []);
+    if (!address || !isLinking) return;
 
-  // Chỉ link wallet lên server khi user CHỦ ĐỘNG bấm nút kết nối
-  // (không chạy khi wagmi auto-reconnect session cũ từ localStorage)
-  useEffect(() => {
-    if (!address) return;
-    if (address === prevAddressRef.current) return;
-    if (!userInitiatedConnect.current) {
-      // wagmi auto-reconnect → bỏ qua, không link lên server
-      prevAddressRef.current = address;
-      return;
-    }
-
-    prevAddressRef.current = address;
-    userInitiatedConnect.current = false;
-
-    const onConnect = async () => {
+    const linkWallet = async () => {
       try {
         await axios.put(`/api/wallet/updateWallet/${userId}`, {
           walletAddress: address,
         });
-        // Đợi blockchain/etherscan sync
         await new Promise((r) => setTimeout(r, 1500));
-        await fetchWalletInfo();
+        await queryClient.invalidateQueries({
+          queryKey: ["walletInfo", userId],
+        });
       } catch (error) {
-        console.error("[onConnect - updateWallet]", error);
         setWalletError(
           error.response?.data?.message ||
             "Không thể liên kết ví. Vui lòng thử lại.",
         );
+      } finally {
+        setIsLinking(false);
       }
     };
 
-    onConnect();
-  }, [address, userId, fetchWalletInfo]);
+    linkWallet();
+  }, [address, isLinking, userId, queryClient]);
 
-  // Ngắt kết nối → xoá address trên server → reset state
-  const handleDisconnect = async () => {
-    try {
-      await axios.delete(`/api/wallet/disconnectWallet/${userId}`);
-      setWalletInfo(DEFAULT_WALLET_INFO);
-      setIsWalletLinked(false);
-      prevAddressRef.current = null;
-      userInitiatedConnect.current = false;
-    } catch (error) {
-      console.error("[handleDisconnect]", error);
-    } finally {
-      disconnect();
-    }
+  const handleConnect = () => {
+    setIsLinking(true);
+    connect({ connector: injected() });
   };
 
-  // Tính giá trị VNĐ ước tính
   const ETH_TO_VND = 100_000_000;
   const estimatedVnd = (
     parseFloat(walletInfo.balance || "0") * ETH_TO_VND
@@ -135,7 +93,6 @@ const Financials = () => {
 
   return (
     <div className="mx-auto w-full max-w-6xl p-2">
-      {/* Header */}
       <div className="mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Tài chính & Ví NFT</h1>
@@ -143,43 +100,29 @@ const Financials = () => {
             Quản lý số dư ETH và tài sản NFT của bạn trên UITShare.
           </p>
         </div>
-
-        {!isWalletLinked ? (
-          // Chưa link trên server → luôn hiện nút kết nối
-          // (kể cả khi wagmi đã auto-reconnect từ localStorage)
+        {!isWalletLinked && (
           <button
-            onClick={() => {
-              userInitiatedConnect.current = true;
-              connect({ connector: injected() });
-            }}
+            onClick={handleConnect}
+            disabled={isLinking}
+            className="cursor-pointer rounded-2xl bg-purple-600 px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors hover:bg-purple-700 disabled:opacity-50"
           >
-            Kết nối ví MetaMask
+            {isLinking ? "Đang kết nối..." : "Kết nối ví MetaMask"}
           </button>
-        ) : isWrongNetwork ? (
-          // Đã link nhưng sai mạng → nhắc đổi sang Sepolia
-          <button onClick={() => switchChain({ chainId: sepolia.id })}>
-            Sai mạng! Đổi sang Sepolia
-          </button>
-        ) : (
-          // Đã link đúng mạng → cho phép ngắt kết nối
-          <button onClick={handleDisconnect}>Ngắt kết nối</button>
         )}
       </div>
 
-      {/* Error banner */}
       {walletError && (
         <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
           {walletError}
           <button
             className="ml-3 underline hover:text-red-300"
-            onClick={fetchWalletInfo}
+            onClick={() => refetch()}
           >
             Thử lại
           </button>
         </div>
       )}
 
-      {/* Stats cards — dùng isWalletLinked thay vì isConnected để tránh hiện data sai */}
       <div className="mb-8 grid grid-cols-3 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <BalanceCard
           balance={
@@ -187,12 +130,11 @@ const Financials = () => {
           }
           onViewExplorer={() =>
             window.open(
-              `https://sepolia.etherscan.io/address/${address}`,
+              `https://sepolia.etherscan.io/address/${walletInfo.walletAddress}`,
               "_blank",
             )
           }
         />
-
         <FinanceStatCard
           title="Giá trị ước tính"
           value={!isWalletLinked || isLoadingWallet ? "—" : `${estimatedVnd}đ`}
@@ -206,19 +148,14 @@ const Financials = () => {
         />
       </div>
 
-      {/* Transaction table */}
       <TransactionTable
         transactions={isWalletLinked ? walletInfo.transactions : []}
         isLoading={isLoadingWallet}
       />
 
-      {/* Linked wallet card */}
       <h3 className="mb-4 text-lg font-bold text-white">Ví liên kết</h3>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <WalletCard
-          isConnected={isConnected && isWalletLinked}
-          address={isWalletLinked ? shortAddress : "Chưa kết nối"}
-        />
+        <WalletCard isConnected={isWalletLinked} address={shortAddress} />
       </div>
     </div>
   );
