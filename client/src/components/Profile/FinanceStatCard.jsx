@@ -1,18 +1,18 @@
 const FinanceStatCard = ({ title, value, tagText, tagStyle, subElement }) => {
   return (
-    <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+    <div className="flex w-full flex-col justify-between rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm backdrop-blur-md xl:col-span-2">
       <div>
-        <div className="flex items-start justify-between mb-1 gap-2">
-          <p className="text-sm font-medium text-gray-400 leading-tight">
+        <div className="mb-1 flex items-start justify-between gap-2">
+          <p className="text-sm leading-tight font-medium text-gray-400">
             {title}
           </p>
           <span
-            className={`text-xs font-bold px-2 py-1 rounded whitespace-nowrap shrink-0 ${tagStyle}`}
+            className={`shrink-0 rounded px-2 py-1 text-xs font-bold whitespace-nowrap ${tagStyle}`}
           >
             {tagText}
           </span>
         </div>
-        <h3 className="text-xl xl:text-2xl font-bold text-white break-words">
+        <h3 className="font-bold break-words text-white xl:text-4xl">
           {value}
         </h3>
       </div>

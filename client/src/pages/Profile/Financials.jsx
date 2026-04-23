@@ -180,12 +180,11 @@ const Financials = () => {
       )}
 
       {/* Stats cards — dùng isWalletLinked thay vì isConnected để tránh hiện data sai */}
-      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-8 grid grid-cols-3 gap-4 md:grid-cols-2 xl:grid-cols-4">
         <BalanceCard
           balance={
             !isWalletLinked || isLoadingWallet ? "—" : walletInfo.balance
           }
-          change="+0.05 ETH (tháng này)"
           onViewExplorer={() =>
             window.open(
               `https://sepolia.etherscan.io/address/${address}`,
@@ -203,27 +202,6 @@ const Financials = () => {
             <p className="text-xs text-gray-400">
               Tỉ giá: 1 ETH = ~100,000,000đ
             </p>
-          }
-        />
-
-        <FinanceStatCard
-          title="NFT sở hữu"
-          value={
-            !isWalletLinked || isLoadingWallet ? (
-              "—"
-            ) : (
-              <>
-                {walletInfo.nftCount}{" "}
-                <span className="text-sm font-medium text-gray-400">Items</span>
-              </>
-            )
-          }
-          tagText="Sepolia"
-          tagStyle="text-purple-400 bg-purple-500/10 border border-purple-500/20"
-          subElement={
-            <button className="rounded text-sm font-medium text-purple-400 transition-colors hover:text-purple-300 hover:underline focus:ring-1 focus:ring-purple-400 focus:outline-none">
-              Xem bộ sưu tập &rarr;
-            </button>
           }
         />
       </div>
