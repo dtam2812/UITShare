@@ -306,7 +306,7 @@ const buyDocument = async (req, res) => {
 // cancelListing
 const cancelListing = async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, txHash } = req.body;
     const userId = req.userId;
 
     if (!orderId) {
@@ -328,7 +328,96 @@ const cancelListing = async (req, res) => {
         .json({ message: "Bạn không có quyền hủy listing này" });
     }
 
-    // 3. Verify order còn active trên chain
+    // Luồng resell: user đã ký cancelOrder từ ví, gửi txHash để verify
+    if (!listing.isOriginalCreator) {
+      if (!txHash) {
+        return res
+          .status(400)
+          .json({ message: "Thiếu txHash để xác minh giao dịch huỷ" });
+      }
+
+      // Chống replay
+      const existingTx = await transactionModel.findOne({ txHash });
+      if (existingTx) {
+        return res
+          .status(409)
+          .json({ message: "Transaction này đã được xử lý" });
+      }
+
+      // Verify on-chain
+      const provider = getProvider();
+      const receipt = await getReceiptWithRetry(provider, txHash);
+      if (!receipt) {
+        return res.status(400).json({
+          message:
+            "Không tìm thấy transaction trên blockchain. Vui lòng thử lại sau.",
+        });
+      }
+      if (receipt.status !== 1) {
+        return res
+          .status(400)
+          .json({ message: "Transaction đã thất bại trên blockchain" });
+      }
+      if (
+        receipt.to?.toLowerCase() !==
+        process.env.MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()
+      ) {
+        return res.status(400).json({
+          message: "Transaction không tương tác với marketplace contract",
+        });
+      }
+
+      // Parse event OrderCancelled để đảm bảo đúng orderId
+      const iface = new ethers.Interface(MARKETPLACE_ABI);
+      let cancelledOrderId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed?.name === "OrderCancelled") {
+            cancelledOrderId = parsed.args.orderId.toString();
+            break;
+          }
+        } catch (_) {}
+      }
+
+      if (cancelledOrderId !== String(orderId)) {
+        return res.status(400).json({
+          message: "Transaction không khớp với orderId yêu cầu huỷ",
+        });
+      }
+
+      // Cập nhật DB
+      listing.status = "cancelled";
+      listing.cancelledAt = new Date();
+      await listing.save();
+
+      await documentModel.findByIdAndUpdate(listing.document, {
+        $inc: { remainingSupply: listing.amount },
+      });
+
+      const seller = await userModel.findById(userId);
+
+      await transactionModel.create({
+        fromUser: userId,
+        fromAddress: listing.sellerAddress ?? seller?.walletAddress,
+        document: listing.document,
+        tokenId: listing.tokenId,
+        orderId,
+        quantity: listing.amount,
+        price: listing.price,
+        type: "cancel",
+        txHash,
+        blockNumber: receipt.blockNumber,
+        status: "success",
+      });
+
+      return res.status(200).json({
+        message: "Hủy listing thành công",
+        txHash,
+      });
+    }
+
+    // Luồng original: backend wallet tự cancel on-chain
     const signer = getBackendSigner();
     const marketplace = getMarketplaceContract(signer);
     const onChainOrder = await marketplace.orders(orderId);
@@ -341,7 +430,6 @@ const cancelListing = async (req, res) => {
         .json({ message: "Order này đã không còn active trên blockchain" });
     }
 
-    // 4. Cancel on-chain
     const tx = await marketplace.cancelOrder(orderId);
     const receipt = await tx.wait();
 
@@ -351,7 +439,6 @@ const cancelListing = async (req, res) => {
         .json({ message: "Transaction cancel thất bại trên blockchain" });
     }
 
-    // 5. Cập nhật DB
     listing.status = "cancelled";
     listing.cancelledAt = new Date();
     await listing.save();
@@ -561,11 +648,20 @@ const checkAccess = async (req, res) => {
       tokenId: document.tokenId,
     });
 
-    if (nft && nft.amount > 0) {
-      return res.json({ hasAccess: true, reason: "owner" });
+    if (!nft || nft.amount < 1) {
+      return res.json({ hasAccess: false });
     }
 
-    return res.json({ hasAccess: false });
+    const activeListing = await listingModel.findOne({
+      seller: userId,
+      tokenId: document.tokenId,
+      status: "active",
+    });
+    if (activeListing) {
+      return res.json({ hasAccess: false, reason: "listed" });
+    }
+
+    return res.json({ hasAccess: true, reason: "owner" });
   } catch (error) {
     console.error("[checkAccess]", error);
     return res.status(500).json({ message: error.message || "Lỗi server" });
@@ -685,15 +781,7 @@ const donateToAuthor = async (req, res) => {
 
 const resellDocument = async (req, res) => {
   try {
-    const {
-      documentId,
-      tokenId,
-      amount,
-      price,
-      orderId,
-      txHash,
-      isOriginalCreator,
-    } = req.body;
+    const { documentId, tokenId, amount, price, orderId, txHash } = req.body;
     const sellerId = req.userId;
 
     if (!documentId || !tokenId || !price || !orderId || !txHash) {
@@ -715,6 +803,22 @@ const resellDocument = async (req, res) => {
     const nft = await nftModel.findOne({ user: sellerId, tokenId });
     if (!nft || nft.amount < 1) {
       return res.status(400).json({ message: "Bạn không sở hữu NFT này" });
+    }
+
+    const existingListing = await listingModel.findOne({
+      seller: sellerId,
+      tokenId,
+      status: "active",
+    });
+    if (existingListing) {
+      return res.status(409).json({
+        message: "Bạn đã có listing đang active cho tài liệu này",
+      });
+    }
+
+    const existingTx = await transactionModel.findOne({ txHash });
+    if (existingTx) {
+      return res.status(409).json({ message: "Transaction này đã được xử lý" });
     }
 
     const seller = await userModel.findById(sellerId);

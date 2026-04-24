@@ -264,6 +264,7 @@ const AuthorDetail = () => {
   const [activeTab, setActiveTab] = useState("shared");
   const [resellListings, setResellListings] = useState([]);
   const [resellLoading, setResellLoading] = useState(false);
+  const { address: currentWallet } = useAccount();
 
   useEffect(() => {
     if (activeTab !== "resell" || !authorId) return;
@@ -403,16 +404,18 @@ const AuthorDetail = () => {
               )}
 
               {/* Donate button — chỉ hiện khi tác giả đã liên kết ví */}
-              {author.walletAddress && (
-                <button
-                  onClick={() => setShowDonateModal(true)}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
-                  title="Ủng hộ tác giả bằng ETH"
-                >
-                  <FiHeart className="h-4 w-4" />
-                  Donate ETH
-                </button>
-              )}
+              {author.walletAddress &&
+                currentWallet?.toLowerCase() !==
+                  author.walletAddress?.toLowerCase() && (
+                  <button
+                    onClick={() => setShowDonateModal(true)}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
+                    title="Ủng hộ tác giả bằng ETH"
+                  >
+                    <FiHeart className="h-4 w-4" />
+                    Donate ETH
+                  </button>
+                )}
             </div>
           </div>
 
@@ -460,7 +463,7 @@ const AuthorDetail = () => {
         {/* Documents */}
         <div>
           {/* Tab Header */}
-          <div className="mb-6 flex w-fit items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
             <button
               onClick={() => setActiveTab("shared")}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
@@ -501,7 +504,7 @@ const AuthorDetail = () => {
                   Chưa có tài liệu nào.
                 </p>
               ) : (
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap justify-between gap-4">
                   {documents.map((doc) => (
                     <DocumentCard key={doc._id} {...doc} />
                   ))}

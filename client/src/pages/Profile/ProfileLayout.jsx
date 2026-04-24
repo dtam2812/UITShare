@@ -13,15 +13,15 @@ const ProfileLayout = () => {
   const payloadDecode = jwtDecode(accessToken);
 
   const [profileInfo, setProfileInfo] = useState(() => {
-  const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
     return jwtDecode(token);
   });
 
   useEffect(() => {
-  const handleTokenUpdate = () => {
-    const token = localStorage.getItem("access_token");
-    if (token) setProfileInfo(jwtDecode(token));
-  };
+    const handleTokenUpdate = () => {
+      const token = localStorage.getItem("access_token");
+      if (token) setProfileInfo(jwtDecode(token));
+    };
     window.addEventListener("token-updated", handleTokenUpdate);
     return () => window.removeEventListener("token-updated", handleTokenUpdate);
   }, []);
@@ -29,7 +29,7 @@ const ProfileLayout = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const userId = payloadDecode.id;
+    const userId = payloadDecode?.id;
     if (!userId) return;
 
     queryClient.prefetchQuery({
@@ -55,7 +55,7 @@ const ProfileLayout = () => {
       },
       staleTime: 5 * 60 * 1000,
     });
-  }, []);
+  }, [payloadDecode?.id, queryClient]);
 
   const handleClick = () => {
     setOpenSidebar((prev) => !prev);

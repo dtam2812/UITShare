@@ -4,7 +4,9 @@ import RootLayout from "./RootLayout.jsx";
 import HomePage from "./pages/Homepage/HomePage.jsx";
 import DocumentDetail from "./pages/DocumentDetail/DocumentDetail.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
 import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
@@ -29,8 +31,22 @@ import MainLayout from "./MainLayout.jsx";
 import Cart from "./pages/Cart.jsx";
 import DocumentReading from "./pages/DocumentReading.jsx";
 import PurchasedDocuments from "./pages/Profile/PurchasedDocs.jsx";
+import ResellDocuments from "./pages/Profile/ResellDocuments.jsx";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60,
+      staleTime: 1000 * 60 * 5,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+const persister = createSyncStoragePersister({
+  storage: window.sessionStorage,
+});
 
 const router = createBrowserRouter([
   {
@@ -113,6 +129,10 @@ const router = createBrowserRouter([
                 element: <PurchasedDocuments />,
               },
               {
+                path: "resell",
+                element: <ResellDocuments />,
+              },
+              {
                 path: "reviewsManagement",
                 element: <ReviewsManagement />,
               },
@@ -149,7 +169,10 @@ const router = createBrowserRouter([
 ]);
 
 createRoot(document.getElementById("root")).render(
-  <QueryClientProvider client={queryClient}>
+  <PersistQueryClientProvider
+    client={queryClient}
+    persistOptions={{ persister, maxAge: 1000 * 60 * 60 }}
+  >
     <RouterProvider router={router} />
-  </QueryClientProvider>,
+  </PersistQueryClientProvider>,
 );
