@@ -55,6 +55,11 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
           Tài liệu đã tải lên
         </NavLink>
 
+        <NavLink to={`/profile/${userId}/purchased`} className={navLinkClass}>
+          <FiFileText className="h-5 w-5" />
+          Tài liệu đã mua
+        </NavLink>
+
         <NavLink to={`/profile/${userId}/financials`} className={navLinkClass}>
           <FiCreditCard className="h-5 w-5" />
           Tài chính & Ví NFT

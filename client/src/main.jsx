@@ -28,6 +28,7 @@ import DonationsReceived from "./pages/Profile/DonationsReceived.jsx";
 import MainLayout from "./MainLayout.jsx";
 import Cart from "./pages/Cart.jsx";
 import DocumentReading from "./pages/DocumentReading.jsx";
+import PurchasedDocuments from "./pages/Profile/PurchasedDocs.jsx";
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,10 @@ const router = createBrowserRouter([
               {
                 path: "purchase-history",
                 element: <PurchaseHistory />,
+              },
+              {
+                path: "purchased",
+                element: <PurchasedDocuments />,
               },
               {
                 path: "reviewsManagement",

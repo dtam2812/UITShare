@@ -28,6 +28,11 @@ const MARKETPLACE_ABI = [
   "event OrderAdded(uint256 indexed orderId, address indexed seller, uint256 indexed tokenId, uint256 amount, uint256 price)",
 ];
 
+const NFT_ABI = [
+  "function isApprovedForAll(address account, address operator) view returns (bool)",
+  "function setApprovalForAll(address operator, bool approved) external",
+];
+
 export default function DocumentReading() {
   const { documentId } = useParams();
   const navigate = useNavigate();
@@ -41,7 +46,6 @@ export default function DocumentReading() {
   const [scale, setScale] = useState(1.2);
 
   const [showSellModal, setShowSellModal] = useState(false);
-  const [sellPrice, setSellPrice] = useState("");
   const [sellStep, setSellStep] = useState("idle");
   const [sellError, setSellError] = useState("");
   const [sellTxHash, setSellTxHash] = useState("");
@@ -112,12 +116,31 @@ export default function DocumentReading() {
         return;
       }
 
-      const nftRes = await axios.get(`/api/nft/my`);
+      const nftRes = await axios.get(`/api/nfts/myNFTs`);
       const nft = nftRes.data.find((n) => n.tokenId === doc.tokenId);
       if (!nft || nft.amount < 1) {
         setSellError("Không tìm thấy NFT trong tài khoản của bạn.");
         setSellStep("error");
         return;
+      }
+
+      const nftContract = new ethers.Contract(
+        import.meta.env.VITE_NFT_CONTRACT_ADDRESS,
+        NFT_ABI,
+        signer,
+      );
+
+      const isApproved = await nftContract.isApprovedForAll(
+        address,
+        import.meta.env.VITE_MARKETPLACE_CONTRACT_ADDRESS,
+      );
+
+      if (!isApproved) {
+        const approveTx = await nftContract.setApprovalForAll(
+          import.meta.env.VITE_MARKETPLACE_CONTRACT_ADDRESS,
+          true,
+        );
+        await approveTx.wait();
       }
 
       const marketplace = new ethers.Contract(
@@ -126,7 +149,8 @@ export default function DocumentReading() {
         signer,
       );
 
-      const priceInWei = ethers.parseEther(String(sellPrice));
+      const fixedPrice = doc.price;
+      const priceInWei = ethers.parseEther(String(fixedPrice));
       const tx = await marketplace.addOrder(doc.tokenId, 1, priceInWei);
       const receipt = await tx.wait();
 
@@ -151,7 +175,7 @@ export default function DocumentReading() {
         documentId: doc._id,
         tokenId: doc.tokenId,
         amount: 1,
-        price: parseFloat(sellPrice),
+        price: fixedPrice,
         orderId,
         txHash: receipt.hash,
         isOriginalCreator: false,
@@ -175,7 +199,6 @@ export default function DocumentReading() {
     setShowSellModal(false);
     setSellStep("idle");
     setSellError("");
-    setSellPrice("");
     setSellTxHash("");
     if (sellStep === "success") navigate(`/documentDetail/${documentId}`);
   };
@@ -388,32 +411,30 @@ export default function DocumentReading() {
                           </span>{" "}
                           từ mỗi giao dịch bán lại.
                         </li>
-                        <li>Marketplace sẽ thu thêm một khoản phí dịch vụ.</li>
                       </ul>
                     </div>
                   </div>
                 </div>
 
+                {/* ✅ Hiển thị giá cố định, không cho nhập */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">
                     Giá bán (ETH)
                   </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.00001"
-                    placeholder="Nhập giá bán..."
-                    value={sellPrice}
-                    onChange={(e) => setSellPrice(e.target.value)}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-gray-600 transition outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30"
-                  />
+                  <div className="flex w-full items-center rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white">
+                    <span className="font-bold text-purple-400">
+                      {doc.price} ETH
+                    </span>
+                    <span className="ml-2 text-xs text-gray-500">
+                      (bằng giá gốc của tác giả)
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={handleSell}
-                    disabled={!sellPrice || parseFloat(sellPrice) <= 0}
-                    className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 py-3 text-sm font-semibold text-white transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-purple-600 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
                   >
                     Xác nhận bán
                   </button>

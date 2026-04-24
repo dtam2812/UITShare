@@ -88,6 +88,7 @@ export default function Cart() {
   const handleCheckout = async () => {
     setCheckoutStep(CHECKOUT_STEP.CHECKING);
 
+    // 1. Lấy ví từ DB trước tiên
     let walletAddress = null;
     try {
       const { data } = await axios.get(`/api/wallet/walletInfo/${userId}`);
@@ -111,10 +112,20 @@ export default function Cart() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
 
-      if (address.toLowerCase() !== walletAddress.toLowerCase()) {
+      // 2. Lấy account đang active từ MetaMask
+      const accounts = await provider.send("eth_accounts", []);
+      const signerAddress = accounts[0];
+
+      console.log("MetaMask address:", signerAddress);
+      console.log("DB address:", walletAddress);
+      console.log(
+        "Match:",
+        signerAddress?.toLowerCase() === walletAddress?.toLowerCase(),
+      );
+
+      // 3. So sánh với DB
+      if (signerAddress?.toLowerCase() !== walletAddress?.toLowerCase()) {
         setCheckoutStep(CHECKOUT_STEP.IDLE);
         setBalanceInfo({
           balance: "—",
@@ -125,7 +136,8 @@ export default function Cart() {
         return;
       }
 
-      const balanceWei = await provider.getBalance(address);
+      // 4. Check số dư
+      const balanceWei = await provider.getBalance(signerAddress);
       const balanceEth = parseFloat(ethers.formatEther(balanceWei));
       if (balanceEth < total) {
         setCheckoutStep(CHECKOUT_STEP.IDLE);
@@ -138,6 +150,7 @@ export default function Cart() {
         return;
       }
 
+      const signer = await provider.getSigner(signerAddress);
       const marketplace = new ethers.Contract(
         import.meta.env.VITE_MARKETPLACE_CONTRACT_ADDRESS,
         MARKETPLACE_ABI,
@@ -149,19 +162,16 @@ export default function Cart() {
 
       for (const item of cartItems) {
         setItemStatus(item._id, { status: ITEM_STATUS.PROCESSING });
-
         try {
           const { orderId, price } = await fetchOrderId(item._id);
           const priceInWei = ethers.parseEther(String(price));
-
           const tx = await marketplace.executeOrder(orderId, {
             value: priceInWei,
           });
           const receipt = await tx.wait();
 
-          if (receipt.status !== 1) {
+          if (receipt.status !== 1)
             throw new Error("Transaction thất bại trên blockchain");
-          }
 
           await axios.post("/api/marketplace/buy", {
             orderId,
@@ -187,23 +197,17 @@ export default function Cart() {
         }
       }
 
-      if (succeededIds.length > 0) {
-        removeMultipleFromCart(succeededIds);
-      }
+      if (succeededIds.length > 0) removeMultipleFromCart(succeededIds);
 
       setCheckoutStep(CHECKOUT_STEP.DONE);
       setCheckoutDone(true);
       setSuccessCount(succeededIds.length);
-
-      if (succeededIds.length > 0) {
-        setSuccessModal(true);
-      }
+      if (succeededIds.length > 0) setSuccessModal(true);
     } catch (err) {
       console.error("[checkout]", err);
       setCheckoutStep(CHECKOUT_STEP.IDLE);
     }
   };
-
   const StatusBadge = ({ docId }) => {
     const s = itemStatuses[docId];
     if (!s || checkoutStep === CHECKOUT_STEP.IDLE) return null;

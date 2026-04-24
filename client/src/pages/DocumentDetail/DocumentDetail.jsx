@@ -61,17 +61,6 @@ export default function DocumentDetail() {
         );
         if (response.status === 200) {
           setDoc(response.data);
-
-          if (response.data.tokenId) {
-            try {
-              const historyRes = await axios.get(
-                `/api/documents/nft-history/${response.data.tokenId}`,
-              );
-              setNftHistory(historyRes.data);
-            } catch {
-              setNftHistory([]);
-            }
-          }
         }
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tài liệu");

@@ -11,6 +11,7 @@ const marketplaceRoute = require("./Router/MarketplaceRoute");
 const listingRoute = require("./Router/ListingRoute");
 const walletRoute = require("./Router/WalletRoute");
 const transactionRoute = require("./Router/TransactionRoute");
+const nftRoute = require("./Router/NFTRoute");
 
 //cors middleware for all request
 app.use(
@@ -28,6 +29,7 @@ connectDb();
 
 //middleware router
 app.use("/auth/admin", userRouter);
+app.use("/api/nfts", nftRoute);
 app.use("/api/personal", personalRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/documents", documentRoute);

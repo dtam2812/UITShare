@@ -38,8 +38,6 @@ export default function FeaturedDocuments({
     getListDocument();
   }, []);
 
-  console.log(documents);
-
   return (
     <section className="relative overflow-hidden px-6 py-12 text-white">
       <div className="mx-auto mb-12 max-w-6xl">

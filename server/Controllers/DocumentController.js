@@ -263,7 +263,10 @@ const uploadDocument = async (req, res) => {
 const getListDocument = async (req, res) => {
   try {
     const documents = await documentModel
-      .find({ isMinted: true })
+      .find({
+        isMinted: true,
+        $or: [{ price: 0 }, { remainingSupply: { $gt: 0 } }],
+      })
       .populate("author", "userName email avatar")
       .sort({ createdAt: -1 })
       .lean();
@@ -358,28 +361,9 @@ const getDocumentDetail = async (req, res) => {
   }
 };
 
-const getNFTTransactionHistory = async (req, res) => {
-  try {
-    const { tokenId } = req.params;
-
-    const transactions = await transactionModel
-      .find({ tokenId, status: "success" })
-      .sort({ createdAt: -1 })
-      .populate("fromUser", "userName")
-      .populate("toUser", "userName")
-      .lean();
-
-    return res.json(transactions);
-  } catch (err) {
-    console.error("[getNFTTransactionHistory]", err);
-    return res.status(500).json({ message: err.message });
-  }
-};
-
 module.exports = {
   uploadDocument,
   getListDocument,
   deleteDocument,
   getDocumentDetail,
-  getNFTTransactionHistory,
 };
