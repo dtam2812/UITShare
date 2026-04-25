@@ -97,7 +97,7 @@ export default function Admin({ onSignOut }) {
             </button>
             <button
               onClick={() => setActiveTab("documents")}
-              className={`flex w-full cursor-pointer items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "mr-4 rounded-r-full bg-white font-medium text-[#1c1e2f]" : "hover:bg-white/5"}`}
+              className={`flex w-full cursor-pointer items-center space-x-3 px-6 py-3 transition-colors ${activeTab === "documents" ? "border-r-4 border-purple-500 bg-purple-600/20 font-medium text-purple-400" : "hover:bg-white/5"}`}
             >
               <BookOpen size={20} />
               <span>Documents</span>

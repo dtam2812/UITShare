@@ -120,7 +120,7 @@ export default function DocumentsTab({
       <select
         value={categoryFilter}
         onChange={(e) => setCategoryFilter(e.target.value)}
-        className="rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600 outline-none"
+        className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
         <option value="All">All Categories</option>
         <option value="exam">Exam</option>
@@ -131,7 +131,7 @@ export default function DocumentsTab({
       <select
         value={accessFilter}
         onChange={(e) => setAccessFilter(e.target.value)}
-        className="rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600 outline-none"
+        className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
         <option value="All">All Access</option>
         <option value="free">Free</option>

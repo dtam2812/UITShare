@@ -168,7 +168,7 @@ export default function UsersTab({ users, setUsers }) {
       <select
         value={roleFilter}
         onChange={(e) => setRoleFilter(e.target.value)}
-        className="rounded-md border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-600 outline-none"
+        className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
         <option>All Roles</option>
         <option>User</option>
