@@ -547,8 +547,11 @@ export default function DocumentDetail() {
       showCartMsg("already_owned");
       return;
     }
+
+    const listingId = searchParams.get("listingId");
+
     setAddingToCart(true);
-    const result = await addToCart(doc);
+    const result = await addToCart(doc, listingId || null);
     setAddingToCart(false);
     showCartMsg(result.success ? "added" : result.reason);
   };
@@ -565,9 +568,12 @@ export default function DocumentDetail() {
       accessStatus === ACCESS_STATUS.AUTHOR
     )
       return;
+
+    const listingId = searchParams.get("listingId");
+
     if (!isInCart) {
       setAddingToCart(true);
-      const result = await addToCart(doc);
+      const result = await addToCart(doc, listingId || null);
       setAddingToCart(false);
       if (!result.success && result.reason === "already_owned") {
         showCartMsg("already_owned");
@@ -790,7 +796,7 @@ export default function DocumentDetail() {
 
               {/* Resell banner — chỉ hiện khi đến từ listing của người khác */}
               {resellListing && !resellListing.isOriginalCreator && (
-                <div className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                <div className="mb-2 flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
                   <AlertTriangle
                     size={14}
                     className="mt-0.5 shrink-0 text-amber-400"

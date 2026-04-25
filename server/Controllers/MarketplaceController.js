@@ -237,12 +237,18 @@ const buyDocument = async (req, res) => {
     listing.status = updateData.status ?? listing.status;
 
     // 11. Giảm remainingSupply + tăng downloadCount trong document
-    await documentModel.findByIdAndUpdate(document._id, {
-      $inc: {
-        remainingSupply: -quantityBought,
-        downloadCount: quantityBought,
-      },
-    });
+    if (listing.isOriginalCreator) {
+      await documentModel.findByIdAndUpdate(document._id, {
+        $inc: {
+          remainingSupply: -quantityBought,
+          downloadCount: quantityBought,
+        },
+      });
+    } else {
+      await documentModel.findByIdAndUpdate(document._id, {
+        $inc: { downloadCount: quantityBought },
+      });
+    }
 
     // 12. Giảm NFT của seller
     await nftModel.findOneAndUpdate(

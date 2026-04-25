@@ -12,7 +12,7 @@ const getUserTransactions = async (req, res) => {
 
     // Lấy các giao dịch mua và transfer liên quan đến user
     const baseQuery = {
-      type: { $in: ["buy", "transfer"] },
+      type: { $in: ["buy", "transfer", "donate", "royalty"] },
       $or: [
         { fromUser: new mongoose.Types.ObjectId(userId) },
         { toUser: new mongoose.Types.ObjectId(userId) },
@@ -52,13 +52,21 @@ const getUserTransactions = async (req, res) => {
           amountDisplay = `+ ${tx.sellerReceived ?? tx.price} ETH`;
         }
       } else if (tx.type === "transfer") {
-        label = isSeller ? "Chuyển tài liệu" : "Nhận tài liệu";
+        label = isSeller ? "Chuyển nhượng tài liệu" : "Nhận chuyển nhượng";
         amountDisplay = `${tx.quantity} NFT`;
+      } else if (tx.type === "donate") {
+        label = isSeller ? "Đã donate" : "Nhận donate";
+        amountDisplay = `${isSeller ? "-" : "+"} ${tx.price} ETH`;
+      } else if (tx.type === "royalty") {
+        label = "Hoa hồng";
+        amountDisplay = `+ ${tx.price} ETH`;
       }
 
       return {
         txHash: tx.txHash,
         type: label,
+        rawType: tx.type,
+        isBuyer,
         detail: tx.document?.title ?? "—",
         subject: tx.document?.subject ?? "",
         date: new Date(tx.createdAt).toLocaleDateString("vi-VN"),

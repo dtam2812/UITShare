@@ -24,7 +24,6 @@ const UploadPage = () => {
 
   const handleSubmit = (formData) => {
     setStep((prev) => prev + 1);
-    console.log(formData);
   };
 
   const handleReset = () => {

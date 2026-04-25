@@ -79,7 +79,7 @@ export function CartProvider({ children }) {
   }, []);
 
   const addToCart = useCallback(
-    async (doc) => {
+    async (doc, listingId = null) => {
       if (cartItems.some((item) => item._id === doc._id)) {
         return { success: false, reason: "already_in_cart" };
       }
@@ -96,7 +96,10 @@ export function CartProvider({ children }) {
         // Nếu API lỗi thì vẫn cho thêm vào giỏ, backend sẽ check lúc mua
       }
 
-      setCartItems((prev) => [...prev, doc]);
+      setCartItems((prev) => [
+        ...prev,
+        { ...doc, ...(listingId ? { listingId } : {}) },
+      ]);
       return { success: true };
     },
     [cartItems],
