@@ -5,13 +5,21 @@ const AuthMiddleware = require("../Middleware/AuthMiddleware");
 
 router.get(
   "/user",
-  [AuthMiddleware.isAuthentication],
+  [AuthMiddleware.isAuthentication, AuthMiddleware.isAdmin],
   userController.getListUser,
 );
+
 router.post(
   "/user/create",
   [AuthMiddleware.isAuthentication, AuthMiddleware.isAdmin],
   userController.addUser,
+);
+
+// ✅ Thêm route update user
+router.put(
+  "/user/update/:userId",
+  [AuthMiddleware.isAuthentication, AuthMiddleware.isAdmin],
+  userController.updateUser,
 );
 
 router.delete(
