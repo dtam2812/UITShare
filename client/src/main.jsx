@@ -11,6 +11,7 @@ import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
 import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
 import Admin from "./pages/Admin/Admin.jsx";
+import AdminGuard from "./components/Admin/AdminGuard.jsx"; // 👈 thêm
 import FAQ from "./pages/FAQ.jsx";
 import Privacy from "./pages/PrivacyPolicy.jsx";
 import Contact from "./pages/Contact.jsx";
@@ -56,54 +57,25 @@ const router = createBrowserRouter([
       {
         element: <MainLayout />,
         children: [
-          {
-            path: "/",
-            element: <HomePage />,
-          },
-          {
-            path: "/documentDetail/:documentId",
-            element: <DocumentDetail />,
-          },
+          { path: "/", element: <HomePage /> },
+          { path: "/documentDetail/:documentId", element: <DocumentDetail /> },
           {
             path: "admin",
-            element: <Admin />,
+            element: (
+              <AdminGuard>
+                <Admin />
+              </AdminGuard>
+            ),
           },
-          {
-            path: "faq",
-            element: <FAQ />,
-          },
-          {
-            path: "privacy",
-            element: <Privacy />,
-          },
-          {
-            path: "contact",
-            element: <Contact />,
-          },
-          {
-            path: "terms",
-            element: <TermsOfService />,
-          },
-          {
-            path: "about",
-            element: <AboutUs />,
-          },
-          {
-            path: "document",
-            element: <DocumentPage />,
-          },
-          {
-            path: "search",
-            element: <SearchResultsPage />,
-          },
-          {
-            path: "author/:authorId",
-            element: <AuthorDetail />,
-          },
-          {
-            path: "/cart",
-            element: <Cart />,
-          },
+          { path: "faq", element: <FAQ /> },
+          { path: "privacy", element: <Privacy /> },
+          { path: "contact", element: <Contact /> },
+          { path: "terms", element: <TermsOfService /> },
+          { path: "about", element: <AboutUs /> },
+          { path: "document", element: <DocumentPage /> },
+          { path: "search", element: <SearchResultsPage /> },
+          { path: "author/:authorId", element: <AuthorDetail /> },
+          { path: "/cart", element: <Cart /> },
           {
             path: "/documentReading/:documentId",
             element: <DocumentReading />,
@@ -112,58 +84,22 @@ const router = createBrowserRouter([
             path: "profile/:userId",
             element: <ProfileLayout />,
             children: [
-              {
-                index: true,
-                element: <PersonalInfo />,
-              },
-              {
-                path: "financials",
-                element: <Financials />,
-              },
-              {
-                path: "purchase-history",
-                element: <PurchaseHistory />,
-              },
-              {
-                path: "purchased",
-                element: <PurchasedDocuments />,
-              },
-              {
-                path: "resell",
-                element: <ResellDocuments />,
-              },
-              {
-                path: "reviewsManagement",
-                element: <ReviewsManagement />,
-              },
-              {
-                path: "uploadedDocs",
-                element: <UploadedDocs />,
-              },
-              {
-                path: "donationsReceived",
-                element: <DonationsReceived />,
-              },
+              { index: true, element: <PersonalInfo /> },
+              { path: "financials", element: <Financials /> },
+              { path: "purchase-history", element: <PurchaseHistory /> },
+              { path: "purchased", element: <PurchasedDocuments /> },
+              { path: "resell", element: <ResellDocuments /> },
+              { path: "reviewsManagement", element: <ReviewsManagement /> },
+              { path: "uploadedDocs", element: <UploadedDocs /> },
+              { path: "donationsReceived", element: <DonationsReceived /> },
             ],
           },
-          {
-            path: "upload",
-            element: <UploadPage />,
-          },
+          { path: "upload", element: <UploadPage /> },
         ],
       },
-      {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "register",
-        element: <Register />,
-      },
-      {
-        path: "forgotPassword",
-        element: <ForgotPassword />,
-      },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgotPassword", element: <ForgotPassword /> },
     ],
   },
 ]);

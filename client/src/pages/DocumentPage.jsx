@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { ChevronDown, ChevronRight, Check } from "lucide-react";
 import DocumentCard from "../components/DocumentCard/DocumentCard";
-import { fetchSubjects } from "../api/api_test";
 import axios from "../common";
+
+const PREFIX_ORDER = ["MA", "IT", "IE"];
+
+const sortSubjects = (list) => {
+  const getCode = (s) => s._id ?? s.id ?? "";
+  return [...list].sort((a, b) => {
+    const codeA = getCode(a);
+    const codeB = getCode(b);
+    const prefixA = PREFIX_ORDER.findIndex((p) => codeA.startsWith(p));
+    const prefixB = PREFIX_ORDER.findIndex((p) => codeB.startsWith(p));
+    const rankA = prefixA === -1 ? PREFIX_ORDER.length : prefixA;
+    const rankB = prefixB === -1 ? PREFIX_ORDER.length : prefixB;
+    if (rankA !== rankB) return rankA - rankB;
+    const numA = parseInt(codeA.replace(/\D/g, ""), 10) || 0;
+    const numB = parseInt(codeB.replace(/\D/g, ""), 10) || 0;
+    return numA - numB;
+  });
+};
 
 export default function DocumentsPage() {
   const [sortBy, setSortBy] = useState("newest");
@@ -19,30 +36,20 @@ export default function DocumentsPage() {
 
   const categories = ["Đại cương", "Cơ sở ngành", "Chuyên ngành"];
 
-  const getListDocument = async () => {
-    try {
-      const response = await axios.get("/api/documents/documentList");
-
-      if (response.status === 200) {
-        setDocuments(response.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    getListDocument();
-  }, []);
-
   useEffect(() => {
     window.scrollTo(0, 0);
 
     const loadData = async () => {
       setLoading(true);
       try {
-        const [subjectsData] = await Promise.all([fetchSubjects()]);
-        setSubjects(subjectsData);
+        const [subjectsRes, docsRes] = await Promise.all([
+          axios.get("/api/subjects"),
+          axios.get("/api/documents/documentList"),
+        ]);
+
+        if (subjectsRes.status === 200)
+          setSubjects(sortSubjects(subjectsRes.data));
+        if (docsRes.status === 200) setDocuments(docsRes.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -53,7 +60,6 @@ export default function DocumentsPage() {
     loadData();
   }, []);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedSubjects, sortBy]);
@@ -74,23 +80,22 @@ export default function DocumentsPage() {
     );
   };
 
-  // Filter logic
   const filteredDocuments = documents.filter((doc) => {
-    const matchSubject =
-      selectedSubjects.length === 0 || selectedSubjects.includes(doc.subject);
-    return matchSubject;
+    return (
+      selectedSubjects.length === 0 || selectedSubjects.includes(doc.subject)
+    );
   });
 
-  // Sort logic
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     if (sortBy === "price_asc") return a.price - b.price;
     if (sortBy === "price_desc") return b.price - a.price;
-    if (sortBy === "popular") return b.reviews - a.reviews;
-    if (sortBy === "oldest") return a.id - b.id;
-    return b.id - a.id; // newest
+    if (sortBy === "popular")
+      return (b.downloadCount ?? 0) - (a.downloadCount ?? 0);
+    if (sortBy === "oldest")
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
-  // Pagination logic
   const totalPages = Math.ceil(sortedDocuments.length / itemsPerPage);
   const paginatedDocuments = sortedDocuments.slice(
     (currentPage - 1) * itemsPerPage,
@@ -120,8 +125,9 @@ export default function DocumentsPage() {
                 (s) => s.category === category,
               );
               const isExpanded = expandedCategories.includes(category);
+              const getCode = (s) => s._id ?? s.id ?? "";
               const selectedInCategory = categorySubjects.filter((s) =>
-                selectedSubjects.includes(s.id),
+                selectedSubjects.includes(getCode(s)),
               ).length;
 
               return (
@@ -153,29 +159,41 @@ export default function DocumentsPage() {
                   {isExpanded && (
                     <div className="border-t border-gray-800/50 px-2 pt-1 pb-3">
                       {categorySubjects.length > 0 ? (
-                        categorySubjects.map((subject) => (
-                          <button
-                            key={subject.id}
-                            onClick={() => toggleSubject(subject.id)}
-                            className="group flex w-full items-center rounded-md px-2 py-2 text-left transition-colors hover:bg-white/5"
-                          >
-                            <div
-                              className={`mr-3 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${selectedSubjects.includes(subject.id) ? "border-purple-600 bg-purple-600" : "border-gray-600 group-hover:border-gray-500"}`}
+                        categorySubjects.map((subject) => {
+                          const code = getCode(subject);
+                          return (
+                            <button
+                              key={code}
+                              onClick={() => toggleSubject(code)}
+                              className="group flex w-full items-center rounded-md px-2 py-2 text-left transition-colors hover:bg-white/5"
                             >
-                              {selectedSubjects.includes(subject.id) && (
-                                <Check size={12} className="text-white" />
-                              )}
-                            </div>
-                            <span
-                              className={`truncate text-sm ${selectedSubjects.includes(subject.id) ? "font-medium text-white" : "text-gray-400 group-hover:text-gray-300"}`}
-                            >
-                              {subject.name}
-                            </span>
-                          </button>
-                        ))
+                              <div
+                                className={`mr-3 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
+                                  selectedSubjects.includes(code)
+                                    ? "border-purple-600 bg-purple-600"
+                                    : "border-gray-600 group-hover:border-gray-500"
+                                }`}
+                              >
+                                {selectedSubjects.includes(code) && (
+                                  <Check size={12} className="text-white" />
+                                )}
+                              </div>
+                              <span
+                                className={`truncate text-sm ${
+                                  selectedSubjects.includes(code)
+                                    ? "font-medium text-white"
+                                    : "text-gray-400 group-hover:text-gray-300"
+                                }`}
+                                title={`${code} - ${subject.name}`}
+                              >
+                                {code} - {subject.name}
+                              </span>
+                            </button>
+                          );
+                        })
                       ) : (
                         <div className="px-2 py-2 text-sm text-gray-500">
-                          Đang tải...
+                          Không có môn học nào.
                         </div>
                       )}
                     </div>
@@ -208,7 +226,7 @@ export default function DocumentsPage() {
                 <option value="oldest">Cũ nhất</option>
                 <option value="price_asc">Giá: Thấp đến cao</option>
                 <option value="price_desc">Giá: Cao đến thấp</option>
-                <option value="popular">Lượt mua nhiều nhất</option>
+                <option value="popular">Lượt tải nhiều nhất</option>
               </select>
             </div>
           </div>

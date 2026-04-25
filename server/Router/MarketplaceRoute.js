@@ -52,4 +52,6 @@ router.get(
   marketplaceController.getAuthorResellListings,
 );
 
+router.get("/listing/:listingId", marketplaceController.getListingById);
+
 module.exports = router;

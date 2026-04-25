@@ -27,6 +27,7 @@ import { useCart } from "../../context/CartContext";
 import axios from "../../common";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { useSearchParams } from "react-router";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -433,6 +434,8 @@ export default function DocumentDetail() {
   const [showPreview, setShowPreview] = useState(false);
   const [nftHistory, setNftHistory] = useState([]);
   const [accessStatus, setAccessStatus] = useState(ACCESS_STATUS.LOADING);
+  const [searchParams] = useSearchParams();
+  const [resellListing, setResellListing] = useState(null);
 
   const [activeListing, setActiveListing] = useState(null);
 
@@ -463,6 +466,21 @@ export default function DocumentDetail() {
     };
     fetchDocument();
   }, [documentId]);
+
+  useEffect(() => {
+    const listingId = searchParams.get("listingId");
+    if (!listingId) return;
+
+    const fetchListing = async () => {
+      try {
+        const res = await axios.get(`/api/marketplace/listing/${listingId}`);
+        setResellListing(res.data);
+      } catch {
+        setResellListing(null);
+      }
+    };
+    fetchListing();
+  }, [searchParams]);
 
   const checkAccess = async () => {
     if (!doc) return;
@@ -769,6 +787,42 @@ export default function DocumentDetail() {
                   ))}
                 </Document>
               </div>
+
+              {/* Resell banner — chỉ hiện khi đến từ listing của người khác */}
+              {resellListing && !resellListing.isOriginalCreator && (
+                <div className="flex gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                  <AlertTriangle
+                    size={14}
+                    className="mt-0.5 shrink-0 text-amber-400"
+                  />
+                  <div>
+                    <p className="pb-2 text-xs font-semibold text-amber-300">
+                      Tài liệu bán lại — không phải từ tác giả gốc
+                    </p>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/30 text-[10px] font-bold text-purple-300">
+                        {resellListing.seller?.userName?.[0]?.toUpperCase() ||
+                          "?"}
+                      </div>
+                      <Link
+                        to={`/author/${resellListing.seller?._id}`}
+                        className="truncate text-xs text-amber-400 underline underline-offset-2 hover:text-amber-300"
+                      >
+                        {resellListing.seller?.userName || "Người dùng"}
+                      </Link>
+                      <span className="text-xs text-amber-500/70">
+                        đang bán lại
+                      </span>
+                    </div>
+                    <p className="mt-1 pt-2 text-[11px] text-amber-500/70">
+                      Tác giả gốc:{" "}
+                      <span className="font-medium text-amber-400">
+                        {doc.author?.userName}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="mb-1 flex items-end gap-2">
                 <span className="text-3xl font-black text-white">

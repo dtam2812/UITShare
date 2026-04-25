@@ -267,32 +267,18 @@ const AuthorDetail = () => {
   const { address: currentWallet } = useAccount();
 
   useEffect(() => {
-    if (activeTab !== "resell" || !authorId) return;
-    const fetchResell = async () => {
-      setResellLoading(true);
-      try {
-        const res = await axios.get(
-          `/api/marketplace/author/${authorId}/resell`,
-        );
-        setResellListings(res.data);
-      } catch {
-        setResellListings([]);
-      } finally {
-        setResellLoading(false);
-      }
-    };
-    fetchResell();
-  }, [activeTab, authorId]);
-
-  useEffect(() => {
     const fetchAuthor = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`/api/author/authorDetail/${authorId}`);
-        setAuthor(res.data.author);
-        setDocuments(res.data.documents);
-        setStats(res.data.stats);
+        const [authorRes, resellRes] = await Promise.all([
+          axios.get(`/api/author/authorDetail/${authorId}`),
+          axios.get(`/api/marketplace/author/${authorId}/resell`),
+        ]);
+        setAuthor(authorRes.data.author);
+        setDocuments(authorRes.data.documents);
+        setStats(authorRes.data.stats);
+        setResellListings(resellRes.data);
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tác giả");
       } finally {
@@ -524,11 +510,22 @@ const AuthorDetail = () => {
               ) : (
                 <div className="flex flex-wrap gap-4">
                   {resellListings.map((listing) => (
-                    <DocumentCard
+                    <div
                       key={listing._id}
-                      {...listing.document}
-                      price={listing.price}
-                    />
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(
+                          `/documentDetail/${listing.document._id}?listingId=${listing._id}`,
+                        );
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <DocumentCard
+                        {...listing.document}
+                        price={listing.price}
+                        disableLink
+                      />
+                    </div>
                   ))}
                 </div>
               )}

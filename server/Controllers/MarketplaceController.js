@@ -443,10 +443,6 @@ const cancelListing = async (req, res) => {
     listing.cancelledAt = new Date();
     await listing.save();
 
-    await documentModel.findByIdAndUpdate(listing.document, {
-      $inc: { remainingSupply: listing.amount },
-    });
-
     const seller = await userModel.findById(userId);
 
     await transactionModel.create({
@@ -877,7 +873,12 @@ const getAuthorResellListings = async (req, res) => {
 
     const listings = await listingModel
       .find({ seller: authorId, status: "active", isOriginalCreator: false })
-      .populate("document", "title fileUrl price subject category")
+      .populate({
+        path: "document",
+        select:
+          "title fileUrl price subject category pageCount averageRating downloadCount commentCount tokenId author createdAt",
+        populate: { path: "author", select: "userName avatar _id" },
+      })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -920,6 +921,23 @@ const getPurchasedDocuments = async (req, res) => {
   }
 };
 
+const getListingById = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await listingModel
+      .findById(listingId)
+      .populate("seller", "userName avatar _id")
+      .lean();
+
+    if (!listing) {
+      return res.status(404).json({ message: "Không tìm thấy listing" });
+    }
+    return res.json(listing);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createListing,
   buyDocument,
@@ -931,4 +949,5 @@ module.exports = {
   resellDocument,
   getDonationsReceived,
   getPurchasedDocuments,
+  getListingById,
 };
