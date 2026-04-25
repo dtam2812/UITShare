@@ -11,7 +11,7 @@ const Step3Processing = ({ onReset }) => {
       <p className="text-gray-400 text-base mb-8">
         Quá trình tải lên IPFS và đúc NFT có thể mất vài phút. Kiểm tra{" "}
         <Link
-          to="/profile/uploaded-docs"
+          to="/profile/:userId/uploaded-docs"
           className="text-purple-400 hover:text-purple-300 hover:underline font-medium transition-colors"
         >
           trang quản lý tài liệu
