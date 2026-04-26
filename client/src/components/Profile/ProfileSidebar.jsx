@@ -10,6 +10,7 @@ import {
   FiFile,
 } from "react-icons/fi";
 import { NavLink, useNavigate, useParams } from "react-router";
+import { useCart } from "../../context/CartContext";
 
 const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
   const navLinkClass = ({ isActive }) =>
@@ -18,10 +19,13 @@ const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
 
   const navigate = useNavigate();
   const { userId } = useParams();
+  const { reloadCartForCurrentUser } = useCart();
 
   const handleLogout = () => {
     onClose?.();
-    navigate("/");
+    localStorage.removeItem("access_token");
+    reloadCartForCurrentUser();
+    navigate("/login");
   };
 
   return (
