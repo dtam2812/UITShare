@@ -65,7 +65,9 @@ const PersonalInfo = () => {
       const formData = new FormData();
 
       formData.append("userName", formInput.userName);
-      formData.append("studentId", formInput.studentId);
+      if (formInput.studentId) {
+        formData.append("studentId", formInput.studentId);
+      }
       formData.append("bio", formInput.bio);
       formData.append("facebookLink", formInput.facebookLink);
 
@@ -79,12 +81,19 @@ const PersonalInfo = () => {
       );
 
       if (response.status === 200) {
-        setImg({
-          avatar: response.data.avatar,
-          coverImage: response.data.coverImage,
-        });
-        toast.success("Cập nhật thông tin thành công");
+      if (response.data.newToken) {
+        localStorage.setItem("access_token", response.data.newToken);
+        window.dispatchEvent(new Event("token-updated"));
       }
+      setUser(response.data);
+      setImg((prev) => ({
+        avatar: response.data.avatar,
+        coverImage: response.data.coverImage,
+        avatarPreview: prev.avatarPreview || "",
+        coverImagePreview: prev.coverImagePreview || "",
+      }));
+      toast.success("Cập nhật thành công");
+    }
     } catch (error) {
       console.log(error);
     }
@@ -121,13 +130,15 @@ const PersonalInfo = () => {
       [typeUpload.current]: file,
       [`${typeUpload.current}Preview`]: URL.createObjectURL(file),
     }));
+
+    e.target.value = null
   };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm backdrop-blur-md">
       <div className="relative h-48 rounded-t-2xl bg-white/10">
         <img
-          src={img.coverImagePreview || img.coverImage}
+          src={img.coverImagePreview || img.coverImage || undefined}
           alt="Cover"
           className="h-full w-full object-cover"
         />
@@ -141,7 +152,7 @@ const PersonalInfo = () => {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="relative">
             <img
-              src={img.avatarPreview || img.avatar}
+              src={img.avatarPreview || img.avatar || undefined}
               alt="Profile avatar"
               className="h-24 w-24 rounded-full border-4 border-[#050816] object-cover shadow-md hover:cursor-pointer"
               onClick={() => handleClick("avatar")}

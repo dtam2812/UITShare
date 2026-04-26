@@ -310,7 +310,7 @@ export default function DocumentReading() {
             file={doc.fileUrl}
             onLoadSuccess={onLoadSuccess}
             loading={
-              <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5">
+              <div className="flex h-96 w-xl flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5">
                 <FileText className="h-12 w-12 text-purple-400 opacity-50" />
                 <p className="text-sm text-gray-400">Đang tải tài liệu...</p>
               </div>

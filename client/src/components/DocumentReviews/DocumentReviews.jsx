@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { Star, Send } from "lucide-react";
-
-const INITIAL_REVIEWS = [
-  { id: 1, user: "Minh Khoa",   avatar: "M", rating: 5, date: "12/03/2025", comment: "Tài liệu rất chi tiết, đầy đủ. Mình thi xong được 9 điểm nhờ bộ này!" },
-  { id: 2, user: "Thảo Nguyên", avatar: "T", rating: 5, date: "08/03/2025", comment: "Chất lượng tốt, đáng đồng tiền. Tác giả trình bày rõ ràng, dễ hiểu." },
-  { id: 3, user: "Quốc Bảo",    avatar: "Q", rating: 4, date: "01/03/2025", comment: "Phần lý thuyết ok nhưng bài tập tự luận hơi ít. Vẫn recommend." },
-];
+import { useState, useEffect } from "react";
+import { Star, Send, Loader2 } from "lucide-react";
+import axios from "../../common";
+import { useParams } from "react-router";
 
 function StarRating({ value }) {
   return (
@@ -47,36 +43,93 @@ function StarRatingInput({ value, onChange }) {
         </button>
       ))}
       {value > 0 && (
-        <span className="text-sm text-yellow-400 font-semibold ml-2">{value}/5</span>
+        <span className="text-sm text-yellow-400 font-semibold ml-2">
+          {value}/5
+        </span>
       )}
     </div>
   );
 }
 
-export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
-  const [reviews, setReviews] = useState(initialReviews);
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+function getAvatar(userName) {
+  return userName?.[0]?.toUpperCase() || "?";
+}
+
+export default function DocumentReviews() {
+  const { documentId } = useParams();
+
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  function handleSubmit() {
-    if (!commentText.trim() || commentRating === 0) return;
+  // Fetch comments từ DB
+  useEffect(() => {
+    if (!documentId) return;
+    const fetchComments = async () => {
+      setLoadingReviews(true);
+      try {
+        const res = await axios.get(`/api/comments/${documentId}`);
+        setReviews(res.data);
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    fetchComments();
+  }, [documentId]);
 
-    const today = new Date();
-    const dateStr = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
-
-    setReviews((prev) => [
-      { id: Date.now(), user: "Bạn", avatar: "B", rating: commentRating, date: dateStr, comment: commentText.trim() },
-      ...prev,
-    ]);
-    setCommentText("");
-    setCommentRating(0);
-  }
+  const isLoggedIn = () => {
+    const token = localStorage.getItem("access_token");
+    return token && token !== "undefined";
+  };
 
   const isReady = commentText.trim() && commentRating > 0;
 
+  async function handleSubmit() {
+    if (!isReady) return;
+
+    if (!isLoggedIn()) {
+      setErrorMsg("Vui lòng đăng nhập để đánh giá.");
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      const res = await axios.post(`/api/comments/${documentId}`, {
+        content: commentText.trim(),
+        rating: commentRating,
+      });
+
+      // Thêm comment mới lên đầu danh sách
+      setReviews((prev) => [res.data, ...prev]);
+      setCommentText("");
+      setCommentRating(0);
+      setSuccessMsg("Đánh giá của bạn đã được gửi!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setErrorMsg(
+        err.response?.data?.message || "Gửi thất bại, vui lòng thử lại."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
-
       {/* Write a review */}
       <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
         <h3 className="text-lg font-bold text-white mb-4">Viết đánh giá</h3>
@@ -92,12 +145,19 @@ export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Chia sẻ trải nghiệm của bạn về tài liệu này..."
             rows={4}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none transition-colors"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none transition-colors"
           />
         </div>
 
+        {errorMsg && (
+          <p className="text-xs text-red-400 mb-2">{errorMsg}</p>
+        )}
+        {successMsg && (
+          <p className="text-xs text-green-400 mb-2">{successMsg}</p>
+        )}
+
         <div className="flex items-center justify-between">
-          <p className="text-xs text-white">
+          <p className="text-xs text-gray-500">
             {!isReady
               ? commentRating === 0 && !commentText.trim()
                 ? "Chọn số sao và viết nhận xét để gửi"
@@ -108,14 +168,18 @@ export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
           </p>
           <button
             onClick={handleSubmit}
-            disabled={!isReady}
+            disabled={!isReady || submitting}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
-              isReady
+              isReady && !submitting
                 ? "bg-purple-500 hover:bg-purple-600 text-white"
                 : "bg-white/5 text-gray-600 cursor-not-allowed"
             }`}
           >
-            <Send className="w-4 h-4" />
+            {submitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
             Gửi đánh giá
           </button>
         </div>
@@ -125,29 +189,59 @@ export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
       <div>
         <h3 className="text-lg font-bold text-white mb-4">
           Đánh giá{" "}
-          <span className="text-gray-500 font-normal text-sm">({reviews.length})</span>
+          <span className="text-gray-500 font-normal text-sm">
+            ({reviews.length})
+          </span>
         </h3>
-        <div className="flex flex-col gap-4">
-          {reviews.map((r) => (
-            <div key={r.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full bg-linear-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-sm font-bold text-black shrink-0">
-                  {r.avatar}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-semibold text-white">{r.user}</p>
-                    <p className="text-xs text-gray-600">{r.date}</p>
+
+        {loadingReviews ? (
+          <div className="flex items-center justify-center py-10 text-gray-500 gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">Đang tải đánh giá...</span>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-10 text-gray-600 text-sm">
+            Chưa có đánh giá nào. Hãy là người đầu tiên!
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {reviews.map((r) => (
+              <div
+                key={r._id}
+                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-sm font-bold text-black shrink-0 overflow-hidden">
+                    {r.user?.avatar ? (
+                      <img
+                        src={r.user.avatar}
+                        alt={r.user.userName}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      getAvatar(r.user?.userName)
+                    )}
                   </div>
-                  <StarRating value={r.rating} />
-                  <p className="text-gray-400 text-sm mt-2 leading-relaxed">{r.comment}</p>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-semibold text-white">
+                        {r.user?.userName || "Người dùng"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {formatDate(r.createdAt)}
+                      </p>
+                    </div>
+                    {r.rating && <StarRating value={r.rating} />}
+                    <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+                      {r.content}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
-
     </div>
   );
 }

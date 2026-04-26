@@ -169,15 +169,11 @@ const uploadDocument = async (req, res) => {
         process.env.MARKETPLACE_CONTRACT_ADDRESS,
       );
       if (!isApproved) {
-        console.log(
-          "[uploadDocument] Chưa approve, đang gọi setApprovalForAll...",
-        );
         const approveTx = await nftContract.setApprovalForAll(
           process.env.MARKETPLACE_CONTRACT_ADDRESS,
           true,
         );
         await approveTx.wait();
-        console.log("[uploadDocument] setApprovalForAll thành công");
       }
     }
 

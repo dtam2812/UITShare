@@ -12,10 +12,24 @@ const ProfileLayout = () => {
   const accessToken = localStorage.getItem("access_token");
   const payloadDecode = jwtDecode(accessToken);
 
+  const [profileInfo, setProfileInfo] = useState(() => {
+    const token = localStorage.getItem("access_token");
+    return jwtDecode(token);
+  });
+
+  useEffect(() => {
+    const handleTokenUpdate = () => {
+      const token = localStorage.getItem("access_token");
+      if (token) setProfileInfo(jwtDecode(token));
+    };
+    window.addEventListener("token-updated", handleTokenUpdate);
+    return () => window.removeEventListener("token-updated", handleTokenUpdate);
+  }, []);
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const userId = payloadDecode.id;
+    const userId = payloadDecode?.id;
     if (!userId) return;
 
     queryClient.prefetchQuery({
@@ -41,7 +55,7 @@ const ProfileLayout = () => {
       },
       staleTime: 5 * 60 * 1000,
     });
-  }, []);
+  }, [payloadDecode?.id, queryClient]);
 
   const handleClick = () => {
     setOpenSidebar((prev) => !prev);
@@ -69,9 +83,9 @@ const ProfileLayout = () => {
         className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform border-r border-white/10 bg-[#050816] shadow-xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
       >
         <ProfileSidebar
-          avatar={payloadDecode.avatar}
-          userName={payloadDecode.userName}
-          email={payloadDecode.email}
+          avatar={profileInfo.avatar}
+          userName={profileInfo.userName}
+          email={profileInfo.email}
         />
       </aside>
 

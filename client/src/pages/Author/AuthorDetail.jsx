@@ -264,34 +264,21 @@ const AuthorDetail = () => {
   const [activeTab, setActiveTab] = useState("shared");
   const [resellListings, setResellListings] = useState([]);
   const [resellLoading, setResellLoading] = useState(false);
-
-  useEffect(() => {
-    if (activeTab !== "resell" || !authorId) return;
-    const fetchResell = async () => {
-      setResellLoading(true);
-      try {
-        const res = await axios.get(
-          `/api/marketplace/author/${authorId}/resell`,
-        );
-        setResellListings(res.data);
-      } catch {
-        setResellListings([]);
-      } finally {
-        setResellLoading(false);
-      }
-    };
-    fetchResell();
-  }, [activeTab, authorId]);
+  const { address: currentWallet } = useAccount();
 
   useEffect(() => {
     const fetchAuthor = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`/api/author/authorDetail/${authorId}`);
-        setAuthor(res.data.author);
-        setDocuments(res.data.documents);
-        setStats(res.data.stats);
+        const [authorRes, resellRes] = await Promise.all([
+          axios.get(`/api/author/authorDetail/${authorId}`),
+          axios.get(`/api/marketplace/author/${authorId}/resell`),
+        ]);
+        setAuthor(authorRes.data.author);
+        setDocuments(authorRes.data.documents);
+        setStats(authorRes.data.stats);
+        setResellListings(resellRes.data);
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tác giả");
       } finally {
@@ -403,16 +390,18 @@ const AuthorDetail = () => {
               )}
 
               {/* Donate button — chỉ hiện khi tác giả đã liên kết ví */}
-              {author.walletAddress && (
-                <button
-                  onClick={() => setShowDonateModal(true)}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
-                  title="Ủng hộ tác giả bằng ETH"
-                >
-                  <FiHeart className="h-4 w-4" />
-                  Donate ETH
-                </button>
-              )}
+              {author.walletAddress &&
+                currentWallet?.toLowerCase() !==
+                  author.walletAddress?.toLowerCase() && (
+                  <button
+                    onClick={() => setShowDonateModal(true)}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
+                    title="Ủng hộ tác giả bằng ETH"
+                  >
+                    <FiHeart className="h-4 w-4" />
+                    Donate ETH
+                  </button>
+                )}
             </div>
           </div>
 
@@ -460,7 +449,7 @@ const AuthorDetail = () => {
         {/* Documents */}
         <div>
           {/* Tab Header */}
-          <div className="mb-6 flex w-fit items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+          <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
             <button
               onClick={() => setActiveTab("shared")}
               className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
@@ -501,7 +490,7 @@ const AuthorDetail = () => {
                   Chưa có tài liệu nào.
                 </p>
               ) : (
-                <div className="flex flex-wrap gap-4">
+                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
                   {documents.map((doc) => (
                     <DocumentCard key={doc._id} {...doc} />
                   ))}
@@ -519,13 +508,24 @@ const AuthorDetail = () => {
                   Chưa có tài liệu nào đang bán lại.
                 </p>
               ) : (
-                <div className="flex flex-wrap gap-4">
+                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
                   {resellListings.map((listing) => (
-                    <DocumentCard
+                    <div
                       key={listing._id}
-                      {...listing.document}
-                      price={listing.price}
-                    />
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(
+                          `/documentDetail/${listing.document._id}?listingId=${listing._id}`,
+                        );
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <DocumentCard
+                        {...listing.document}
+                        price={listing.price}
+                        disableLink
+                      />
+                    </div>
                   ))}
                 </div>
               )}

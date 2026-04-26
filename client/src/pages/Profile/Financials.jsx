@@ -8,6 +8,7 @@ import TransactionTable from "../../components/Profile/TransactionTable";
 import WalletCard from "../../components/Profile/WalletCard";
 import { useParams } from "react-router";
 import axios from "../../common";
+import { FiCreditCard, FiAlertTriangle, FiX } from "react-icons/fi";
 
 const DEFAULT_WALLET_INFO = {
   balance: "0",
@@ -147,11 +148,6 @@ const Financials = () => {
           }
         />
       </div>
-
-      <TransactionTable
-        transactions={isWalletLinked ? walletInfo.transactions : []}
-        isLoading={isLoadingWallet}
-      />
 
       <h3 className="mb-4 text-lg font-bold text-white">Ví liên kết</h3>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">

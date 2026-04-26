@@ -5,8 +5,8 @@ import axios from "../../common";
 import { FiAlertTriangle, FiXCircle } from "react-icons/fi";
 
 const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
-  const [formData, setFormData] = useState(() =>
-    file.map(() => ({
+  const [formData, setFormData] = useState(
+    {
       title: "",
       subject: "",
       category: "",
@@ -14,41 +14,27 @@ const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
       price: "",
       royaltyPercent: 10,
       amount: 1,
-    })),
+    }
   );
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadError, setUploadError] = useState(null);
 
-  const handleUpdateForm = (index, name, value) => {
-    setFormData((prev) =>
-      prev.map((item, indexInFormData) =>
-        indexInFormData === index ? { ...item, [name]: value } : item,
-      ),
+  const handleUpdateForm = (name, value) => {
+    setFormData(
+      (prev) => ({ ...prev, [name]: value })
     );
-  };
-
-  const handleApply = (index) => {
-    if (index === 0) setFormData((prev) => prev.map(() => ({ ...prev[0] })));
-    else
-      setFormData((prev) =>
-        prev.map((item, indexCurrent) =>
-          index === indexCurrent ? { ...prev[index - 1] } : item,
-        ),
-      );
   };
 
   const handleSubmit = async (formData) => {
     setIsSubmitted(true);
 
-    const isValid = formData.every(
-      (item) =>
-        item.title.trim() !== "" &&
-        item.subject.trim() !== "" &&
-        item.category.trim() !== "" &&
-        item.price.toString().trim() !== "",
-    );
+    const isValid = 
+        formData.title.trim() !== "" &&
+        formData.subject.trim() !== "" &&
+        formData.category.trim() !== "" &&
+        formData.price.toString().trim() !== "";
 
     if (!isValid) return;
 
@@ -58,13 +44,13 @@ const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
 
       const data = new FormData();
       data.append("file", file[0]);
-      data.append("title", formData[0].title);
-      data.append("subject", formData[0].subject);
-      data.append("category", formData[0].category);
-      data.append("description", formData[0].description);
-      data.append("price", formData[0].price);
-      data.append("royaltyPercent", formData[0].royaltyPercent);
-      data.append("amount", formData[0].amount);
+      data.append("title", formData.title);
+      data.append("subject", formData.subject);
+      data.append("category", formData.category);
+      data.append("description", formData.description);
+      data.append("price", formData.price);
+      data.append("royaltyPercent", formData.royaltyPercent);
+      data.append("amount", formData.amount);
 
       await axios.post("/api/documents/upload", data, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -105,18 +91,13 @@ const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
         </p>
       </div>
 
-      <div className="space-y-8">
-        {file.map((item, index) => (
-          <Step2FileCard
-            key={index}
-            item={item}
-            index={index}
-            formData={formData[index]}
-            updateForm={handleUpdateForm}
-            handleClickApply={handleApply}
-            submit={isSubmitted}
-          />
-        ))}
+      <div className="relative z-20 space-y-8">
+        <Step2FileCard
+          item={file[0]}
+          formData={formData}
+          updateForm={handleUpdateForm}
+          submit={isSubmitted}
+        />
       </div>
 
       {uploadError && (
@@ -154,7 +135,7 @@ const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
         </div>
       )}
 
-      <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6">
+      <div className="mt-8 flex items-center justify-between border-t border-white/10 pt-6 relative z-10">
         <button
           type="button"
           className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white"

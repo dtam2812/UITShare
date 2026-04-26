@@ -105,6 +105,7 @@ const DocumentSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+
   remainingSupply: {
     type: Number,
     default: 0,

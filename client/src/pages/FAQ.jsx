@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { Link } from 'react-router';
+import { Link } from "react-router";
 
 const tabs = ["Sản phẩm", "Thanh toán", "Mua hàng & Hoàn trả"];
 
@@ -30,7 +30,7 @@ const faqData = {
       id: 5,
       question: "1. Tôi có thể thanh toán bằng những phương thức nào?",
       answer:
-        "UITShare hỗ trợ thanh toán bằng tiền điện tử thông qua blockchain.\nHiện tại người dùng có thể thanh toán bằng:\n- NFT Token của nền tảng\n- Ethereum (ETH) thông qua ví crypto\n\nSau khi kết nối ví và xác nhận giao dịch, hệ thống sẽ xử lý thanh toán và cho phép bạn tải tài liệu ngay.",
+        "UITShare hỗ trợ thanh toán bằng tiền điện tử thông qua blockchain.\nHiện tại người dùng có thể thanh toán bằng:\n- Ethereum (ETH) thông qua ví crypto\n\nSau khi kết nối ví và xác nhận giao dịch, hệ thống sẽ xử lý thanh toán và cho phép bạn tải tài liệu ngay.",
     },
     {
       id: 6,
@@ -71,25 +71,25 @@ export default function FAQ({ onNavigate }) {
   const [activeTab, setActiveTab] = useState("Sản phẩm");
   const [activeFaq, setActiveFaq] = useState(1);
 
-  // Tự động cuộn lên đầu trang 
+  // Tự động cuộn lên đầu trang
   useEffect(() => {
-  window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="w-full font-sans flex flex-col overflow-hidden">
+    <div className="flex w-full flex-col overflow-hidden font-sans">
       {/* Background Blurs */}
-      <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-purple-600/20 blur-[120px] rounded-full pointer-events-none z-0"></div>
+      <div className="pointer-events-none absolute top-[-10%] left-1/2 z-0 h-[600px] w-[800px] -translate-x-1/2 rounded-full bg-purple-600/20 blur-[120px]"></div>
       {/* Main Content */}
       <div className="flex-1">
-        <div className="pt-8 pb-6 md:pt-25 md:pb-20 px-4 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold  bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 text-transparent bg-clip-text  pb-2">
+        <div className="px-4 pt-8 pb-6 text-center md:pt-25 md:pb-20">
+          <h1 className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text pb-2 text-3xl font-bold text-transparent md:text-5xl">
             CÂU HỎI THƯỜNG GẶP
           </h1>
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mt-10 ">
+        <div className="mt-10 flex flex-wrap justify-center gap-3">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -97,10 +97,10 @@ export default function FAQ({ onNavigate }) {
                 setActiveTab(tab);
                 setActiveFaq(faqData[tab][0]?.id || null);
               }}
-              className={`px-6 py-2.5 rounded-md text-sm font-medium transition-all duration-200 border ${
+              className={`rounded-md border px-6 py-2.5 text-sm font-medium transition-all duration-200 ${
                 activeTab === tab
-                  ? "bg-purple-600/20 text-purple-400 border-purple-500/50"
-                  : "bg-[#131722] text-gray-400 border-gray-800 hover:bg-[#1c1e2f] hover:text-gray-300"
+                  ? "border-purple-500/50 bg-purple-600/20 text-purple-400"
+                  : "border-gray-800 bg-[#131722] text-gray-400 hover:bg-[#1c1e2f] hover:text-gray-300"
               }`}
             >
               {tab}
@@ -109,30 +109,30 @@ export default function FAQ({ onNavigate }) {
         </div>
 
         {/* Accordion List */}
-        <div className="max-w-4xl mx-auto mt-12 space-y-3 md:space-y-0 px-4 md:px-8">
+        <div className="mx-auto mt-12 max-w-4xl space-y-3 px-4 md:space-y-0 md:px-8">
           {faqData[activeTab]?.map((faq) => {
             const isActive = activeFaq === faq.id;
             return (
               <div
                 key={faq.id}
                 onClick={() => setActiveFaq(isActive ? null : faq.id)}
-                className={`cursor-pointer rounded-2xl p-6 transition-all duration-300 border ${
+                className={`cursor-pointer rounded-2xl border p-6 transition-all duration-300 ${
                   isActive
-                    ? "bg-purple-600/10 border-purple-500/50 text-white shadow-md"
-                    : "bg-[#131722] border-gray-800 text-gray-300 hover:bg-[#1c1e2f] hover:border-gray-700"
+                    ? "border-purple-500/50 bg-purple-600/10 text-white shadow-md"
+                    : "border-gray-800 bg-[#131722] text-gray-300 hover:border-gray-700 hover:bg-[#1c1e2f]"
                 }`}
               >
-                <div className="flex justify-between items-center gap-4">
+                <div className="flex items-center justify-between gap-4">
                   <h3
-                    className={`font-bold text-lg ${isActive ? "text-white" : "text-gray-200"}`}
+                    className={`text-lg font-bold ${isActive ? "text-white" : "text-gray-200"}`}
                   >
                     {faq.question}
                   </h3>
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors ${
                       isActive
-                        ? "bg-purple-600 text-white border-transparent"
-                        : "bg-[#1c1e2f] text-gray-400 border border-gray-700"
+                        ? "border-transparent bg-purple-600 text-white"
+                        : "border border-gray-700 bg-[#1c1e2f] text-gray-400"
                     }`}
                   >
                     {isActive ? (
@@ -147,11 +147,11 @@ export default function FAQ({ onNavigate }) {
                 <div
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     isActive
-                      ? "max-h-60 opacity-100 mt-4"
-                      : "max-h-0 opacity-0 mt-0"
+                      ? "mt-4 max-h-60 opacity-100"
+                      : "mt-0 max-h-0 opacity-0"
                   }`}
                 >
-                  <p className="text-white/90 text-sm leading-relaxed pr-12 whitespace-pre-line">
+                  <p className="pr-12 text-sm leading-relaxed whitespace-pre-line text-white/90">
                     {faq.answer}
                   </p>
                 </div>
@@ -161,17 +161,17 @@ export default function FAQ({ onNavigate }) {
         </div>
 
         {/* Contact Section */}
-        <div className="max-w-4xl mx-auto mt-24 mb-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-t border-gray-800 pt-12 px-4 md:px-8">
+        <div className="mx-auto mt-24 mb-12 flex max-w-4xl flex-col items-start justify-between gap-6 border-t border-gray-800 px-4 pt-12 md:flex-row md:items-center md:px-8">
           <div className="max-w-xl">
-            <h3 className="text-xl font-bold text-white mb-2">Câu hỏi khác?</h3>
-            <p className="text-gray-400 text-sm leading-relaxed">
+            <h3 className="mb-2 text-xl font-bold text-white">Câu hỏi khác?</h3>
+            <p className="text-sm leading-relaxed text-gray-400">
               Nếu bạn còn bất kỳ thắc mắc nào hoặc cần thêm thông tin, đừng ngần
               ngại liên hệ với chúng tôi. Chúng tôi luôn sẵn sàng hỗ trợ bạn!
             </p>
           </div>
           <Link
             to="/contact"
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3.5 rounded-md font-medium transition-colors shrink-0 text-sm inline-block"
+            className="inline-block shrink-0 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-3.5 text-sm font-medium text-white transition-colors hover:from-purple-700 hover:to-indigo-700"
           >
             Liên hệ với chúng tôi
           </Link>
