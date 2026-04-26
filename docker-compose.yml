@@ -18,7 +18,7 @@ services:
     env_file:
       - ./server/.env              # Đọc biến môi trường từ file .env ở root
     volumes:
-      - uploads_data:/app/uploads   # Lưu file upload ra ngoài container
+      - ./server/uploads:/app/uploads   # Lưu file upload ra ngoài container
     depends_on:
       - mongo               # Đợi mongo chạy xong mới chạy server
 
