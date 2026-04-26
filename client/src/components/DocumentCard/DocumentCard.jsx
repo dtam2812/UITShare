@@ -34,7 +34,7 @@ const DocumentCard = ({
           {/* Ảnh */}
           <div className="relative h-32 shrink-0">
             <img
-              src="public\default_thumbnail.png"
+              src="/default_thumbnail.png"
               alt="course"
               className="h-full w-full object-cover"
             />
