@@ -23,6 +23,8 @@ const storage = multer.diskStorage({
 
 const upload = multer({ dest: "uploads/" });
 
+router.get("/search", documentController.searchDocuments);
+
 router.get("/documentDetail/:documentId", documentController.getDocumentDetail);
 
 router.delete(

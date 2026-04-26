@@ -2,7 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Search, X } from "lucide-react";
 import { useNavigate } from "react-router";
-import { searchDocuments } from "../../api/api_test";
+
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+async function searchDocumentsAPI(query) {
+  const res = await fetch(
+    `${BASE_URL}/api/documents/search?q=${encodeURIComponent(query)}`,
+  );
+  if (!res.ok) throw new Error("Search failed");
+  return res.json();
+}
 
 export default function SearchBar({ open, setOpen }) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,7 +23,6 @@ export default function SearchBar({ open, setOpen }) {
   const formRef = useRef(null);
   const navigate = useNavigate();
 
-  // Tính vị trí dropdown theo vị trí thực của form trên màn hình
   const updateDropdownPos = () => {
     if (formRef.current) {
       const rect = formRef.current.getBoundingClientRect();
@@ -45,9 +53,9 @@ export default function SearchBar({ open, setOpen }) {
       }
       setIsLoading(true);
       try {
-        const data = await searchDocuments(searchQuery);
+        const data = await searchDocumentsAPI(searchQuery);
         setResults(data.slice(0, 5));
-        updateDropdownPos(); // cập nhật vị trí trước khi mở
+        updateDropdownPos();
         setIsDropdownOpen(true);
       } catch (error) {
         console.error("Error searching:", error);
@@ -71,7 +79,7 @@ export default function SearchBar({ open, setOpen }) {
     setIsDropdownOpen(false);
     setSearchQuery("");
     setOpen(false);
-    navigate(`/document/${id}`);
+    navigate(`/documentDetail/${id}`);
   };
 
   const dropdown = isDropdownOpen && open && searchQuery.trim() !== "" && (
@@ -93,15 +101,15 @@ export default function SearchBar({ open, setOpen }) {
         <ul className="max-h-80 overflow-y-auto">
           {results.map((doc) => (
             <li
-              key={doc.id}
-              onClick={() => handleResultClick(doc.id)}
+              key={doc._id}
+              onMouseDown={(e) => { e.preventDefault(); handleResultClick(doc._id); }}
               className="px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors flex items-center gap-3"
             >
               <div className="w-10 h-10 rounded bg-gray-800 shrink-0 overflow-hidden">
                 <img
                   src={
                     doc.thumbnail ||
-                    `https://picsum.photos/seed/doc${doc.id}/100/100`
+                    `https://picsum.photos/seed/${doc._id}/100/100`
                   }
                   alt=""
                   className="w-full h-full object-cover"
@@ -113,13 +121,13 @@ export default function SearchBar({ open, setOpen }) {
                   {doc.title}
                 </h4>
                 <p className="text-xs text-gray-400 truncate">
-                  {doc.subjectName} • {doc.author}
+                  {doc.subject} • {doc.author?.userName ?? doc.authorWallet}
                 </p>
               </div>
             </li>
           ))}
           <li
-            onClick={handleSearch}
+            onMouseDown={(e) => { e.preventDefault(); handleSearch(); }}
             className="px-4 py-3 text-center text-sm text-purple-400 hover:text-purple-300 hover:bg-white/5 cursor-pointer font-medium border-t border-white/10"
           >
             Xem tất cả kết quả cho "{searchQuery}"
@@ -138,7 +146,7 @@ export default function SearchBar({ open, setOpen }) {
       <form
         ref={formRef}
         onSubmit={handleSearch}
-        className={`relative flex items-center transition-all duration-300 ${open ? "w-full bg-gray-700/50 rounded-full" : "w-10 justify-end"}`}
+        className={`relative flex items-center transition-all duration-300 origin-right ${open ? "w-full bg-gray-700/50 rounded-full" : "w-10 justify-end"}`}
       >
         <input
           type="text"
@@ -175,7 +183,6 @@ export default function SearchBar({ open, setOpen }) {
         </button>
       </form>
 
-      {/* Render dropdown ra ngoài mọi stacking context */}
       {createPortal(dropdown, document.body)}
     </>
   );
