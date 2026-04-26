@@ -8,15 +8,15 @@ const Home = () => {
   return (
     <div className="relative">
       <div
-        className="pointer-events-none fixed top-0 -left-40 h-150 w-150 bg-purple-600/20 blur-[120px]"
+        className="pointer-events-none fixed top-0 -left-40 h-150 w-150 bg-purple-600/20 blur-[120px]" aria-hidden="true"
         style={{ zIndex: 0 }}
       />
       <div
-        className="pointer-events-none fixed top-1/2 -right-40 h-150 w-150 bg-blue-500/40 blur-[120px]"
+        className="pointer-events-none fixed top-1/2 -right-40 h-150 w-150 bg-blue-500/40 blur-[120px]" aria-hidden="true"
         style={{ zIndex: 0 }}
       />
       <div
-        className="pointer-events-none fixed bottom-0 -left-40 h-150 w-150 bg-purple-600/30 blur-[120px]"
+        className="pointer-events-none fixed bottom-0 -left-40 h-150 w-150 bg-purple-600/30 blur-[120px]" aria-hidden="true"
         style={{ zIndex: 0 }}
       />
 
