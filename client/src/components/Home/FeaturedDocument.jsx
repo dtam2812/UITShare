@@ -52,7 +52,7 @@ export default function FeaturedDocuments({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
         {documents.slice(0, 4).map((doc) => (
           <DocumentCard key={doc._id} {...doc} />
         ))}

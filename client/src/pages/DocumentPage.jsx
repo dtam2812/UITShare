@@ -238,7 +238,7 @@ export default function DocumentsPage() {
             </div>
           ) : paginatedDocuments.length > 0 ? (
             <>
-              <div className="mb-10 grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="mb-10 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3 xl:grid-cols-3">
                 {paginatedDocuments.map((element) => (
                   <DocumentCard key={element._id} {...element} />
                 ))}

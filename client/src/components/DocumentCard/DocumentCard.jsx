@@ -29,8 +29,7 @@ const DocumentCard = ({
 
   return (
     <Link to={`/documentDetail/${documentId}`}>
-      <div className="pt-4 pl-4">
-        <div className="w- flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl xl:w-64">
+      <div className="w-full flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
           {/* Ảnh */}
           <div className="relative h-32 shrink-0">
             <img
@@ -65,21 +64,7 @@ const DocumentCard = ({
                 {title?.split(".")[0]}
               </h2>
             </div>
-
-            {/* Author */}
-            <div className="flex items-center gap-1.5">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-400 to-pink-500">
-                <img className="rounded-full" src={author?.avatar} />
-              </div>
-              <span className="text-xs text-gray-400">
-                <Link to={`/author/${author?._id}`}>
-                  <span className="font-semibold text-gray-300 hover:text-yellow-400">
-                    {author?.userName}
-                  </span>
-                </Link>
-              </span>
-            </div>
-
+          
             {/* Rating + meta - đẩy xuống đáy của flex-1 */}
             <div className="mt-auto flex items-center justify-between">
               <div className="flex items-center gap-1">
@@ -117,10 +102,10 @@ const DocumentCard = ({
               onClick={() => navigate(`/documentDetail/${_id}`)}
               className="cursor-pointer rounded-lg bg-linear-to-r from-purple-600 to-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90 active:scale-95"
             >
-              Xem ngay
+              <span className="hidden xs:inline">Xem ngay</span>
+              <span className="inline xs:hidden">→</span>
             </button>
           </div>
-        </div>
       </div>
     </Link>
   );
