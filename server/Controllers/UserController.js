@@ -40,7 +40,6 @@ const addUser = async (req, res) => {
   }
 };
 
-// ✅ Hàm update user mới
 const updateUser = async (req, res) => {
   try {
     const { userId } = req.params;

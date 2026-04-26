@@ -2,6 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router";
 import DocumentCard from "../components/DocumentCard/DocumentCard";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+async function searchDocumentsAPI(query) {
+  const res = await fetch(
+    `${BASE_URL}/api/documents/search?q=${encodeURIComponent(query)}`,
+  );
+  if (!res.ok) throw new Error("Search failed");
+  return res.json();
+}
+
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
@@ -13,7 +23,7 @@ const SearchResultsPage = () => {
     const fetchResults = async () => {
       setIsLoading(true);
       try {
-        const data = await searchDocuments(query);
+        const data = await searchDocumentsAPI(query);
         setResults(data);
       } catch (error) {
         console.error("Error fetching search results:", error);
@@ -30,13 +40,14 @@ const SearchResultsPage = () => {
     }
   }, [query]);
 
-  // Sort logic
   const sortedDocuments = [...results].sort((a, b) => {
     if (sortBy === "price_asc") return a.price - b.price;
     if (sortBy === "price_desc") return b.price - a.price;
-    if (sortBy === "popular") return b.reviews - a.reviews;
-    if (sortBy === "oldest") return a.id - b.id;
-    return b.id - a.id; // newest
+    if (sortBy === "popular")
+      return (b.commentCount ?? 0) - (a.commentCount ?? 0);
+    if (sortBy === "oldest")
+      return new Date(a.createdAt) - new Date(b.createdAt);
+    return new Date(b.createdAt) - new Date(a.createdAt); // newest
   });
 
   return (
@@ -48,7 +59,6 @@ const SearchResultsPage = () => {
             <span className="text-purple-400">"{query}"</span>
           </h1>
 
-          {/* Sort Dropdown */}
           {!isLoading && results.length > 0 && (
             <div className="flex shrink-0 items-center gap-3">
               <span className="text-sm text-gray-400">Sắp xếp theo:</span>
@@ -74,7 +84,7 @@ const SearchResultsPage = () => {
         ) : sortedDocuments.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {sortedDocuments.map((doc) => (
-              <DocumentCard key={doc.id} {...doc} />
+              <DocumentCard key={doc._id} {...doc} />
             ))}
           </div>
         ) : (

@@ -9,33 +9,33 @@ export default function Hero() {
         {/* BADGE */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-5 py-2 text-sm text-cyan-300">
           <span className="h-2 w-2 rounded-full bg-cyan-400"></span>
-          THE FIRST NFT LEARNING PLATFORM IN VIETNAM
+          NỀN TẢNG HỌC LIỆU NFT ĐẦU TIÊN TẠI VIỆT NAM
         </div>
 
         <h1 className="text-5xl leading-tight font-bold md:text-6xl">
-          Digital Learning Materials
+          Tài Liệu Học Tập Số
           <br />
           <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            For UIT Students
+            Dành Cho Sinh Viên UIT
           </span>
         </h1>
 
         <p className="mt-6 text-lg text-gray-400">
-          Buy study materials as NFTs — verify ownership, trade freely,
-          and no one can take them away.
+          Mua tài liệu học tập dưới dạng NFT — xác minh quyền sở hữu, tự do giao
+          dịch và không ai có thể lấy đi của bạn.
         </p>
 
         {/* BUTTONS */}
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link to="/upload">
             <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium transition hover:bg-purple-600">
-              Upload Document
+              Tải Lên Tài Liệu
             </button>
           </Link>
 
           <Link to="/document">
             <button className="w-48 cursor-pointer rounded-lg bg-white px-6 py-3 font-medium text-black transition hover:bg-gray-200">
-              Explore Documents
+              Khám Phá Tài Liệu
             </button>
           </Link>
         </div>
@@ -43,9 +43,9 @@ export default function Hero() {
 
       {/* STATS */}
       <div className="relative mt-16 grid w-full max-w-6xl grid-cols-2 gap-6 md:grid-cols-3">
-        <Stat icon={<FileText />} value="50K+" label="Documents Stored" />
-        <Stat icon={<Users />} value="12K+" label="Active Users" />
-        <Stat icon={<Share2 />} value="30K+" label="Files Shared" />
+        <Stat icon={<FileText />} value="50K+" label="Tài Liệu Được Lưu Trữ" />
+        <Stat icon={<Users />} value="12K+" label="Người Dùng Hoạt Động" />
+        <Stat icon={<Share2 />} value="30K+" label="Tệp Được Chia Sẻ" />
       </div>
     </section>
   );

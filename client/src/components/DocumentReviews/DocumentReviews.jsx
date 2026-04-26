@@ -9,9 +9,9 @@ function StarRating({ value }) {
       {[1, 2, 3, 4, 5].map((s) => (
         <Star
           key={s}
-          className={`w-3.5 h-3.5 ${
+          className={`h-3.5 w-3.5 ${
             s <= Math.round(value)
-              ? "text-yellow-400 fill-yellow-400"
+              ? "fill-yellow-400 text-yellow-400"
               : "text-white/20"
           }`}
         />
@@ -35,9 +35,9 @@ function StarRatingInput({ value, onChange }) {
           className="cursor-pointer p-0.5 transition-transform hover:scale-110"
         >
           <Star
-            className={`w-5 h-5 transition-colors ${
+            className={`h-5 w-5 transition-colors ${
               s <= (hovered || value)
-                ? "text-yellow-400 fill-yellow-400"
+                ? "fill-yellow-400 text-yellow-400"
                 : "text-white/20 hover:text-white/40"
             }`}
           />
@@ -55,7 +55,7 @@ function StarRatingInput({ value, onChange }) {
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   return `${String(d.getDate()).padStart(2, "0")}/${String(
-    d.getMonth() + 1
+    d.getMonth() + 1,
   ).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
@@ -103,7 +103,7 @@ export default function DocumentReviews() {
     if (!isReady) return;
 
     if (!isLoggedIn()) {
-      setErrorMsg("Please log in to leave a review.");
+      setErrorMsg("Vui lòng đăng nhập để gửi đánh giá.");
       return;
     }
 
@@ -120,11 +120,11 @@ export default function DocumentReviews() {
       setReviews((prev) => [res.data, ...prev]);
       setCommentText("");
       setCommentRating(0);
-      setSuccessMsg("Your review has been submitted!");
+      setSuccessMsg("Đánh giá của bạn đã được gửi thành công!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
       setErrorMsg(
-        err.response?.data?.message || "Submission failed. Please try again."
+        err.response?.data?.message || "Gửi thất bại. Vui lòng thử lại.",
       );
     } finally {
       setSubmitting(false);
@@ -133,12 +133,12 @@ export default function DocumentReviews() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Write a review */}
+      {/* Viết đánh giá */}
       <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-        <h3 className="mb-4 text-lg font-bold text-white">Write a Review</h3>
+        <h3 className="mb-4 text-lg font-bold text-white">Viết Đánh Giá</h3>
 
         <div className="mb-4">
-          <p className="mb-2 text-sm text-white">Your Rating</p>
+          <p className="mb-2 text-sm text-white">Đánh Giá Của Bạn</p>
           <StarRatingInput value={commentRating} onChange={setCommentRating} />
         </div>
 
@@ -146,7 +146,7 @@ export default function DocumentReviews() {
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Share your experience about this document..."
+            placeholder="Chia sẻ trải nghiệm của bạn về tài liệu này..."
             rows={4}
             className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 transition-colors focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 focus:outline-none"
           />
@@ -161,11 +161,11 @@ export default function DocumentReviews() {
           <p className="text-xs text-gray-500">
             {!isReady
               ? commentRating === 0 && !commentText.trim()
-                ? "Select stars and write a review to submit"
+                ? "Chọn số sao và viết nội dung để gửi đánh giá"
                 : commentRating === 0
-                ? "Please select a rating"
-                : "Please write a review"
-              : "Ready to submit!"}
+                  ? "Vui lòng chọn số sao"
+                  : "Vui lòng viết nội dung đánh giá"
+              : "Sẵn sàng gửi!"}
           </p>
 
           <button
@@ -182,15 +182,15 @@ export default function DocumentReviews() {
             ) : (
               <Send className="h-4 w-4" />
             )}
-            Submit Review
+            Gửi Đánh Giá
           </button>
         </div>
       </div>
 
-      {/* Reviews list */}
+      {/* Danh sách đánh giá */}
       <div>
         <h3 className="mb-4 text-lg font-bold text-white">
-          Reviews{" "}
+          Đánh Giá{" "}
           <span className="text-sm font-normal text-gray-500">
             ({reviews.length})
           </span>
@@ -199,11 +199,11 @@ export default function DocumentReviews() {
         {loadingReviews ? (
           <div className="flex items-center justify-center gap-2 py-10 text-gray-500">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Loading reviews...</span>
+            <span className="text-sm">Đang tải đánh giá...</span>
           </div>
         ) : reviews.length === 0 ? (
           <div className="py-10 text-center text-sm text-gray-600">
-            No reviews yet. Be the first one!
+            Chưa có đánh giá nào. Hãy là người đầu tiên!
           </div>
         ) : (
           <div className="flex flex-col gap-4">
@@ -228,7 +228,7 @@ export default function DocumentReviews() {
                   <div className="flex-1">
                     <div className="mb-1 flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">
-                        {r.user?.userName || "User"}
+                        {r.user?.userName || "Người dùng"}
                       </p>
                       <p className="text-xs text-gray-600">
                         {formatDate(r.createdAt)}

@@ -6,9 +6,9 @@ import { useCart } from "../../context/CartContext";
 import { jwtDecode } from "jwt-decode";
 
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Documents", href: "/document" },
-  { label: "FAQ", href: "faq" },
+  { label: "Trang chủ", href: "/" },
+  { label: "Tài liệu", href: "/document" },
+  { label: "Hỏi đáp", href: "faq" },
 ];
 
 const Header = () => {
@@ -55,6 +55,7 @@ const Header = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Khóa scroll khi drawer mở
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => {
@@ -66,6 +67,7 @@ const Header = () => {
     <>
       <header className="relative z-50 my-5 flex w-full justify-center">
         <div className="relative flex w-[90%] max-w-6xl items-center rounded-full border border-white/20 bg-white/10 px-5 py-3 backdrop-blur-md lg:px-8">
+          {/* Logo */}
           <Link to="/" onClick={() => setDrawerOpen(false)}>
             <img
               src="/UIT-Share-Logo-2.svg"
@@ -74,6 +76,7 @@ const Header = () => {
             />
           </Link>
 
+          {/* Menu - chỉ hiện trên desktop */}
           {!searchOpen && (
             <nav className="absolute left-1/2 hidden -translate-x-1/2 gap-10 font-medium text-white lg:flex">
               {NAV_LINKS.map((link) => (
@@ -88,6 +91,7 @@ const Header = () => {
             </nav>
           )}
 
+          {/* Right side */}
           <div
             className={`ml-auto flex items-center gap-3 lg:gap-6 ${searchOpen ? "flex-1" : ""}`}
           >
@@ -95,9 +99,11 @@ const Header = () => {
 
             {!searchOpen && (
               <>
+                {/* Desktop: đăng ký / cart / user */}
                 <div className="hidden items-center gap-6 lg:flex">
                   {accessToken ? (
                     <>
+                      {/* Cart với dropdown */}
                       <div
                         className="relative"
                         onMouseEnter={() => setCartHovered(true)}
@@ -121,12 +127,12 @@ const Header = () => {
                           <div className="absolute top-6 right-0 z-50 w-72 overflow-hidden rounded-xl border border-white/10 bg-[#1a1a2e]/95 shadow-xl backdrop-blur-md">
                             <div className="border-b border-white/10 px-4 py-3">
                               <p className="text-sm font-semibold text-white">
-                                Cart ({cartItems.length})
+                                Giỏ hàng ({cartItems.length})
                               </p>
                             </div>
                             {cartItems.length === 0 ? (
                               <div className="px-4 py-6 text-center text-sm text-gray-500">
-                                Your cart is empty
+                                Giỏ hàng trống
                               </div>
                             ) : (
                               <>
@@ -161,7 +167,7 @@ const Header = () => {
                                 <div className="border-t border-white/10 px-4 py-3">
                                   <Link to="/cart">
                                     <button className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600">
-                                      Checkout
+                                      Thanh toán
                                     </button>
                                   </Link>
                                 </div>
@@ -189,7 +195,7 @@ const Header = () => {
                                   to={`/profile/${userId}`}
                                   className="block cursor-pointer px-4 py-2 transition hover:bg-white/5"
                                 >
-                                  Profile
+                                  Trang cá nhân
                                 </Link>
                               </li>
 
@@ -197,7 +203,7 @@ const Header = () => {
                                 <li>
                                   <Link to="/admin">
                                     <button className="w-full cursor-pointer px-4 py-2 text-left transition hover:bg-white/5 hover:text-red-400">
-                                      Admin Panel
+                                      Quản lý
                                     </button>
                                   </Link>
                                 </li>
@@ -214,7 +220,7 @@ const Header = () => {
                                   }}
                                   className="w-full cursor-pointer px-4 py-2 text-left transition hover:bg-white/5 hover:text-red-400"
                                 >
-                                  Logout
+                                  Đăng xuất
                                 </button>
                               </li>
                             </ul>
@@ -225,12 +231,13 @@ const Header = () => {
                   ) : (
                     <Link to="/login">
                       <button className="cursor-pointer rounded-full bg-linear-to-r from-purple-600 to-indigo-600 px-6 py-2 text-white transition hover:opacity-90">
-                        Login
+                        Đăng nhập
                       </button>
                     </Link>
                   )}
                 </div>
 
+                {/* Mobile/Tablet: cart + hamburger */}
                 <div className="flex items-center gap-3 lg:hidden">
                   {accessToken && (
                     <div className="relative cursor-pointer">
@@ -260,6 +267,7 @@ const Header = () => {
         </div>
       </header>
 
+      {/* Overlay */}
       {drawerOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
@@ -267,9 +275,11 @@ const Header = () => {
         />
       )}
 
+      {/* Drawer */}
       <div
         className={`fixed top-0 right-0 z-50 flex h-full w-72 flex-col border-l border-white/10 bg-[#0f0f1a] transition-transform duration-300 ease-in-out lg:hidden ${drawerOpen ? "translate-x-0" : "translate-x-full"}`}
       >
+        {/* Drawer header */}
         <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
           <img
             src="/UIT-Share-Logo-2.svg"
@@ -284,6 +294,7 @@ const Header = () => {
           </button>
         </div>
 
+        {/* Nav links */}
         <nav className="flex flex-col gap-1 border-b border-white/10 px-5 py-4">
           {NAV_LINKS.map((link) => (
             <a
@@ -297,17 +308,18 @@ const Header = () => {
           ))}
         </nav>
 
+        {/* Cart section (chỉ khi đã login) */}
         {accessToken && (
           <div className="flex flex-1 flex-col overflow-hidden">
             <div className="border-b border-white/10 px-5 py-3">
               <p className="text-sm font-semibold text-white">
-                Cart ({cartItems.length})
+                Giỏ hàng ({cartItems.length})
               </p>
             </div>
 
             {cartItems.length === 0 ? (
               <div className="px-5 py-6 text-center text-sm text-gray-500">
-                Your cart is empty
+                Giỏ hàng trống
               </div>
             ) : (
               <>
@@ -342,7 +354,7 @@ const Header = () => {
                     onClick={() => navigate("/cart")}
                     className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
                   >
-                    Checkout
+                    Thanh toán
                   </button>
                 </div>
               </>
@@ -350,6 +362,7 @@ const Header = () => {
           </div>
         )}
 
+        {/* Auth buttons */}
         <div className="mt-auto border-t border-white/10 px-5 py-4">
           {!accessToken ? (
             <button
@@ -358,12 +371,12 @@ const Header = () => {
               }}
               className="w-full rounded-full bg-linear-to-r from-purple-600 to-indigo-600 py-2.5 font-medium text-white transition hover:opacity-90"
             >
-              Login
+              Đăng nhập
             </button>
           ) : (
             <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-white transition hover:bg-white/5">
               <HiUser size={20} />
-              <span className="text-sm font-medium">Profile</span>
+              <span className="text-sm font-medium">Trang cá nhân</span>
             </button>
           )}
         </div>
