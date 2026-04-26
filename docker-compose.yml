@@ -16,9 +16,7 @@ services:
     ports:
       - "8080:8080"
     env_file:
-      - .env                # Đọc biến môi trường từ file .env ở root
-    environment:
-      - DB_URL=mongodb://mongo:27017/uitshare   # Dùng tên service "mongo" thay vì localhost
+      - ./server/.env              # Đọc biến môi trường từ file .env ở root
     volumes:
       - uploads_data:/app/uploads   # Lưu file upload ra ngoài container
     depends_on:
