@@ -15,7 +15,6 @@ router.post(
   userController.addUser,
 );
 
-// ✅ Thêm route update user
 router.put(
   "/user/update/:userId",
   [AuthMiddleware.isAuthentication, AuthMiddleware.isAdmin],
