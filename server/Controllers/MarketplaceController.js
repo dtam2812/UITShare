@@ -70,49 +70,46 @@ const createListing = async ({
   tokenId,
   amount,
   price,
-  isOriginalCreator = true,
+  isOriginalCreator,
 }) => {
-  const signer = getBackendSigner();
-  const marketplace = getMarketplaceContract(signer);
+  const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
+  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+  const marketplace = new ethers.Contract(
+    process.env.MARKETPLACE_CONTRACT_ADDRESS,
+    MARKETPLACE_ABI,
+    signer,
+  );
 
   const priceInWei = ethers.parseEther(String(price));
-
   const tx = await marketplace.addOrder(tokenId, amount, priceInWei);
   const receipt = await tx.wait();
 
-  const args = parseEventFromReceipt(receipt, "OrderAdded");
-  if (!args) throw new Error("Không lấy được orderId từ event OrderAdded");
+  const iface = new ethers.Interface(MARKETPLACE_ABI);
+  let orderId = null;
 
-  const orderId = args.orderId.toString();
+  for (const log of receipt.logs) {
+    try {
+      const parsed = iface.parseLog(log);
+      if (parsed?.name === "OrderAdded") {
+        orderId = parsed.args.orderId.toString();
+        break;
+      }
+    } catch (_) {}
+  }
 
-  const listing = await listingModel.create({
+  if (!orderId) throw new Error("Không parse được orderId từ event");
+
+  await listingModel.create({
+    orderId,
     seller: sellerId,
     sellerAddress,
     document: documentId,
-    tokenId: String(tokenId),
-    orderId,
+    tokenId,
     amount,
     price,
     isOriginalCreator,
-    listTxHash: receipt.hash,
     status: "active",
   });
-
-  await transactionModel.create({
-    fromUser: sellerId,
-    fromAddress: sellerAddress,
-    document: documentId,
-    tokenId: String(tokenId),
-    orderId,
-    quantity: amount,
-    price,
-    type: "list",
-    txHash: receipt.hash,
-    blockNumber: receipt.blockNumber,
-    status: "success",
-  });
-
-  return listing;
 };
 
 //  buyDocument
@@ -228,20 +225,30 @@ const buyDocument = async (req, res) => {
     const quantityBought = 1;
 
     // 10. Cập nhật listing amount
-    listing.amount = listing.amount - quantityBought;
-    if (listing.amount <= 0) {
-      listing.status = "sold";
-      listing.soldAt = new Date();
-    }
-    await listing.save();
+    const newAmount = listing.amount - quantityBought;
+    const updateData =
+      newAmount <= 0
+        ? { amount: 0, status: "sold", soldAt: new Date() }
+        : { amount: newAmount };
+
+    await listingModel.updateOne({ _id: listing._id }, { $set: updateData });
+
+    listing.amount = newAmount;
+    listing.status = updateData.status ?? listing.status;
 
     // 11. Giảm remainingSupply + tăng downloadCount trong document
-    await documentModel.findByIdAndUpdate(document._id, {
-      $inc: {
-        remainingSupply: -quantityBought,
-        downloadCount: quantityBought,
-      },
-    });
+    if (listing.isOriginalCreator) {
+      await documentModel.findByIdAndUpdate(document._id, {
+        $inc: {
+          remainingSupply: -quantityBought,
+          downloadCount: quantityBought,
+        },
+      });
+    } else {
+      await documentModel.findByIdAndUpdate(document._id, {
+        $inc: { downloadCount: quantityBought },
+      });
+    }
 
     // 12. Giảm NFT của seller
     await nftModel.findOneAndUpdate(
@@ -305,7 +312,7 @@ const buyDocument = async (req, res) => {
 // cancelListing
 const cancelListing = async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId, txHash } = req.body;
     const userId = req.userId;
 
     if (!orderId) {
@@ -327,7 +334,96 @@ const cancelListing = async (req, res) => {
         .json({ message: "Bạn không có quyền hủy listing này" });
     }
 
-    // 3. Verify order còn active trên chain
+    // Luồng resell: user đã ký cancelOrder từ ví, gửi txHash để verify
+    if (!listing.isOriginalCreator) {
+      if (!txHash) {
+        return res
+          .status(400)
+          .json({ message: "Thiếu txHash để xác minh giao dịch huỷ" });
+      }
+
+      // Chống replay
+      const existingTx = await transactionModel.findOne({ txHash });
+      if (existingTx) {
+        return res
+          .status(409)
+          .json({ message: "Transaction này đã được xử lý" });
+      }
+
+      // Verify on-chain
+      const provider = getProvider();
+      const receipt = await getReceiptWithRetry(provider, txHash);
+      if (!receipt) {
+        return res.status(400).json({
+          message:
+            "Không tìm thấy transaction trên blockchain. Vui lòng thử lại sau.",
+        });
+      }
+      if (receipt.status !== 1) {
+        return res
+          .status(400)
+          .json({ message: "Transaction đã thất bại trên blockchain" });
+      }
+      if (
+        receipt.to?.toLowerCase() !==
+        process.env.MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()
+      ) {
+        return res.status(400).json({
+          message: "Transaction không tương tác với marketplace contract",
+        });
+      }
+
+      // Parse event OrderCancelled để đảm bảo đúng orderId
+      const iface = new ethers.Interface(MARKETPLACE_ABI);
+      let cancelledOrderId = null;
+      for (const log of receipt.logs) {
+        try {
+          const parsed = iface.parseLog(log);
+          if (parsed?.name === "OrderCancelled") {
+            cancelledOrderId = parsed.args.orderId.toString();
+            break;
+          }
+        } catch (_) {}
+      }
+
+      if (cancelledOrderId !== String(orderId)) {
+        return res.status(400).json({
+          message: "Transaction không khớp với orderId yêu cầu huỷ",
+        });
+      }
+
+      // Cập nhật DB
+      listing.status = "cancelled";
+      listing.cancelledAt = new Date();
+      await listing.save();
+
+      await documentModel.findByIdAndUpdate(listing.document, {
+        $inc: { remainingSupply: listing.amount },
+      });
+
+      const seller = await userModel.findById(userId);
+
+      await transactionModel.create({
+        fromUser: userId,
+        fromAddress: listing.sellerAddress ?? seller?.walletAddress,
+        document: listing.document,
+        tokenId: listing.tokenId,
+        orderId,
+        quantity: listing.amount,
+        price: listing.price,
+        type: "cancel",
+        txHash,
+        blockNumber: receipt.blockNumber,
+        status: "success",
+      });
+
+      return res.status(200).json({
+        message: "Hủy listing thành công",
+        txHash,
+      });
+    }
+
+    // Luồng original: backend wallet tự cancel on-chain
     const signer = getBackendSigner();
     const marketplace = getMarketplaceContract(signer);
     const onChainOrder = await marketplace.orders(orderId);
@@ -340,7 +436,6 @@ const cancelListing = async (req, res) => {
         .json({ message: "Order này đã không còn active trên blockchain" });
     }
 
-    // 4. Cancel on-chain
     const tx = await marketplace.cancelOrder(orderId);
     const receipt = await tx.wait();
 
@@ -350,14 +445,9 @@ const cancelListing = async (req, res) => {
         .json({ message: "Transaction cancel thất bại trên blockchain" });
     }
 
-    // 5. Cập nhật DB
     listing.status = "cancelled";
     listing.cancelledAt = new Date();
     await listing.save();
-
-    await documentModel.findByIdAndUpdate(listing.document, {
-      $inc: { remainingSupply: listing.amount },
-    });
 
     const seller = await userModel.findById(userId);
 
@@ -560,11 +650,20 @@ const checkAccess = async (req, res) => {
       tokenId: document.tokenId,
     });
 
-    if (nft && nft.amount > 0) {
-      return res.json({ hasAccess: true, reason: "owner" });
+    if (!nft || nft.amount < 1) {
+      return res.json({ hasAccess: false });
     }
 
-    return res.json({ hasAccess: false });
+    const activeListing = await listingModel.findOne({
+      seller: userId,
+      tokenId: document.tokenId,
+      status: "active",
+    });
+    if (activeListing) {
+      return res.json({ hasAccess: false, reason: "listed" });
+    }
+
+    return res.json({ hasAccess: true, reason: "owner" });
   } catch (error) {
     console.error("[checkAccess]", error);
     return res.status(500).json({ message: error.message || "Lỗi server" });
@@ -682,11 +781,179 @@ const donateToAuthor = async (req, res) => {
   }
 };
 
+const resellDocument = async (req, res) => {
+  try {
+    const { documentId, tokenId, amount, price, orderId, txHash } = req.body;
+    const sellerId = req.userId;
+
+    if (!documentId || !tokenId || !price || !orderId || !txHash) {
+      return res.status(400).json({ message: "Thiếu thông tin listing" });
+    }
+
+    const document = await documentModel.findById(documentId);
+    if (!document) {
+      return res.status(404).json({ message: "Không tìm thấy tài liệu" });
+    }
+
+    if (parseFloat(price) !== parseFloat(document.price)) {
+      return res.status(400).json({
+        message: `Giá bán phải bằng giá gốc của tác giả: ${document.price} ETH`,
+      });
+    }
+
+    // Kiểm tra seller có NFT không
+    const nft = await nftModel.findOne({ user: sellerId, tokenId });
+    if (!nft || nft.amount < 1) {
+      return res.status(400).json({ message: "Bạn không sở hữu NFT này" });
+    }
+
+    const existingListing = await listingModel.findOne({
+      seller: sellerId,
+      tokenId,
+      status: "active",
+    });
+    if (existingListing) {
+      return res.status(409).json({
+        message: "Bạn đã có listing đang active cho tài liệu này",
+      });
+    }
+
+    const existingTx = await transactionModel.findOne({ txHash });
+    if (existingTx) {
+      return res.status(409).json({ message: "Transaction này đã được xử lý" });
+    }
+
+    const seller = await userModel.findById(sellerId);
+
+    await listingModel.create({
+      orderId,
+      seller: sellerId,
+      sellerAddress: seller.walletAddress,
+      document: documentId,
+      tokenId,
+      amount: amount || 1,
+      price: document.price,
+      isOriginalCreator: false,
+      status: "active",
+    });
+
+    return res.status(201).json({ message: "Đăng bán thành công" });
+  } catch (error) {
+    console.error("[resellDocument]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
+const getDonationsReceived = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const donations = await transactionModel
+      .find({ toUser: userId, type: "donate", status: "success" })
+      .sort({ createdAt: -1 })
+      .populate("fromUser", "userName avatar")
+      .lean();
+
+    const totalETH = donations.reduce((sum, d) => sum + (d.price ?? 0), 0);
+    const maxETH = donations.length
+      ? Math.max(...donations.map((d) => d.price ?? 0))
+      : 0;
+
+    return res.json({
+      donations,
+      stats: {
+        total: donations.length,
+        totalETH: Math.round(totalETH * 10000) / 10000,
+        maxETH,
+      },
+    });
+  } catch (error) {
+    console.error("[getDonationsReceived]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
+const getAuthorResellListings = async (req, res) => {
+  try {
+    const { authorId } = req.params;
+
+    const listings = await listingModel
+      .find({ seller: authorId, status: "active", isOriginalCreator: false })
+      .populate({
+        path: "document",
+        select:
+          "title fileUrl price subject category pageCount averageRating downloadCount commentCount tokenId author createdAt",
+        populate: { path: "author", select: "userName avatar _id" },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.json(listings);
+  } catch (error) {
+    console.error("[getAuthorResellListings]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
+const getPurchasedDocuments = async (req, res) => {
+  try {
+    const userId = req.userId;
+
+    const nfts = await nftModel
+      .find({ user: userId, amount: { $gt: 0 } })
+      .populate({
+        path: "document",
+        populate: { path: "author", select: "userName avatar" },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const purchased = nfts
+      .filter(
+        (nft) =>
+          nft.document &&
+          nft.document.author?._id?.toString() !== userId.toString(),
+      )
+      .map((nft) => ({
+        ...nft.document,
+        boughtAt: nft.createdAt,
+        nftAmount: nft.amount,
+      }));
+
+    return res.json(purchased);
+  } catch (error) {
+    console.error("[getPurchasedDocuments]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
+const getListingById = async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const listing = await listingModel
+      .findById(listingId)
+      .populate("seller", "userName avatar _id")
+      .lean();
+
+    if (!listing) {
+      return res.status(404).json({ message: "Không tìm thấy listing" });
+    }
+    return res.json(listing);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createListing,
   buyDocument,
   cancelListing,
+  getAuthorResellListings,
   transferNFT,
   checkAccess,
   donateToAuthor,
+  resellDocument,
+  getDonationsReceived,
+  getPurchasedDocuments,
+  getListingById,
 };

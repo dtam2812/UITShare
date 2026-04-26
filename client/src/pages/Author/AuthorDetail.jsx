@@ -261,16 +261,24 @@ const AuthorDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showDonateModal, setShowDonateModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("shared");
+  const [resellListings, setResellListings] = useState([]);
+  const [resellLoading, setResellLoading] = useState(false);
+  const { address: currentWallet } = useAccount();
 
   useEffect(() => {
     const fetchAuthor = async () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await axios.get(`/api/author/authorDetail/${authorId}`);
-        setAuthor(res.data.author);
-        setDocuments(res.data.documents);
-        setStats(res.data.stats);
+        const [authorRes, resellRes] = await Promise.all([
+          axios.get(`/api/author/authorDetail/${authorId}`),
+          axios.get(`/api/marketplace/author/${authorId}/resell`),
+        ]);
+        setAuthor(authorRes.data.author);
+        setDocuments(authorRes.data.documents);
+        setStats(authorRes.data.stats);
+        setResellListings(resellRes.data);
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tác giả");
       } finally {
@@ -382,16 +390,18 @@ const AuthorDetail = () => {
               )}
 
               {/* Donate button — chỉ hiện khi tác giả đã liên kết ví */}
-              {author.walletAddress && (
-                <button
-                  onClick={() => setShowDonateModal(true)}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
-                  title="Ủng hộ tác giả bằng ETH"
-                >
-                  <FiHeart className="h-4 w-4" />
-                  Donate ETH
-                </button>
-              )}
+              {author.walletAddress &&
+                currentWallet?.toLowerCase() !==
+                  author.walletAddress?.toLowerCase() && (
+                  <button
+                    onClick={() => setShowDonateModal(true)}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-pink-500/30 bg-pink-500/10 px-4 py-2.5 text-sm font-medium text-pink-400 transition-all hover:bg-pink-500/20 hover:text-pink-300"
+                    title="Ủng hộ tác giả bằng ETH"
+                  >
+                    <FiHeart className="h-4 w-4" />
+                    Donate ETH
+                  </button>
+                )}
             </div>
           </div>
 
@@ -438,18 +448,88 @@ const AuthorDetail = () => {
 
         {/* Documents */}
         <div>
-          <h2 className="mb-6 flex items-center gap-2 text-xl font-bold text-white">
-            <span className="h-6 w-1.5 rounded-sm bg-cyan-400" />
-            Tài liệu đã chia sẻ
-          </h2>
-          {documents.length === 0 ? (
-            <p className="text-center text-gray-500">Chưa có tài liệu nào.</p>
-          ) : (
-            <div className="flex flex-wrap gap-4">
-              {documents.map((doc) => (
-                <DocumentCard key={doc._id} {...doc} />
-              ))}
-            </div>
+          {/* Tab Header */}
+          <div className="mx-auto mb-6 flex w-fit items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1">
+            <button
+              onClick={() => setActiveTab("shared")}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                activeTab === "shared"
+                  ? "bg-purple-500/30 text-purple-300"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <FiFileText className="h-4 w-4" />
+              Tài liệu đã chia sẻ
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                {stats.totalDocs}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab("resell")}
+              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                activeTab === "resell"
+                  ? "bg-cyan-500/30 text-cyan-300"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <FiShield className="h-4 w-4" />
+              Đang bán lại
+              {resellListings.length > 0 && (
+                <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
+                  {resellListings.length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === "shared" && (
+            <>
+              {documents.length === 0 ? (
+                <p className="text-center text-gray-500">
+                  Chưa có tài liệu nào.
+                </p>
+              ) : (
+                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
+                  {documents.map((doc) => (
+                    <DocumentCard key={doc._id} {...doc} />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "resell" && (
+            <>
+              {resellLoading ? (
+                <p className="py-8 text-center text-gray-500">Đang tải...</p>
+              ) : resellListings.length === 0 ? (
+                <p className="py-8 text-center text-gray-500">
+                  Chưa có tài liệu nào đang bán lại.
+                </p>
+              ) : (
+                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
+                  {resellListings.map((listing) => (
+                    <div
+                      key={listing._id}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(
+                          `/documentDetail/${listing.document._id}?listingId=${listing._id}`,
+                        );
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <DocumentCard
+                        {...listing.document}
+                        price={listing.price}
+                        disableLink
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

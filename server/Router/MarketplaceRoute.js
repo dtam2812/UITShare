@@ -29,4 +29,29 @@ router.post(
   marketplaceController.donateToAuthor,
 );
 
+router.post(
+  "/list",
+  authMiddleware.isAuthentication,
+  marketplaceController.resellDocument,
+);
+
+router.get(
+  "/donate/received",
+  authMiddleware.isAuthentication,
+  marketplaceController.getDonationsReceived,
+);
+
+router.get(
+  "/purchased",
+  authMiddleware.isAuthentication,
+  marketplaceController.getPurchasedDocuments,
+);
+
+router.get(
+  "/author/:authorId/resell",
+  marketplaceController.getAuthorResellListings,
+);
+
+router.get("/listing/:listingId", marketplaceController.getListingById);
+
 module.exports = router;

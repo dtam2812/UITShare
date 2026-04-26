@@ -1,3 +1,4 @@
+import { FaMoneyBillTransfer } from "react-icons/fa6";
 import {
   FiUser,
   FiFileText,
@@ -6,6 +7,7 @@ import {
   FiStar,
   FiLogOut,
   FiGift,
+  FiFile,
 } from "react-icons/fi";
 import { NavLink, useNavigate, useParams } from "react-router";
 
@@ -53,6 +55,16 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
         >
           <FiFileText className="h-5 w-5" />
           Tài liệu đã tải lên
+        </NavLink>
+
+        <NavLink to={`/profile/${userId}/purchased`} className={navLinkClass}>
+          <FiFile className="h-5 w-5" />
+          Tài liệu đã mua
+        </NavLink>
+
+        <NavLink to={`/profile/${userId}/resell`} className={navLinkClass}>
+          <FaMoneyBillTransfer className="h-5 w-5" />
+          Tài liệu bán lại
         </NavLink>
 
         <NavLink to={`/profile/${userId}/financials`} className={navLinkClass}>

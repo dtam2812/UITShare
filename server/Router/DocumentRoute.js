@@ -25,7 +25,11 @@ const upload = multer({ dest: "uploads/" });
 
 router.get("/documentDetail/:documentId", documentController.getDocumentDetail);
 
-router.delete("/deleteDocument/:documentId", documentController.deleteDocument);
+router.delete(
+  "/deleteDocument/:documentId",
+  authMiddleware.isAuthentication,
+  documentController.deleteDocument,
+);
 
 router.post(
   "/upload",
@@ -38,10 +42,5 @@ router.post(
 );
 
 router.get("/documentList", documentController.getListDocument);
-
-router.get(
-  "/transactionHistory/:tokenId",
-  documentController.getNFTTransactionHistory,
-);
 
 module.exports = router;

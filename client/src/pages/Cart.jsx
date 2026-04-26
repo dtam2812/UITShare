@@ -12,6 +12,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import { ethers } from "ethers";
 import axios from "../common";
@@ -77,10 +78,16 @@ export default function Cart() {
     }));
   };
 
-  const fetchOrderId = async (documentId) => {
-    console.log("Fetching listing for documentId:", documentId);
+  const fetchOrderId = async (documentId, listingId = null) => {
+    if (listingId) {
+      // Resell item: lấy orderId từ listingId
+      const res = await axios.get(`/api/marketplace/listing/${listingId}`);
+      if (!res.data?.orderId) throw new Error("Không có listing active");
+      return { orderId: res.data.orderId, price: res.data.price };
+    }
+
+    // Item thường
     const res = await axios.get(`/api/listing/active/${documentId}`);
-    console.log("Listing response:", res.data);
     if (!res.data?.orderId) throw new Error("Không có listing active");
     return { orderId: res.data.orderId, price: res.data.price };
   };
@@ -88,6 +95,7 @@ export default function Cart() {
   const handleCheckout = async () => {
     setCheckoutStep(CHECKOUT_STEP.CHECKING);
 
+    // 1. Lấy ví từ DB trước tiên
     let walletAddress = null;
     try {
       const { data } = await axios.get(`/api/wallet/walletInfo/${userId}`);
@@ -111,10 +119,13 @@ export default function Cart() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
 
-      if (address.toLowerCase() !== walletAddress.toLowerCase()) {
+      // 2. Lấy account đang active từ MetaMask
+      const accounts = await provider.send("eth_accounts", []);
+      const signerAddress = accounts[0];
+
+      // 3. So sánh với DB
+      if (signerAddress?.toLowerCase() !== walletAddress?.toLowerCase()) {
         setCheckoutStep(CHECKOUT_STEP.IDLE);
         setBalanceInfo({
           balance: "—",
@@ -125,7 +136,8 @@ export default function Cart() {
         return;
       }
 
-      const balanceWei = await provider.getBalance(address);
+      // 4. Check số dư
+      const balanceWei = await provider.getBalance(signerAddress);
       const balanceEth = parseFloat(ethers.formatEther(balanceWei));
       if (balanceEth < total) {
         setCheckoutStep(CHECKOUT_STEP.IDLE);
@@ -138,6 +150,7 @@ export default function Cart() {
         return;
       }
 
+      const signer = await provider.getSigner(signerAddress);
       const marketplace = new ethers.Contract(
         import.meta.env.VITE_MARKETPLACE_CONTRACT_ADDRESS,
         MARKETPLACE_ABI,
@@ -149,19 +162,19 @@ export default function Cart() {
 
       for (const item of cartItems) {
         setItemStatus(item._id, { status: ITEM_STATUS.PROCESSING });
-
         try {
-          const { orderId, price } = await fetchOrderId(item._id);
+          const { orderId, price } = await fetchOrderId(
+            item._id,
+            item.listingId ?? null,
+          );
           const priceInWei = ethers.parseEther(String(price));
-
           const tx = await marketplace.executeOrder(orderId, {
             value: priceInWei,
           });
           const receipt = await tx.wait();
 
-          if (receipt.status !== 1) {
+          if (receipt.status !== 1)
             throw new Error("Transaction thất bại trên blockchain");
-          }
 
           await axios.post("/api/marketplace/buy", {
             orderId,
@@ -187,23 +200,17 @@ export default function Cart() {
         }
       }
 
-      if (succeededIds.length > 0) {
-        removeMultipleFromCart(succeededIds);
-      }
+      if (succeededIds.length > 0) removeMultipleFromCart(succeededIds);
 
       setCheckoutStep(CHECKOUT_STEP.DONE);
       setCheckoutDone(true);
       setSuccessCount(succeededIds.length);
-
-      if (succeededIds.length > 0) {
-        setSuccessModal(true);
-      }
+      if (succeededIds.length > 0) setSuccessModal(true);
     } catch (err) {
       console.error("[checkout]", err);
       setCheckoutStep(CHECKOUT_STEP.IDLE);
     }
   };
-
   const StatusBadge = ({ docId }) => {
     const s = itemStatuses[docId];
     if (!s || checkoutStep === CHECKOUT_STEP.IDLE) return null;
@@ -311,6 +318,15 @@ export default function Cart() {
                   <p className="mt-1 text-xs text-gray-500">
                     Tác giả: {item.author?.userName || "—"}
                   </p>
+
+                  {/* Badge resell */}
+                  {item.listingId && (
+                    <span className="mt-1.5 inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+                      <Tag className="h-2.5 w-2.5" />
+                      Mua từ người bán lại
+                    </span>
+                  )}
+
                   {itemStatuses[item._id]?.txHash && (
                     <a
                       href={`https://sepolia.etherscan.io/tx/${itemStatuses[item._id].txHash}`}

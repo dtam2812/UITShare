@@ -16,7 +16,7 @@ const TYPE_CONFIG = {
     icon: <Coins className="h-3 w-3" />,
   },
   buy: {
-    label: "Mua",
+    label: "Buy",
     color: "text-green-400",
     bg: "bg-green-500/20",
     icon: <ShieldCheck className="h-3 w-3" />,
@@ -34,7 +34,7 @@ const TYPE_CONFIG = {
     icon: <Tag className="h-3 w-3" />,
   },
   cancel: {
-    label: "Huỷ",
+    label: "Cancel",
     color: "text-red-400",
     bg: "bg-red-500/20",
     icon: <XCircle className="h-3 w-3" />,
@@ -47,7 +47,7 @@ const TYPE_CONFIG = {
   },
 };
 
-export default function NFTInfo({ nft, nftHistory = [] }) {
+export default function NFTInfo({ nft }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
       {/* Header */}
@@ -65,99 +65,50 @@ export default function NFTInfo({ nft, nftHistory = [] }) {
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </div>
-        <h3 className="text-base font-bold text-white">Thông tin NFT</h3>
+        <h3 className="text-base font-bold text-white">NFT Information</h3>
       </div>
 
       {/* NFT Stats */}
       <div className="mb-6 grid grid-cols-3 gap-5">
         {[
-          { label: "Giá", value: `${nft.price} ETH`, highlight: true },
+          { label: "Price", value: `${nft.price} ETH`, highlight: true },
           { label: "Token ID", value: `#${nft.tokenId}` },
-          { label: "Hoa hồng tác giả", value: `${nft.royaltyPercent ?? 0}%` },
-          { label: "Tổng số bản", value: `${nft.totalSupply} bản` },
-          { label: "Số bản còn lại", value: `${nft.remainingSupply ?? 0} bản` },
+          { label: "Author Royalty", value: `${nft.royaltyPercent ?? 0}%` },
+          { label: "Total Supply", value: `${nft.totalSupply} copies` },
+          {
+            label: "Remaining Supply",
+            value: `${nft.remainingSupply ?? 0} copies`,
+          },
         ].map((item) => (
           <div key={item.label}>
             <p className="mb-1 text-xs text-gray-500">{item.label}</p>
             <p
-              className={`text-sm font-semibold ${item.highlight ? "text-lg text-purple-400" : "text-white"}`}
+              className={`text-sm font-semibold ${
+                item.highlight ? "text-lg text-purple-400" : "text-white"
+              }`}
             >
               {item.value}
             </p>
           </div>
         ))}
 
-        {/* Contract address */}
+        {/* Author wallet address */}
         <div className="col-span-2">
-          <p className="mb-1 text-xs text-gray-500">Địa chỉ hợp đồng</p>
+          <p className="mb-1 text-xs text-gray-500">Author Wallet Address</p>
           <div className="flex items-center gap-2">
             <p className="font-mono text-sm font-semibold text-white">
-              {nft.contractAddress?.slice(0, 20)}...
+              {nft.authorWallet ? `${nft.authorWallet.slice(0, 20)}...` : "—"}
             </p>
-            <button
-              onClick={() => navigator.clipboard.writeText(nft.contractAddress)}
-              className="cursor-pointer text-white/40 transition-colors hover:text-cyan-400"
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
+            {nft.authorWallet && (
+              <button
+                onClick={() => navigator.clipboard.writeText(nft.authorWallet)}
+                className="cursor-pointer text-white/40 transition-colors hover:text-cyan-400"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
-      </div>
-
-      {/* Transaction History */}
-      <div>
-        <p className="mb-3 text-xs font-semibold tracking-widest text-gray-500 uppercase">
-          Lịch sử giao dịch
-        </p>
-
-        {nftHistory.length === 0 ? (
-          <p className="py-4 text-center text-xs text-gray-600">
-            Chưa có giao dịch nào
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {nftHistory.map((tx) => {
-              const cfg = TYPE_CONFIG[tx.type] ?? TYPE_CONFIG.transfer;
-              return (
-                <div
-                  key={tx._id}
-                  className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2.5"
-                >
-                  {/* Left: type badge + actors */}
-                  <div className="flex items-center gap-2.5">
-                    <div
-                      className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${cfg.bg} ${cfg.color}`}
-                    >
-                      {cfg.icon}
-                      {cfg.label}
-                    </div>
-                    <p className="text-xs text-gray-400">
-                      {tx.fromUser?.userName ?? shortenAddress(tx.fromAddress)}
-                      {tx.toUser && (
-                        <span className="text-gray-600">
-                          {" → "}
-                          {tx.toUser.userName ?? shortenAddress(tx.toAddress)}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-
-                  {/* Right: price + date */}
-                  <div className="text-right">
-                    {tx.price > 0 && (
-                      <p className="text-xs font-semibold text-white">
-                        {tx.price} ETH
-                      </p>
-                    )}
-                    <p className="text-xs text-gray-600">
-                      {new Date(tx.createdAt).toLocaleDateString("vi-VN")}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </div>
   );

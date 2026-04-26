@@ -39,7 +39,7 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
 
     if (finalFile.length === 0) return;
 
-    setFileUploaded((prev) => [...prev, ...finalFile]);
+    setFileUploaded([finalFile[0]]);
 
     fileInputRef.current.value = null;
   };
@@ -123,7 +123,6 @@ const Step1Dropzone = ({ onNextStep, initialFile = [] }) => {
 
         <input
           type="file"
-          multiple
           accept=".pdf"
           className="hidden"
           ref={fileInputRef}

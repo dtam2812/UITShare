@@ -1,11 +1,7 @@
-import { useState } from "react";
-import { Star, Send } from "lucide-react";
-
-const INITIAL_REVIEWS = [
-  { id: 1, user: "Minh Khoa",   avatar: "M", rating: 5, date: "12/03/2025", comment: "Tài liệu rất chi tiết, đầy đủ. Mình thi xong được 9 điểm nhờ bộ này!" },
-  { id: 2, user: "Thảo Nguyên", avatar: "T", rating: 5, date: "08/03/2025", comment: "Chất lượng tốt, đáng đồng tiền. Tác giả trình bày rõ ràng, dễ hiểu." },
-  { id: 3, user: "Quốc Bảo",    avatar: "Q", rating: 4, date: "01/03/2025", comment: "Phần lý thuyết ok nhưng bài tập tự luận hơi ít. Vẫn recommend." },
-];
+import { useState, useEffect } from "react";
+import { Star, Send, Loader2 } from "lucide-react";
+import axios from "../../common";
+import { useParams } from "react-router";
 
 function StarRating({ value }) {
   return (
@@ -26,6 +22,7 @@ function StarRating({ value }) {
 
 function StarRatingInput({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
+
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((s) => (
@@ -47,42 +44,101 @@ function StarRatingInput({ value, onChange }) {
         </button>
       ))}
       {value > 0 && (
-        <span className="text-sm text-yellow-400 font-semibold ml-2">{value}/5</span>
+        <span className="ml-2 text-sm font-semibold text-yellow-400">
+          {value}/5
+        </span>
       )}
     </div>
   );
 }
 
-export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
-  const [reviews, setReviews] = useState(initialReviews);
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(
+    d.getMonth() + 1
+  ).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+function getAvatar(userName) {
+  return userName?.[0]?.toUpperCase() || "?";
+}
+
+export default function DocumentReviews() {
+  const { documentId } = useParams();
+
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [commentRating, setCommentRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  function handleSubmit() {
-    if (!commentText.trim() || commentRating === 0) return;
+  useEffect(() => {
+    if (!documentId) return;
 
-    const today = new Date();
-    const dateStr = `${String(today.getDate()).padStart(2, "0")}/${String(today.getMonth() + 1).padStart(2, "0")}/${today.getFullYear()}`;
+    const fetchComments = async () => {
+      setLoadingReviews(true);
+      try {
+        const res = await axios.get(`/api/comments/${documentId}`);
+        setReviews(res.data);
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
 
-    setReviews((prev) => [
-      { id: Date.now(), user: "Bạn", avatar: "B", rating: commentRating, date: dateStr, comment: commentText.trim() },
-      ...prev,
-    ]);
-    setCommentText("");
-    setCommentRating(0);
-  }
+    fetchComments();
+  }, [documentId]);
+
+  const isLoggedIn = () => {
+    const token = localStorage.getItem("access_token");
+    return token && token !== "undefined";
+  };
 
   const isReady = commentText.trim() && commentRating > 0;
 
+  async function handleSubmit() {
+    if (!isReady) return;
+
+    if (!isLoggedIn()) {
+      setErrorMsg("Please log in to leave a review.");
+      return;
+    }
+
+    setSubmitting(true);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    try {
+      const res = await axios.post(`/api/comments/${documentId}`, {
+        content: commentText.trim(),
+        rating: commentRating,
+      });
+
+      setReviews((prev) => [res.data, ...prev]);
+      setCommentText("");
+      setCommentRating(0);
+      setSuccessMsg("Your review has been submitted!");
+      setTimeout(() => setSuccessMsg(""), 3000);
+    } catch (err) {
+      setErrorMsg(
+        err.response?.data?.message || "Submission failed. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
-
       {/* Write a review */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-4">Viết đánh giá</h3>
+      <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+        <h3 className="mb-4 text-lg font-bold text-white">Write a Review</h3>
 
         <div className="mb-4">
-          <p className="text-sm text-white mb-2">Đánh giá của bạn</p>
+          <p className="mb-2 text-sm text-white">Your Rating</p>
           <StarRatingInput value={commentRating} onChange={setCommentRating} />
         </div>
 
@@ -90,64 +146,107 @@ export default function DocumentReviews({ initialReviews = INITIAL_REVIEWS }) {
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Chia sẻ trải nghiệm của bạn về tài liệu này..."
+            placeholder="Share your experience about this document..."
             rows={4}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white-600 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none transition-colors"
+            className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 transition-colors focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 focus:outline-none"
           />
         </div>
 
+        {errorMsg && <p className="mb-2 text-xs text-red-400">{errorMsg}</p>}
+        {successMsg && (
+          <p className="mb-2 text-xs text-green-400">{successMsg}</p>
+        )}
+
         <div className="flex items-center justify-between">
-          <p className="text-xs text-white">
+          <p className="text-xs text-gray-500">
             {!isReady
               ? commentRating === 0 && !commentText.trim()
-                ? "Chọn số sao và viết nhận xét để gửi"
+                ? "Select stars and write a review to submit"
                 : commentRating === 0
-                ? "Vui lòng chọn số sao"
-                : "Vui lòng viết nhận xét"
-              : "Sẵn sàng gửi đánh giá!"}
+                ? "Please select a rating"
+                : "Please write a review"
+              : "Ready to submit!"}
           </p>
+
           <button
             onClick={handleSubmit}
-            disabled={!isReady}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
-              isReady
-                ? "bg-purple-500 hover:bg-purple-600 text-white"
-                : "bg-white/5 text-gray-600 cursor-not-allowed"
+            disabled={!isReady || submitting}
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+              isReady && !submitting
+                ? "bg-purple-500 text-white hover:bg-purple-600"
+                : "cursor-not-allowed bg-white/5 text-gray-600"
             }`}
           >
-            <Send className="w-4 h-4" />
-            Gửi đánh giá
+            {submitting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            Submit Review
           </button>
         </div>
       </div>
 
       {/* Reviews list */}
       <div>
-        <h3 className="text-lg font-bold text-white mb-4">
-          Đánh giá{" "}
-          <span className="text-gray-500 font-normal text-sm">({reviews.length})</span>
+        <h3 className="mb-4 text-lg font-bold text-white">
+          Reviews{" "}
+          <span className="text-sm font-normal text-gray-500">
+            ({reviews.length})
+          </span>
         </h3>
-        <div className="flex flex-col gap-4">
-          {reviews.map((r) => (
-            <div key={r.id} className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full bg-linear-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-sm font-bold text-black shrink-0">
-                  {r.avatar}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-semibold text-white">{r.user}</p>
-                    <p className="text-xs text-gray-600">{r.date}</p>
+
+        {loadingReviews ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading reviews...</span>
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="py-10 text-center text-sm text-gray-600">
+            No reviews yet. Be the first one!
+          </div>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {reviews.map((r) => (
+              <div
+                key={r._id}
+                className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-sm font-bold text-black">
+                    {r.user?.avatar ? (
+                      <img
+                        src={r.user.avatar}
+                        alt={r.user.userName}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      getAvatar(r.user?.userName)
+                    )}
                   </div>
-                  <StarRating value={r.rating} />
-                  <p className="text-gray-400 text-sm mt-2 leading-relaxed">{r.comment}</p>
+
+                  <div className="flex-1">
+                    <div className="mb-1 flex items-center justify-between">
+                      <p className="text-sm font-semibold text-white">
+                        {r.user?.userName || "User"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {formatDate(r.createdAt)}
+                      </p>
+                    </div>
+
+                    {r.rating && <StarRating value={r.rating} />}
+
+                    <p className="mt-2 text-sm leading-relaxed text-gray-400">
+                      {r.content}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
-
     </div>
   );
 }

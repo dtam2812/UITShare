@@ -6,6 +6,7 @@ import { useState } from "react";
 import axios from "../../common";
 import { jwtDecode } from "jwt-decode";
 import { useCart } from "../../context/CartContext";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,33 +17,30 @@ const Login = () => {
   const handleLogin = async (e) => {
     try {
       e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
 
       if (!email || !password) {
-        alert("Chưa nhập đủ thông tin!");
+        toast.error("Vui lòng nhập đầy đủ email và mật khẩu!");
         return;
       }
 
-      const response = await axios.post("api/auth/login", {
-        email: email,
-        password: password,
-      });
+      const response = await axios.post("api/auth/login", { email, password });
 
       if (response.status === 200) {
         const accessToken = response.data.accessToken;
         const payloadDedoded = jwtDecode(accessToken);
-
-        if (payloadDedoded.role === "admin") navigate("/admin");
-        else navigate("/");
-
         localStorage.setItem("access_token", accessToken);
         reloadCartForCurrentUser();
         setEmail("");
         setPassword("");
+        if (payloadDedoded.role === "admin") navigate("/admin");
+        else navigate("/");
       }
     } catch (error) {
-      console.log(error);
+      if (error.response?.status === 400) {
+        toast.error("Email hoặc mật khẩu không đúng!");
+      } else {
+        toast.error("Đã có lỗi xảy ra, vui lòng thử lại.");
+      }
     }
   };
 

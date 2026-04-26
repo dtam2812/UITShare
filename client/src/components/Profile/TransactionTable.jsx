@@ -7,7 +7,7 @@ const TransactionTable = ({ transactions }) => {
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold text-white">Giao dịch gần đây</h3>
         <Link
-          to="/profile/purchase-history"
+          to="/profile/:userId/purchase-history"
           className="text-sm font-medium text-purple-400 hover:text-purple-300 hover:underline transition-colors"
         >
           Xem tất cả &rarr;
