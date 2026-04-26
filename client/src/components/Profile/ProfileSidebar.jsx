@@ -11,7 +11,7 @@ import {
 } from "react-icons/fi";
 import { NavLink, useNavigate, useParams } from "react-router";
 
-const ProfileSidebar = ({ avatar, userName, email }) => {
+const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 py-3 px-4 font-medium transition-all rounded-r-xl border-l-4 
     ${isActive ? "bg-purple-500/10 text-purple-400 border-purple-400" : "text-gray-400 hover:bg-white/5 hover:text-white border-transparent"}`;
@@ -20,6 +20,7 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
   const { userId } = useParams();
 
   const handleLogout = () => {
+    onClose?.();
     navigate("/");
   };
 
@@ -44,7 +45,7 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
           Quản lý tài khoản
         </p>
 
-        <NavLink to={`/profile/${userId}`} end className={navLinkClass}>
+        <NavLink to={`/profile/${userId}`} end className={navLinkClass} onClick={onClose}>
           <FiUser className="h-5 w-5" />
           Thông tin cá nhân
         </NavLink>
@@ -52,22 +53,23 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
         <NavLink
           to={`/profile/${userId}/uploadedDocs`}
           className={navLinkClass}
+          onClick={onClose}
         >
           <FiFileText className="h-5 w-5" />
           Tài liệu đã tải lên
         </NavLink>
 
-        <NavLink to={`/profile/${userId}/purchased`} className={navLinkClass}>
+        <NavLink to={`/profile/${userId}/purchased`} className={navLinkClass} onClick={onClose}>
           <FiFile className="h-5 w-5" />
           Tài liệu đã mua
         </NavLink>
 
-        <NavLink to={`/profile/${userId}/resell`} className={navLinkClass}>
+        <NavLink to={`/profile/${userId}/resell`} className={navLinkClass} onClick={onClose}>
           <FaMoneyBillTransfer className="h-5 w-5" />
           Tài liệu bán lại
         </NavLink>
 
-        <NavLink to={`/profile/${userId}/financials`} className={navLinkClass}>
+        <NavLink to={`/profile/${userId}/financials`} className={navLinkClass} onClick={onClose}>
           <FiCreditCard className="h-5 w-5" />
           Tài chính & Ví NFT
         </NavLink>
@@ -75,6 +77,7 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
         <NavLink
           to={`/profile//${userId}/purchase-history`}
           className={navLinkClass}
+          onClick={onClose}
         >
           <FiClock className="h-5 w-5" />
           Lịch sử giao dịch
@@ -83,6 +86,7 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
         <NavLink
           to={`/profile//${userId}/reviewsManagement`}
           className={navLinkClass}
+          onClick={onClose}
         >
           <FiStar className="h-5 w-5" />
           Đánh giá nhận được
@@ -91,6 +95,7 @@ const ProfileSidebar = ({ avatar, userName, email }) => {
         <NavLink
           to={`/profile//${userId}/donationsReceived`}
           className={navLinkClass}
+          onClick={onClose}
         >
           <FiGift className="h-5 w-5" />
           Donate nhận được

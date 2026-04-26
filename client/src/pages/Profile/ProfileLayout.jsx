@@ -63,13 +63,6 @@ const ProfileLayout = () => {
 
   return (
     <div className="relative min-h-screen bg-[#050816] font-sans text-white">
-      <button
-        onClick={handleClick}
-        className="fixed top-4 right-4 z-50 rounded-lg border border-white/10 bg-white/5 p-2 text-gray-300 shadow-md backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white focus:outline-none md:hidden"
-      >
-        {openSidebar ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
-      </button>
-
       <div
         onClick={handleClick}
         className={`fixed inset-0 z-40 bg-[#050816]/80 backdrop-blur-sm transition-opacity md:hidden ${openSidebar ? "" : "hidden"}`}
@@ -85,10 +78,21 @@ const ProfileLayout = () => {
             avatar={profileInfo.avatar}
             userName={profileInfo.userName}
             email={profileInfo.email}
+            onClose={() => setOpenSidebar(false)} 
           />
         </aside>
 
-        <main className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
+        <main className={`flex h-screen w-full flex-1 flex-col ${openSidebar ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <div className="md:hidden px-6 pt-4">
+            <button
+              onClick={handleClick}
+              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 hover:bg-white/10 transition-colors"
+            >
+              <FiMenu className="h-4 w-4" />
+              Menu tài khoản
+            </button>
+          </div>
+
           <div className="w-full flex-1 p-6 md:p-10">
             <Outlet />
           </div>
