@@ -46,14 +46,16 @@ export default function DocumentDetail() {
   const { cartItems, addToCart } = useCart();
   const isInCart = cartItems.some((item) => item._id === doc?._id);
 
-  // ── Fetch document ──────────────────────────────────────────────────────────
+  //  Fetch documen
   useEffect(() => {
     const fetchDocument = async () => {
       setLoading(true);
       setError(null);
       setAccessStatus(ACCESS_STATUS.LOADING);
       try {
-        const response = await axios.get(`/api/documents/documentDetail/${documentId}`);
+        const response = await axios.get(
+          `/api/documents/documentDetail/${documentId}`,
+        );
         if (response.status === 200) setDoc(response.data);
       } catch (err) {
         setError(err.response?.data?.message || "Không tìm thấy tài liệu");
@@ -64,7 +66,7 @@ export default function DocumentDetail() {
     fetchDocument();
   }, [documentId]);
 
-  // ── Fetch resell listing (when navigating from marketplace) ─────────────────
+  // Fetch resell listing
   useEffect(() => {
     const listingId = searchParams.get("listingId");
     if (!listingId) return;
@@ -79,7 +81,7 @@ export default function DocumentDetail() {
     fetchListing();
   }, [searchParams]);
 
-  // ── Check access ─────────────────────────────────────────────────────────────
+  //  Check access
   const checkAccess = async () => {
     if (!doc) return;
     const token = localStorage.getItem("access_token");
@@ -121,7 +123,7 @@ export default function DocumentDetail() {
     checkAccess();
   }, [doc]);
 
-  // ── Cart helpers ─────────────────────────────────────────────────────────────
+  // Cart helpers
   const showCartMsg = (msg) => {
     setCartMsg(msg);
     setTimeout(() => setCartMsg(null), 3000);
@@ -131,7 +133,10 @@ export default function DocumentDetail() {
     if (!doc) return;
     const token = localStorage.getItem("access_token");
     if (!token || token === "undefined") return navigate("/login");
-    if (accessStatus === ACCESS_STATUS.OWNED || accessStatus === ACCESS_STATUS.AUTHOR) {
+    if (
+      accessStatus === ACCESS_STATUS.OWNED ||
+      accessStatus === ACCESS_STATUS.AUTHOR
+    ) {
       showCartMsg("already_owned");
       return;
     }
@@ -145,11 +150,18 @@ export default function DocumentDetail() {
     if (!doc) return;
     const token = localStorage.getItem("access_token");
     if (!token || token === "undefined") return navigate("/login");
-    if (accessStatus === ACCESS_STATUS.OWNED || accessStatus === ACCESS_STATUS.AUTHOR) return;
+    if (
+      accessStatus === ACCESS_STATUS.OWNED ||
+      accessStatus === ACCESS_STATUS.AUTHOR
+    )
+      return;
 
     if (!isInCart) {
       setAddingToCart(true);
-      const result = await addToCart(doc, searchParams.get("listingId") || null);
+      const result = await addToCart(
+        doc,
+        searchParams.get("listingId") || null,
+      );
       setAddingToCart(false);
       if (!result.success && result.reason === "already_owned") {
         showCartMsg("already_owned");
@@ -159,11 +171,13 @@ export default function DocumentDetail() {
     navigate("/cart");
   };
 
-  // ── Render guards ─────────────────────────────────────────────────────────────
+  // Render guards
   if (loading) {
     return (
       <section className="relative px-6 py-12 text-white">
-        <div className="mx-auto max-w-6xl py-32 text-center text-gray-400">Đang tải...</div>
+        <div className="mx-auto max-w-6xl py-32 text-center text-gray-400">
+          Đang tải...
+        </div>
       </section>
     );
   }
@@ -182,9 +196,18 @@ export default function DocumentDetail() {
     <section className="relative overflow-hidden px-6 py-12 text-white">
       <div className="mx-auto max-w-6xl">
         {/* Background blobs */}
-        <div className="pointer-events-none fixed top-0 -left-40 h-150 w-150 bg-purple-600/20 blur-[120px]" style={{ zIndex: 0 }} />
-        <div className="pointer-events-none fixed top-1/2 -right-40 h-150 w-150 bg-blue-500/40 blur-[120px]" style={{ zIndex: 0 }} />
-        <div className="pointer-events-none fixed bottom-0 -left-40 h-150 w-150 bg-purple-600/30 blur-[120px]" style={{ zIndex: 0 }} />
+        <div
+          className="pointer-events-none fixed top-0 -left-40 h-150 w-150 bg-purple-600/20 blur-[120px]"
+          style={{ zIndex: 0 }}
+        />
+        <div
+          className="pointer-events-none fixed top-1/2 -right-40 h-150 w-150 bg-blue-500/40 blur-[120px]"
+          style={{ zIndex: 0 }}
+        />
+        <div
+          className="pointer-events-none fixed bottom-0 -left-40 h-150 w-150 bg-purple-600/30 blur-[120px]"
+          style={{ zIndex: 0 }}
+        />
 
         <button
           onClick={() => navigate(-1)}
@@ -193,7 +216,9 @@ export default function DocumentDetail() {
           ← <span className="text-sm">Quay lại</span>
         </button>
 
-        <p className="mb-2 text-sm font-semibold text-cyan-400">✦ Chi tiết tài liệu</p>
+        <p className="mb-2 text-sm font-semibold text-cyan-400">
+          ✦ Chi tiết tài liệu
+        </p>
         <h2 className="mb-12 text-3xl font-bold md:text-4xl">{doc.title}</h2>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -229,14 +254,20 @@ export default function DocumentDetail() {
 
       {/* Modals */}
       {showPreview && (
-        <PDFPreviewModal file={doc.fileUrl} onClose={() => setShowPreview(false)} />
+        <PDFPreviewModal
+          file={doc.fileUrl}
+          onClose={() => setShowPreview(false)}
+        />
       )}
 
       {showResellModal && (
         <ResellModal
           doc={doc}
           onClose={() => setShowResellModal(false)}
-          onSuccess={() => { setShowResellModal(false); checkAccess(); }}
+          onSuccess={() => {
+            setShowResellModal(false);
+            checkAccess();
+          }}
         />
       )}
 
@@ -244,7 +275,10 @@ export default function DocumentDetail() {
         <CancelListingModal
           listing={activeListing}
           onClose={() => setShowCancelModal(false)}
-          onSuccess={() => { setShowCancelModal(false); checkAccess(); }}
+          onSuccess={() => {
+            setShowCancelModal(false);
+            checkAccess();
+          }}
         />
       )}
     </section>
