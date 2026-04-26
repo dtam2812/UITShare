@@ -62,38 +62,38 @@ const ProfileLayout = () => {
   };
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-[#050816] font-sans text-white">
+    <div className="relative min-h-screen bg-[#050816] font-sans text-white">
       <button
         onClick={handleClick}
-        className={`fixed top-4 right-4 z-50 rounded-lg border border-white/10 bg-white/5 p-2 text-gray-300 shadow-md backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white focus:outline-none md:hidden`}
+        className="fixed top-4 right-4 z-50 rounded-lg border border-white/10 bg-white/5 p-2 text-gray-300 shadow-md backdrop-blur-md transition-colors hover:bg-white/10 hover:text-white focus:outline-none md:hidden"
       >
-        {openSidebar ? (
-          <FiX className="h-6 w-6" />
-        ) : (
-          <FiMenu className="h-6 w-6" />
-        )}
+        {openSidebar ? <FiX className="h-6 w-6" /> : <FiMenu className="h-6 w-6" />}
       </button>
 
       <div
         onClick={handleClick}
         className={`fixed inset-0 z-40 bg-[#050816]/80 backdrop-blur-sm transition-opacity md:hidden ${openSidebar ? "" : "hidden"}`}
-      ></div>
+      />
 
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform border-r border-white/10 bg-[#050816] shadow-xl transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-none ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <ProfileSidebar
-          avatar={profileInfo.avatar}
-          userName={profileInfo.userName}
-          email={profileInfo.email}
-        />
-      </aside>
+      <div className="mx-auto flex max-w-7xl min-h-screen">
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform border-r border-white/10 bg-[#050816] shadow-xl transition-transform duration-300 ease-in-out
+            md:relative md:sticky md:top-0 md:h-screen md:translate-x-0 md:shadow-none
+            ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          <ProfileSidebar
+            avatar={profileInfo.avatar}
+            userName={profileInfo.userName}
+            email={profileInfo.email}
+          />
+        </aside>
 
-      <main className="flex h-screen w-full flex-1 flex-col overflow-y-auto">
-        <div className="mx-auto w-full max-w-5xl flex-1 p-6 md:p-10">
-          <Outlet />
-        </div>
-      </main>
+        <main className="flex min-h-screen w-full flex-1 flex-col overflow-y-auto">
+          <div className="w-full flex-1 p-6 md:p-10">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
