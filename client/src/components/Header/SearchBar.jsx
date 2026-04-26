@@ -101,15 +101,12 @@ export default function SearchBar({ open, setOpen }) {
         <ul className="max-h-80 overflow-y-auto">
           {results.map((doc) => (
             <li
-<<<<<<< HEAD
-              key={doc.id}
-              onClick={() => handleResultClick(doc.id)}
-              className="flex cursor-pointer items-center gap-3 border-b border-white/5 px-4 py-3 transition-colors last:border-0 hover:bg-white/5"
-=======
               key={doc._id}
-              onMouseDown={(e) => { e.preventDefault(); handleResultClick(doc._id); }}
-              className="px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors flex items-center gap-3"
->>>>>>> Thinh
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleResultClick(doc._id);
+              }}
+              className="flex cursor-pointer items-center gap-3 border-b border-white/5 px-4 py-3 transition-colors last:border-0 hover:bg-white/5"
             >
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-gray-800">
                 <img
@@ -126,25 +123,18 @@ export default function SearchBar({ open, setOpen }) {
                 <h4 className="truncate text-sm font-medium text-white">
                   {doc.title}
                 </h4>
-<<<<<<< HEAD
                 <p className="truncate text-xs text-gray-400">
-                  {doc.subjectName} • {doc.author}
-=======
-                <p className="text-xs text-gray-400 truncate">
                   {doc.subject} • {doc.author?.userName ?? doc.authorWallet}
->>>>>>> Thinh
                 </p>
               </div>
             </li>
           ))}
           <li
-<<<<<<< HEAD
-            onClick={handleSearch}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleSearch();
+            }}
             className="cursor-pointer border-t border-white/10 px-4 py-3 text-center text-sm font-medium text-purple-400 hover:bg-white/5 hover:text-purple-300"
-=======
-            onMouseDown={(e) => { e.preventDefault(); handleSearch(); }}
-            className="px-4 py-3 text-center text-sm text-purple-400 hover:text-purple-300 hover:bg-white/5 cursor-pointer font-medium border-t border-white/10"
->>>>>>> Thinh
           >
             Xem tất cả kết quả cho "{searchQuery}"
           </li>
@@ -162,11 +152,7 @@ export default function SearchBar({ open, setOpen }) {
       <form
         ref={formRef}
         onSubmit={handleSearch}
-<<<<<<< HEAD
-        className={`relative ml-4 flex items-center transition-all duration-300 ${open ? "w-full rounded-full bg-gray-700/50" : "w-10 justify-end"}`}
-=======
-        className={`relative flex items-center transition-all duration-300 origin-right ${open ? "w-full bg-gray-700/50 rounded-full" : "w-10 justify-end"}`}
->>>>>>> Thinh
+        className={`relative ml-4 flex origin-right items-center transition-all duration-300 ${open ? "w-full rounded-full bg-gray-700/50" : "w-10 justify-end"}`}
       >
         <input
           type="text"

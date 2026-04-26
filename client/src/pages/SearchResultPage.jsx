@@ -43,8 +43,10 @@ const SearchResultsPage = () => {
   const sortedDocuments = [...results].sort((a, b) => {
     if (sortBy === "price_asc") return a.price - b.price;
     if (sortBy === "price_desc") return b.price - a.price;
-    if (sortBy === "popular") return (b.commentCount ?? 0) - (a.commentCount ?? 0);
-    if (sortBy === "oldest") return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sortBy === "popular")
+      return (b.commentCount ?? 0) - (a.commentCount ?? 0);
+    if (sortBy === "oldest")
+      return new Date(a.createdAt) - new Date(b.createdAt);
     return new Date(b.createdAt) - new Date(a.createdAt); // newest
   });
 

@@ -286,7 +286,6 @@ const getListDocument = async (req, res) => {
   }
 };
 
-// ─── SEARCH ────────────────────────────────────────────────────────────────────
 const searchDocuments = async (req, res) => {
   try {
     const q = req.query.q?.trim();
@@ -341,7 +340,6 @@ const searchDocuments = async (req, res) => {
     return res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
-// ───────────────────────────────────────────────────────────────────────────────
 
 const deleteDocument = async (req, res) => {
   try {
