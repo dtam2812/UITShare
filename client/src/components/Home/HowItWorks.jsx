@@ -5,20 +5,20 @@ const STEPS = [
   {
     icon: Search,
     step: "01",
-    title: "Tìm tài liệu",
-    desc: "Duyệt qua hàng nghìn tài liệu từ sinh viên các trường hàng đầu. Filter theo môn, trường, rating.",
+    title: "Find Documents",
+    desc: "Browse thousands of documents from students at top universities. Filter by subject, school, and rating.",
   },
   {
     icon: Wallet,
     step: "02",
-    title: "Thanh toán bằng ETH",
-    desc: "Kết nối ví MetaMask, mua tài liệu với vài click. Giao dịch minh bạch, phí thấp trên blockchain.",
+    title: "Pay with ETH",
+    desc: "Connect your MetaMask wallet and buy documents in just a few clicks. Transparent transactions with low blockchain fees.",
   },
   {
     icon: BadgeCheck,
     step: "03",
-    title: "Sở hữu NFT vĩnh viễn",
-    desc: "Tài liệu được mint thành NFT, thuộc về bạn mãi mãi. Có thể bán lại, tặng, hoặc giữ làm bộ sưu tập.",
+    title: "Own NFT Forever",
+    desc: "Documents are minted as NFTs and belong to you forever. Resell, gift, or keep them as collectibles.",
   },
 ];
 
@@ -30,17 +30,16 @@ export default function HowItWorks() {
           {/* section title */}
           <div className="mb-12">
             <p className="mb-2 text-sm font-semibold text-cyan-400">
-              ✦ Cách hoạt động
+              ✦ How It Works
             </p>
             <h2 className="text-3xl font-bold text-white md:text-4xl">
-              Đơn giản như{" "}
+              Simple in{" "}
               <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                3 bước
+                3 Steps
               </span>
             </h2>
             <p className="mt-3 max-w-xl text-base text-gray-400">
-              Không cần biết về blockchain. Mua tài liệu nhanh như mua hàng
-              online.
+              No blockchain knowledge needed. Buy documents as easily as shopping online.
             </p>
           </div>
 
@@ -54,7 +53,7 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="mt-12 flex justify-center">
             <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition hover:bg-purple-600">
-              Bắt đầu ngay →
+              Get Started →
             </button>
           </div>
         </div>

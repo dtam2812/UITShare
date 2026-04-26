@@ -4,9 +4,9 @@ import axios from "../../common";
 import { Link } from "react-router";
 
 export default function FeaturedDocuments({
-  badge = "✦ Nổi bật",
-  title = "Tài liệu được yêu thích",
-  showAll = "Xem tất cả →",
+  badge = "✦ Featured",
+  title = "Most Loved Documents",
+  showAll = "View All →",
 }) {
   const [documents, setDocuments] = React.useState([]);
 
@@ -15,7 +15,7 @@ export default function FeaturedDocuments({
       const response = await axios.get("/api/documents/documentList");
 
       if (response.status === 200) {
-        if (badge === "✦ Nổi bật") {
+        if (badge === "✦ Featured") {
           setDocuments(
             response.data.sort(
               (a, b) => (b.downloadCount || 0) - (a.downloadCount || 0),

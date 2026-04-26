@@ -22,6 +22,7 @@ function StarRating({ value }) {
 
 function StarRatingInput({ value, onChange }) {
   const [hovered, setHovered] = useState(0);
+
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((s) => (
@@ -43,7 +44,7 @@ function StarRatingInput({ value, onChange }) {
         </button>
       ))}
       {value > 0 && (
-        <span className="text-sm text-yellow-400 font-semibold ml-2">
+        <span className="ml-2 text-sm font-semibold text-yellow-400">
           {value}/5
         </span>
       )}
@@ -53,7 +54,9 @@ function StarRatingInput({ value, onChange }) {
 
 function formatDate(dateStr) {
   const d = new Date(dateStr);
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  return `${String(d.getDate()).padStart(2, "0")}/${String(
+    d.getMonth() + 1
+  ).padStart(2, "0")}/${d.getFullYear()}`;
 }
 
 function getAvatar(userName) {
@@ -71,9 +74,9 @@ export default function DocumentReviews() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // Fetch comments từ DB
   useEffect(() => {
     if (!documentId) return;
+
     const fetchComments = async () => {
       setLoadingReviews(true);
       try {
@@ -85,6 +88,7 @@ export default function DocumentReviews() {
         setLoadingReviews(false);
       }
     };
+
     fetchComments();
   }, [documentId]);
 
@@ -99,7 +103,7 @@ export default function DocumentReviews() {
     if (!isReady) return;
 
     if (!isLoggedIn()) {
-      setErrorMsg("Vui lòng đăng nhập để đánh giá.");
+      setErrorMsg("Please log in to leave a review.");
       return;
     }
 
@@ -113,15 +117,14 @@ export default function DocumentReviews() {
         rating: commentRating,
       });
 
-      // Thêm comment mới lên đầu danh sách
       setReviews((prev) => [res.data, ...prev]);
       setCommentText("");
       setCommentRating(0);
-      setSuccessMsg("Đánh giá của bạn đã được gửi!");
+      setSuccessMsg("Your review has been submitted!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
       setErrorMsg(
-        err.response?.data?.message || "Gửi thất bại, vui lòng thử lại."
+        err.response?.data?.message || "Submission failed. Please try again."
       );
     } finally {
       setSubmitting(false);
@@ -131,11 +134,11 @@ export default function DocumentReviews() {
   return (
     <div className="flex flex-col gap-6">
       {/* Write a review */}
-      <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-4">Viết đánh giá</h3>
+      <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+        <h3 className="mb-4 text-lg font-bold text-white">Write a Review</h3>
 
         <div className="mb-4">
-          <p className="text-sm text-white mb-2">Đánh giá của bạn</p>
+          <p className="mb-2 text-sm text-white">Your Rating</p>
           <StarRatingInput value={commentRating} onChange={setCommentRating} />
         </div>
 
@@ -143,96 +146,98 @@ export default function DocumentReviews() {
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Chia sẻ trải nghiệm của bạn về tài liệu này..."
+            placeholder="Share your experience about this document..."
             rows={4}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 resize-none transition-colors"
+            className="w-full resize-none rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 transition-colors focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/30 focus:outline-none"
           />
         </div>
 
-        {errorMsg && (
-          <p className="text-xs text-red-400 mb-2">{errorMsg}</p>
-        )}
+        {errorMsg && <p className="mb-2 text-xs text-red-400">{errorMsg}</p>}
         {successMsg && (
-          <p className="text-xs text-green-400 mb-2">{successMsg}</p>
+          <p className="mb-2 text-xs text-green-400">{successMsg}</p>
         )}
 
         <div className="flex items-center justify-between">
           <p className="text-xs text-gray-500">
             {!isReady
               ? commentRating === 0 && !commentText.trim()
-                ? "Chọn số sao và viết nhận xét để gửi"
+                ? "Select stars and write a review to submit"
                 : commentRating === 0
-                ? "Vui lòng chọn số sao"
-                : "Vui lòng viết nhận xét"
-              : "Sẵn sàng gửi đánh giá!"}
+                ? "Please select a rating"
+                : "Please write a review"
+              : "Ready to submit!"}
           </p>
+
           <button
             onClick={handleSubmit}
             disabled={!isReady || submitting}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
+            className={`flex cursor-pointer items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
               isReady && !submitting
-                ? "bg-purple-500 hover:bg-purple-600 text-white"
-                : "bg-white/5 text-gray-600 cursor-not-allowed"
+                ? "bg-purple-500 text-white hover:bg-purple-600"
+                : "cursor-not-allowed bg-white/5 text-gray-600"
             }`}
           >
             {submitting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="h-4 w-4" />
             )}
-            Gửi đánh giá
+            Submit Review
           </button>
         </div>
       </div>
 
       {/* Reviews list */}
       <div>
-        <h3 className="text-lg font-bold text-white mb-4">
-          Đánh giá{" "}
-          <span className="text-gray-500 font-normal text-sm">
+        <h3 className="mb-4 text-lg font-bold text-white">
+          Reviews{" "}
+          <span className="text-sm font-normal text-gray-500">
             ({reviews.length})
           </span>
         </h3>
 
         {loadingReviews ? (
-          <div className="flex items-center justify-center py-10 text-gray-500 gap-2">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">Đang tải đánh giá...</span>
+          <div className="flex items-center justify-center gap-2 py-10 text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading reviews...</span>
           </div>
         ) : reviews.length === 0 ? (
-          <div className="text-center py-10 text-gray-600 text-sm">
-            Chưa có đánh giá nào. Hãy là người đầu tiên!
+          <div className="py-10 text-center text-sm text-gray-600">
+            No reviews yet. Be the first one!
           </div>
         ) : (
           <div className="flex flex-col gap-4">
             {reviews.map((r) => (
               <div
                 key={r._id}
-                className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6"
+                className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-sm font-bold text-black shrink-0 overflow-hidden">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-sm font-bold text-black">
                     {r.user?.avatar ? (
                       <img
                         src={r.user.avatar}
                         alt={r.user.userName}
-                        className="w-full h-full object-cover rounded-full"
+                        className="h-full w-full rounded-full object-cover"
                       />
                     ) : (
                       getAvatar(r.user?.userName)
                     )}
                   </div>
+
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="mb-1 flex items-center justify-between">
                       <p className="text-sm font-semibold text-white">
-                        {r.user?.userName || "Người dùng"}
+                        {r.user?.userName || "User"}
                       </p>
                       <p className="text-xs text-gray-600">
                         {formatDate(r.createdAt)}
                       </p>
                     </div>
+
                     {r.rating && <StarRating value={r.rating} />}
-                    <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+
+                    <p className="mt-2 text-sm leading-relaxed text-gray-400">
                       {r.content}
                     </p>
                   </div>
