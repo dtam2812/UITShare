@@ -31,11 +31,11 @@ const DocumentCard = ({
   return (
     <Link to={`/documentDetail/${documentId}`}>
       <div className="pt-4 pl-4">
-        <div className="w-64 flex flex-col cursor-pointer overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
+        <div className="flex w-64 cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
           {/* Ảnh */}
           <div className="relative h-32 shrink-0">
             <img
-              src={pic2}
+              src="public\default_thumbnail.png"
               alt="course"
               className="h-full w-full object-cover"
             />
@@ -45,7 +45,7 @@ const DocumentCard = ({
           </div>
 
           {/* Info */}
-          <div className="flex-1 border-b border-white/10 px-4 py-3 flex flex-col gap-2">
+          <div className="flex flex-1 flex-col gap-2 border-b border-white/10 px-4 py-3">
             {/* School */}
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white">
@@ -97,7 +97,7 @@ const DocumentCard = ({
           </div>
 
           {/* CTA */}
-          <div className="shrink-0 flex items-center justify-between bg-black/20 px-4 py-3">
+          <div className="flex shrink-0 items-center justify-between bg-black/20 px-4 py-3">
             <div className="flex items-center gap-1">
               <svg
                 className="h-3.5 w-3.5 text-purple-400"

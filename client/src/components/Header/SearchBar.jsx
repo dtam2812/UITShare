@@ -110,10 +110,7 @@ export default function SearchBar({ open, setOpen }) {
             >
               <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-gray-800">
                 <img
-                  src={
-                    doc.thumbnail ||
-                    `https://picsum.photos/seed/${doc._id}/100/100`
-                  }
+                  src="public\default_thumbnail.png"
                   alt=""
                   className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
