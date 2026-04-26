@@ -95,7 +95,7 @@ const DocumentCard = ({
                 <span className="text-[10px] text-white sm:text-xs">({commentCount})</span>
               </div>
               <span className="truncate text-[10px] text-gray-400 sm:text-xs">
-                {pageCount}tr · {new Date(createdAt)?.getFullYear()}
+                {pageCount} trang · {new Date(createdAt)?.getFullYear()}
               </span>
             </div>
           </div>
