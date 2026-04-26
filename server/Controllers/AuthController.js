@@ -11,8 +11,8 @@ const register = async (req, res) => {
       password: bcrypt.hashSync(password, 10),
       bio: "",
       facebookLink: "",
-      avatar: '${process.env.SERVER_URL}/uploads/avatar/default.jpg',
-      coverImage: '${process.env.SERVER_URL}/uploads/coverImage/default.jpg',
+      avatar: `${process.env.SERVER_URL}/uploads/avatar/default.jpg`,
+      coverImage: `${process.env.SERVER_URL}/uploads/coverImage/default.jpg`,
       role: "user",
       profileCompletion: 50,
     });
