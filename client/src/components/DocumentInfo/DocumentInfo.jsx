@@ -18,10 +18,10 @@ function StarRating({ value }) {
 }
 
 const CATEGORY_LABELS = {
-  exam: "Đề thi",
-  slide: "Slide",
-  assignment: "Bài tập",
-  project: "Đồ án",
+  exam: "Exam",
+  slide: "Slides",
+  assignment: "Assignment",
+  project: "Project",
 };
 
 export default function DocumentInfo({ doc, reviewCount }) {
@@ -48,7 +48,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
             {doc.author?.userName?.[0]?.toUpperCase() || "?"}
           </div>
           <div>
-            <p className="text-xs text-gray-500">Tác giả</p>
+            <p className="text-xs text-gray-500">Author</p>
             <p className="text-sm font-semibold text-white">
               {doc.author?.userName || "—"}
             </p>
@@ -59,9 +59,9 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         {/* Pages */}
         <div>
-          <p className="text-xs text-gray-500">Số trang</p>
+          <p className="text-xs text-gray-500">Pages</p>
           <p className="text-sm font-semibold text-white">
-            {doc.pageCount ? `${doc.pageCount} trang` : "—"}
+            {doc.pageCount ? `${doc.pageCount} pages` : "—"}
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         {/* Created year */}
         <div>
-          <p className="text-xs text-gray-500">Năm đăng</p>
+          <p className="text-xs text-gray-500">Published Year</p>
           <p className="text-sm font-semibold text-white">
             {doc.createdAt ? new Date(doc.createdAt).getFullYear() : "—"}
           </p>
@@ -79,7 +79,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         {/* Royalty */}
         <div>
-          <p className="text-xs text-gray-500">Hoa hồng</p>
+          <p className="text-xs text-gray-500">Royalty</p>
           <p className="text-sm font-semibold text-white">
             {doc.royaltyPercent ? `${doc.royaltyPercent}%` : "—"}
           </p>
@@ -94,14 +94,14 @@ export default function DocumentInfo({ doc, reviewCount }) {
             {doc.averageRating || "—"}
           </span>
           <span className="text-sm text-gray-500">
-            ({reviewCount} đánh giá)
+            ({reviewCount} reviews)
           </span>
         </div>
       )}
 
       {/* Description */}
       <p className="text-sm leading-relaxed text-gray-400">
-        {doc.description || "Không có mô tả."}
+        {doc.description || "No description available."}
       </p>
     </div>
   );

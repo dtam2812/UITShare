@@ -9,33 +9,33 @@ export default function Hero() {
         {/* BADGE */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-400/10 px-5 py-2 text-sm text-cyan-300">
           <span className="h-2 w-2 rounded-full bg-cyan-400"></span>
-          NỀN TẢNG HỌC LIỆU NFT ĐẦU TIÊN TẠI VIỆT NAM
+          THE FIRST NFT LEARNING PLATFORM IN VIETNAM
         </div>
 
         <h1 className="text-5xl leading-tight font-bold md:text-6xl">
-          Học liệu số
+          Digital Learning Materials
           <br />
           <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Dành cho sinh viên UIT
+            For UIT Students
           </span>
         </h1>
 
         <p className="mt-6 text-lg text-gray-400">
-          Mua tài liệu học tập dưới dạng NFT — xác thực quyền sở hữu, giao dịch
-          tự do, không ai có thể lấy đi.
+          Buy study materials as NFTs — verify ownership, trade freely,
+          and no one can take them away.
         </p>
 
         {/* BUTTONS */}
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link to="/upload">
             <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium transition hover:bg-purple-600">
-              Tải lên tài liệu
+              Upload Document
             </button>
           </Link>
 
           <Link to="/document">
             <button className="w-48 cursor-pointer rounded-lg bg-white px-6 py-3 font-medium text-black transition hover:bg-gray-200">
-              Khám phá tài liệu
+              Explore Documents
             </button>
           </Link>
         </div>
