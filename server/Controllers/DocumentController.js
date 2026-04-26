@@ -83,7 +83,6 @@ const uploadDocument = async (req, res) => {
     );
     const parsedAmount = Math.min(Math.max(parseInt(amount) || 1, 1), 1000);
 
-    // Check fileHash TRƯỚC khi upload Pinata — tiết kiệm băng thông
     const fileBuffer = fs.readFileSync(mainFile.path);
     const fileHash = createHash("sha256").update(fileBuffer).digest("hex");
 
@@ -121,14 +120,12 @@ const uploadDocument = async (req, res) => {
         .json({ message: "Bạn cần liên kết ví trước khi đăng tài liệu" });
     }
 
-    // 1. Upload file lên IPFS
     const { cid, fileUrl } = await uploadFileToPinata(
       mainFile.path,
       mainFile.originalname,
     );
     cleanupTempFile(tempFilePath);
 
-    // 2. Upload metadata
     const metadata = {
       name: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
@@ -153,7 +150,6 @@ const uploadDocument = async (req, res) => {
       `${title?.trim() || mainFile.originalname}_metadata`,
     );
 
-    // 3. Setup provider + signer + contracts
     const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(
@@ -162,7 +158,6 @@ const uploadDocument = async (req, res) => {
       signer,
     );
 
-    // 4. Approve marketplace nếu chưa được approve (chỉ tốn gas 1 lần duy nhất)
     if (parsedPrice > 0) {
       const isApproved = await nftContract.isApprovedForAll(
         signer.address,
@@ -177,7 +172,6 @@ const uploadDocument = async (req, res) => {
       }
     }
 
-    // 5. Mint
     const currentId = await nftContract.getCurrentTokenId();
     const tx = await nftContract.mint(
       parsedAmount,
@@ -187,7 +181,6 @@ const uploadDocument = async (req, res) => {
     );
     const receipt = await tx.wait();
 
-    // 6. Lấy tokenId từ event TransferSingle
     const iface = new ethers.Interface(NFT_ABI);
     let tokenId = Number(currentId) + 1;
     for (const log of receipt.logs) {
@@ -200,7 +193,6 @@ const uploadDocument = async (req, res) => {
       } catch (_) {}
     }
 
-    // 7. Lưu Document
     const newDocument = await documentModel.create({
       title: title?.trim() || mainFile.originalname,
       description: description?.trim() || "",
@@ -222,7 +214,6 @@ const uploadDocument = async (req, res) => {
       isMinted: true,
     });
 
-    // 8. Lưu NFT ownership cho tác giả
     await nftModel.create({
       user: req.userId,
       document: newDocument._id,
@@ -231,7 +222,6 @@ const uploadDocument = async (req, res) => {
       ownerAddress: user.walletAddress,
     });
 
-    // 9. Tạo listing trên marketplace (chỉ khi price > 0)
     if (parsedPrice > 0) {
       await createListing({
         sellerId: req.userId,
@@ -295,6 +285,63 @@ const getListDocument = async (req, res) => {
     return res.status(500).json({ message: error.message || "Lỗi server" });
   }
 };
+
+// ─── SEARCH ────────────────────────────────────────────────────────────────────
+const searchDocuments = async (req, res) => {
+  try {
+    const q = req.query.q?.trim();
+    if (!q) {
+      return res.status(400).json({ message: "Thiếu từ khóa tìm kiếm" });
+    }
+
+    const regex = new RegExp(q, "i");
+
+    const documents = await documentModel
+      .find({
+        isMinted: true,
+        $or: [{ price: 0 }, { remainingSupply: { $gt: 0 } }],
+        $and: [
+          {
+            $or: [
+              { title: { $regex: regex } },
+              { description: { $regex: regex } },
+              { subject: { $regex: regex } },
+              { category: { $regex: regex } },
+            ],
+          },
+        ],
+      })
+      .populate("author", "userName email avatar")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const documentsWithStats = await Promise.all(
+      documents.map(async (doc) => {
+        const rootComments = await commentModel.find({
+          document: doc._id,
+          parentComment: null,
+        });
+        const ratedComments = rootComments.filter((c) => c.rating != null);
+        const averageRating =
+          ratedComments.length > 0
+            ? Math.round(
+                (ratedComments.reduce((sum, c) => sum + c.rating, 0) /
+                  ratedComments.length) *
+                  10,
+              ) / 10
+            : null;
+
+        return { ...doc, commentCount: rootComments.length, averageRating };
+      }),
+    );
+
+    return res.status(200).json(documentsWithStats);
+  } catch (error) {
+    console.error("[searchDocuments]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+// ───────────────────────────────────────────────────────────────────────────────
 
 const deleteDocument = async (req, res) => {
   try {
@@ -360,6 +407,7 @@ const getDocumentDetail = async (req, res) => {
 module.exports = {
   uploadDocument,
   getListDocument,
+  searchDocuments,
   deleteDocument,
   getDocumentDetail,
 };
