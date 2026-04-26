@@ -34,8 +34,8 @@ const DocumentCard = ({
           {/* Ảnh */}
           <div className="relative h-32 shrink-0">
             <img
-              src="/default_thumbnail.png"
-              alt="course"
+              src="./default_thumbnail.png"
+              alt="thumbnail"
               className="h-full w-full object-cover"
             />
             <div className="absolute top-2 right-2 rounded-full border border-white/20 bg-black/60 px-2 py-0.5 text-xs font-medium text-white shadow-sm">
