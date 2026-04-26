@@ -10,37 +10,37 @@ import {
 
 const TYPE_CONFIG = {
   mint: {
-    label: "Mint",
+    label: "Đúc NFT",
     color: "text-purple-400",
     bg: "bg-purple-500/20",
     icon: <Coins className="h-3 w-3" />,
   },
   buy: {
-    label: "Buy",
+    label: "Mua",
     color: "text-green-400",
     bg: "bg-green-500/20",
     icon: <ShieldCheck className="h-3 w-3" />,
   },
   transfer: {
-    label: "Transfer",
+    label: "Chuyển",
     color: "text-blue-400",
     bg: "bg-blue-500/20",
     icon: <ArrowLeftRight className="h-3 w-3" />,
   },
   list: {
-    label: "Listing",
+    label: "Niêm Yết",
     color: "text-yellow-400",
     bg: "bg-yellow-500/20",
     icon: <Tag className="h-3 w-3" />,
   },
   cancel: {
-    label: "Cancel",
+    label: "Hủy",
     color: "text-red-400",
     bg: "bg-red-500/20",
     icon: <XCircle className="h-3 w-3" />,
   },
   donate: {
-    label: "Donate",
+    label: "Tặng",
     color: "text-pink-400",
     bg: "bg-pink-500/20",
     icon: <ArrowDownToLine className="h-3 w-3" />,
@@ -50,7 +50,7 @@ const TYPE_CONFIG = {
 export default function NFTInfo({ nft }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-      {/* Header */}
+      {/* Tiêu đề */}
       <div className="mb-5 flex items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20">
           <svg
@@ -65,19 +65,19 @@ export default function NFTInfo({ nft }) {
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </div>
-        <h3 className="text-base font-bold text-white">NFT Information</h3>
+        <h3 className="text-base font-bold text-white">Thông Tin NFT</h3>
       </div>
 
-      {/* NFT Stats */}
+      {/* Thông số NFT */}
       <div className="mb-6 grid grid-cols-3 gap-5">
         {[
-          { label: "Price", value: `${nft.price} ETH`, highlight: true },
+          { label: "Giá", value: `${nft.price} ETH`, highlight: true },
           { label: "Token ID", value: `#${nft.tokenId}` },
-          { label: "Author Royalty", value: `${nft.royaltyPercent ?? 0}%` },
-          { label: "Total Supply", value: `${nft.totalSupply} copies` },
+          { label: "Bản Quyền Tác Giả", value: `${nft.royaltyPercent ?? 0}%` },
+          { label: "Tổng Cung", value: `${nft.totalSupply} bản` },
           {
-            label: "Remaining Supply",
-            value: `${nft.remainingSupply ?? 0} copies`,
+            label: "Cung Còn Lại",
+            value: `${nft.remainingSupply ?? 0} bản`,
           },
         ].map((item) => (
           <div key={item.label}>
@@ -92,9 +92,9 @@ export default function NFTInfo({ nft }) {
           </div>
         ))}
 
-        {/* Author wallet address */}
+        {/* Địa chỉ ví tác giả */}
         <div className="col-span-2">
-          <p className="mb-1 text-xs text-gray-500">Author Wallet Address</p>
+          <p className="mb-1 text-xs text-gray-500">Địa Chỉ Ví Tác Giả</p>
           <div className="flex items-center gap-2">
             <p className="font-mono text-sm font-semibold text-white">
               {nft.authorWallet ? `${nft.authorWallet.slice(0, 20)}...` : "—"}

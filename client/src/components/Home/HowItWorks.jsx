@@ -5,20 +5,20 @@ const STEPS = [
   {
     icon: Search,
     step: "01",
-    title: "Find Documents",
-    desc: "Browse thousands of documents from students at top universities. Filter by subject, school, and rating.",
+    title: "Tìm Tài Liệu",
+    desc: "Duyệt hàng nghìn tài liệu từ sinh viên các trường đại học hàng đầu. Lọc theo môn học, trường và đánh giá.",
   },
   {
     icon: Wallet,
     step: "02",
-    title: "Pay with ETH",
-    desc: "Connect your MetaMask wallet and buy documents in just a few clicks. Transparent transactions with low blockchain fees.",
+    title: "Thanh Toán Bằng ETH",
+    desc: "Kết nối ví MetaMask và mua tài liệu chỉ trong vài cú nhấp chuột. Giao dịch minh bạch với phí blockchain thấp.",
   },
   {
     icon: BadgeCheck,
     step: "03",
-    title: "Own NFT Forever",
-    desc: "Documents are minted as NFTs and belong to you forever. Resell, gift, or keep them as collectibles.",
+    title: "Sở Hữu NFT Mãi Mãi",
+    desc: "Tài liệu được đúc thành NFT và thuộc về bạn vĩnh viễn. Bán lại, tặng hoặc giữ làm vật sưu tầm.",
   },
 ];
 
@@ -30,16 +30,17 @@ export default function HowItWorks() {
           {/* section title */}
           <div className="mb-12">
             <p className="mb-2 text-sm font-semibold text-cyan-400">
-              ✦ How It Works
+              ✦ Cách Thức Hoạt Động
             </p>
             <h2 className="text-3xl font-bold text-white md:text-4xl">
-              Simple in{" "}
+              Đơn Giản Chỉ Với{" "}
               <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                3 Steps
+                3 Bước
               </span>
             </h2>
-            <p className="mt-3 max-w-xl text-base text-gray-400">
-              No blockchain knowledge needed. Buy documents as easily as shopping online.
+            <p className="mt-3 w-full text-base text-gray-400">
+              Không cần kiến thức về blockchain. Mua tài liệu dễ dàng như mua
+              sắm trực tuyến.
             </p>
           </div>
 
@@ -53,7 +54,7 @@ export default function HowItWorks() {
           {/* CTA */}
           <div className="mt-12 flex justify-center">
             <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition hover:bg-purple-600">
-              Get Started →
+              Bắt Đầu Ngay →
             </button>
           </div>
         </div>
@@ -68,7 +69,7 @@ function Step({ step, index }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-md transition-colors hover:bg-white/10">
       <div className="mb-4 text-xs font-black tracking-[0.3em] text-white/20 uppercase">
-        Step {step.step}
+        Bước {step.step}
       </div>
 
       {/* icon + pulse ring */}

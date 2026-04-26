@@ -83,10 +83,10 @@ export default function SearchBar({ open, setOpen }) {
         width: dropdownPos.width,
         zIndex: 99999,
       }}
-      className="border border-white/10 rounded-xl shadow-2xl overflow-hidden bg-[#0d0d0d]"
+      className="overflow-hidden rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl"
     >
       {isLoading ? (
-        <div className="p-4 text-center text-gray-400 text-sm">
+        <div className="p-4 text-center text-sm text-gray-400">
           Đang tìm kiếm...
         </div>
       ) : results.length > 0 ? (
@@ -95,24 +95,24 @@ export default function SearchBar({ open, setOpen }) {
             <li
               key={doc.id}
               onClick={() => handleResultClick(doc.id)}
-              className="px-4 py-3 hover:bg-white/5 cursor-pointer border-b border-white/5 last:border-0 transition-colors flex items-center gap-3"
+              className="flex cursor-pointer items-center gap-3 border-b border-white/5 px-4 py-3 transition-colors last:border-0 hover:bg-white/5"
             >
-              <div className="w-10 h-10 rounded bg-gray-800 shrink-0 overflow-hidden">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-gray-800">
                 <img
                   src={
                     doc.thumbnail ||
                     `https://picsum.photos/seed/doc${doc.id}/100/100`
                   }
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <h4 className="text-sm font-medium text-white truncate">
+              <div className="min-w-0 flex-1 text-left">
+                <h4 className="truncate text-sm font-medium text-white">
                   {doc.title}
                 </h4>
-                <p className="text-xs text-gray-400 truncate">
+                <p className="truncate text-xs text-gray-400">
                   {doc.subjectName} • {doc.author}
                 </p>
               </div>
@@ -120,13 +120,13 @@ export default function SearchBar({ open, setOpen }) {
           ))}
           <li
             onClick={handleSearch}
-            className="px-4 py-3 text-center text-sm text-purple-400 hover:text-purple-300 hover:bg-white/5 cursor-pointer font-medium border-t border-white/10"
+            className="cursor-pointer border-t border-white/10 px-4 py-3 text-center text-sm font-medium text-purple-400 hover:bg-white/5 hover:text-purple-300"
           >
             Xem tất cả kết quả cho "{searchQuery}"
           </li>
         </ul>
       ) : (
-        <div className="p-4 text-center text-gray-400 text-sm">
+        <div className="p-4 text-center text-sm text-gray-400">
           Không tìm thấy kết quả nào.
         </div>
       )}
@@ -138,12 +138,12 @@ export default function SearchBar({ open, setOpen }) {
       <form
         ref={formRef}
         onSubmit={handleSearch}
-        className={`relative flex items-center transition-all duration-300 ${open ? "w-full bg-gray-700/50 rounded-full" : "w-10 justify-end"}`}
+        className={`relative ml-4 flex items-center transition-all duration-300 ${open ? "w-full rounded-full bg-gray-700/50" : "w-10 justify-end"}`}
       >
         <input
           type="text"
-          placeholder="What do you want to learn?"
-          className={`bg-transparent text-white placeholder-gray-400 transition-all duration-300 focus:outline-none ${open ? "flex-1 px-4 py-2 opacity-100" : "w-0 px-0 py-0 opacity-0 border-none"}`}
+          placeholder="Bạn muốn tìm kiếm tài liệu gì?"
+          className={`bg-transparent text-white placeholder-gray-400 transition-all duration-300 focus:outline-none ${open ? "flex-1 px-4 py-2 opacity-100" : "w-0 border-none px-0 py-0 opacity-0"}`}
           autoFocus={open}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -165,7 +165,7 @@ export default function SearchBar({ open, setOpen }) {
               setOpen(true);
             }
           }}
-          className={`bg-transparent hover:bg-white/10 w-10 h-10 rounded-full flex items-center justify-center transition duration-200 shrink-0 ${open ? "mr-1" : ""}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-transparent transition duration-200 hover:bg-white/10 ${open ? "mr-1" : ""}`}
         >
           {open ? (
             <X size={18} className="text-gray-400 hover:text-white" />

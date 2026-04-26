@@ -18,16 +18,16 @@ function StarRating({ value }) {
 }
 
 const CATEGORY_LABELS = {
-  exam: "Exam",
-  slide: "Slides",
-  assignment: "Assignment",
-  project: "Project",
+  exam: "Đề Thi",
+  slide: "Bài Giảng",
+  assignment: "Bài Tập",
+  project: "Đồ Án",
 };
 
 export default function DocumentInfo({ doc, reviewCount }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-      {/* Category + AccessType badges */}
+      {/* Nhãn danh mục + loại truy cập */}
       <div className="mb-4 flex flex-wrap gap-2">
         {doc.category && (
           <span className="rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-xs text-purple-300">
@@ -42,13 +42,13 @@ export default function DocumentInfo({ doc, reviewCount }) {
       </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-6">
-        {/* Author */}
+        {/* Tác giả */}
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-blue-500 text-sm font-bold text-white">
             {doc.author?.userName?.[0]?.toUpperCase() || "?"}
           </div>
           <div>
-            <p className="text-xs text-gray-500">Author</p>
+            <p className="text-xs text-gray-500">Tác Giả</p>
             <p className="text-sm font-semibold text-white">
               {doc.author?.userName || "—"}
             </p>
@@ -57,19 +57,19 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Pages */}
+        {/* Số trang */}
         <div>
-          <p className="text-xs text-gray-500">Pages</p>
+          <p className="text-xs text-gray-500">Số Trang</p>
           <p className="text-sm font-semibold text-white">
-            {doc.pageCount ? `${doc.pageCount} pages` : "—"}
+            {doc.pageCount ? `${doc.pageCount} trang` : "—"}
           </p>
         </div>
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Created year */}
+        {/* Năm đăng */}
         <div>
-          <p className="text-xs text-gray-500">Published Year</p>
+          <p className="text-xs text-gray-500">Năm Đăng</p>
           <p className="text-sm font-semibold text-white">
             {doc.createdAt ? new Date(doc.createdAt).getFullYear() : "—"}
           </p>
@@ -77,16 +77,16 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Royalty */}
+        {/* Bản quyền */}
         <div>
-          <p className="text-xs text-gray-500">Royalty</p>
+          <p className="text-xs text-gray-500">Bản Quyền</p>
           <p className="text-sm font-semibold text-white">
             {doc.royaltyPercent ? `${doc.royaltyPercent}%` : "—"}
           </p>
         </div>
       </div>
 
-      {/* Rating */}
+      {/* Đánh giá */}
       {reviewCount !== undefined && (
         <div className="mb-5 flex items-center gap-3">
           <StarRating value={doc.averageRating || 0} />
@@ -94,14 +94,14 @@ export default function DocumentInfo({ doc, reviewCount }) {
             {doc.averageRating || "—"}
           </span>
           <span className="text-sm text-gray-500">
-            ({reviewCount} reviews)
+            ({reviewCount} đánh giá)
           </span>
         </div>
       )}
 
-      {/* Description */}
+      {/* Mô tả */}
       <p className="text-sm leading-relaxed text-gray-400">
-        {doc.description || "No description available."}
+        {doc.description || "Không có mô tả."}
       </p>
     </div>
   );
