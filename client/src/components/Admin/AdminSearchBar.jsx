@@ -14,7 +14,7 @@ export default function AdminSearchBar({ searchTerm, setSearchTerm, placeholder,
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      <div className="flex space-x-3 w-full md:w-auto shrink-0">
+      <div className="flex flex-wrap gap-3 w-full md:w-auto shrink-0">
         {filters}
       </div>
     </div>
