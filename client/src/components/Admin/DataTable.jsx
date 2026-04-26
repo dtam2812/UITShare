@@ -13,7 +13,8 @@ export default function DataTable({title, count, columns, data, emptyMessage = "
       <div className="p-4 border-b border-gray-800 flex items-center">
         <h3 className="text-white font-medium">{title} <span className="text-gray-400 font-normal">({count})</span></h3>
       </div>
-      <table className="w-full text-left border-collapse">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[600px] text-left border-collapse">
         <thead>
           <tr className="border-b border-gray-800">
             {columns.map((col, idx) => <th key={idx} className={`py-4 px-6 text-sm font-semibold text-gray-300 ${col.className || ''}`}>
@@ -32,6 +33,7 @@ export default function DataTable({title, count, columns, data, emptyMessage = "
             </tr>}
         </tbody>
       </table>
+      </div>
       
       {/* Pagination */}
       <div className="flex justify-center items-center space-x-4 p-4 border-t border-gray-800">

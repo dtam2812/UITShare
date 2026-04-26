@@ -1,6 +1,7 @@
 const transactionModel = require("../Models/TransactionModel");
 const mongoose = require("mongoose");
 
+// ─── Lịch sử giao dịch của 1 user (endpoint hiện tại) ───────────────────────
 const getUserTransactions = async (req, res) => {
   try {
     const userId = req.userId;
@@ -10,7 +11,6 @@ const getUserTransactions = async (req, res) => {
     const parsedLimit = Math.min(Math.max(parseInt(limit), 1), 50);
     const skip = (parsedPage - 1) * parsedLimit;
 
-    // Lấy các giao dịch mua và transfer liên quan đến user
     const baseQuery = {
       type: { $in: ["buy", "transfer", "donate", "royalty"] },
       $or: [
@@ -32,25 +32,18 @@ const getUserTransactions = async (req, res) => {
       transactionModel.countDocuments(baseQuery),
     ]);
 
-    // Format response
     const formatted = transactions.map((tx) => {
       const isBuyer =
         tx.toUser?._id?.toString() === userId ||
         tx.toAddress?.toLowerCase() === req.userWallet?.toLowerCase();
-
       const isSeller = tx.fromUser?._id?.toString() === userId;
 
       let label = "";
       let amountDisplay = "";
 
       if (tx.type === "buy") {
-        if (isBuyer) {
-          label = "Mua tài liệu";
-          amountDisplay = `- ${tx.price} ETH`;
-        } else if (isSeller) {
-          label = "Bán tài liệu";
-          amountDisplay = `+ ${tx.sellerReceived ?? tx.price} ETH`;
-        }
+        if (isBuyer) { label = "Mua tài liệu"; amountDisplay = `- ${tx.price} ETH`; }
+        else if (isSeller) { label = "Bán tài liệu"; amountDisplay = `+ ${tx.sellerReceived ?? tx.price} ETH`; }
       } else if (tx.type === "transfer") {
         label = isSeller ? "Chuyển nhượng tài liệu" : "Nhận chuyển nhượng";
         amountDisplay = `${tx.quantity} NFT`;
@@ -72,24 +65,21 @@ const getUserTransactions = async (req, res) => {
         date: new Date(tx.createdAt).toLocaleDateString("vi-VN"),
         amount: amountDisplay,
         status:
-          tx.status === "success"
-            ? "Thành công"
-            : tx.status === "pending"
-              ? "Đang xử lý"
-              : "Thất bại",
+          tx.status === "success" ? "Thành công"
+          : tx.status === "pending" ? "Đang xử lý"
+          : "Thất bại",
         fromUser: tx.fromUser,
         toUser: tx.toUser,
         blockNumber: tx.blockNumber,
       };
     });
 
-    // Lọc theo search nếu có
     const searched = search
       ? formatted.filter(
           (tx) =>
             tx.txHash?.toLowerCase().includes(search.toLowerCase()) ||
             tx.detail?.toLowerCase().includes(search.toLowerCase()) ||
-            tx.type?.toLowerCase().includes(search.toLowerCase()),
+            tx.type?.toLowerCase().includes(search.toLowerCase())
         )
       : formatted;
 
@@ -108,4 +98,22 @@ const getUserTransactions = async (req, res) => {
   }
 };
 
-module.exports = { getUserTransactions };
+// ─── Admin: toàn bộ giao dịch ─────────────────────────────────────────────────
+const getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await transactionModel
+      .find()
+      .populate("document", "title subject category")
+      .populate("fromUser", "userName avatar")
+      .populate("toUser", "userName avatar")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json(transactions);
+  } catch (error) {
+    console.error("[getAllTransactions]", error);
+    return res.status(500).json({ message: error.message || "Lỗi server" });
+  }
+};
+
+module.exports = { getUserTransactions, getAllTransactions };

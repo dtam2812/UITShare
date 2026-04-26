@@ -1,9 +1,11 @@
 import React from "react";
-import { Users, BookOpen } from "lucide-react";
+import { Users, BookOpen, GraduationCap, ArrowLeftRight } from "lucide-react";
 
-export default function Overview({ users, documents }) {
+export default function Overview({ users, documents, subjects, transactions }) {
   const totalUsers = users.length;
   const totalDocs = documents.length;
+  const totalSubjects = subjects.length;
+  const totalTransactions = transactions.length;
 
   return (
     <div className="space-y-6">
@@ -27,6 +29,24 @@ export default function Overview({ users, documents }) {
           <div>
             <p className="text-sm font-medium text-gray-400">Tổng tài liệu</p>
             <p className="text-2xl font-bold text-white">{totalDocs}</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-4 rounded-xl border border-gray-800 bg-[#131722] p-6 shadow-sm">
+          <div className="rounded-lg bg-purple-500/20 p-3 text-purple-400">
+            <GraduationCap size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-400">Tổng môn học</p>
+            <p className="text-2xl font-bold text-white">{totalSubjects}</p>
+          </div>
+        </div>
+         <div className="flex items-center space-x-4 rounded-xl border border-gray-800 bg-[#131722] p-6 shadow-sm">
+          <div className="rounded-lg bg-purple-500/20 p-3 text-purple-400">
+            <ArrowLeftRight size={24} />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-400">Tổng giao dịch</p>
+            <p className="text-2xl font-bold text-white">{totalTransactions}</p>
           </div>
         </div>
       </div>

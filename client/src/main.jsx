@@ -11,12 +11,12 @@ import Login from "./pages/Auth/Login.jsx";
 import Register from "./pages/Auth/Register.jsx";
 import ForgotPassword from "./pages/Auth/ForgotPassword.jsx";
 import Admin from "./pages/Admin/Admin.jsx";
-import AdminGuard from "./components/Admin/AdminGuard.jsx"; // 👈 thêm
-import FAQ from "./pages/FAQ.jsx";
-import Privacy from "./pages/PrivacyPolicy.jsx";
-import Contact from "./pages/Contact.jsx";
-import TermsOfService from "./pages/TermsOfService.jsx";
-import AboutUs from "./pages/AboutUs.jsx";
+import AdminGuard from "./components/Admin/AdminGuard.jsx"; 
+import FAQ from "./pages/Legal/FAQ.jsx";
+import Privacy from "./pages/Legal/PrivacyPolicy.jsx";
+import Contact from "./pages/Legal/Contact.jsx";
+import TermsOfService from "./pages/Legal/TermsOfService.jsx";
+import AboutUs from "./pages/Legal/AboutUs.jsx";
 import DocumentPage from "./pages/DocumentPage.jsx";
 import SearchResultsPage from "./pages/SearchResultPage.jsx";
 import ProfileLayout from "./pages/Profile/ProfileLayout.jsx";
