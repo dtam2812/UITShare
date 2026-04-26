@@ -33,6 +33,7 @@ import Cart from "./pages/Cart.jsx";
 import DocumentReading from "./pages/DocumentReading.jsx";
 import PurchasedDocuments from "./pages/Profile/PurchasedDocs.jsx";
 import ResellDocuments from "./pages/Profile/ResellDocuments.jsx";
+import ResetPassword from "./pages/Auth/ResetPassword.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -100,6 +101,7 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
       { path: "forgotPassword", element: <ForgotPassword /> },
+      { path: "reset-password/:token", element: <ResetPassword /> },
     ],
   },
 ]);
