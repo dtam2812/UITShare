@@ -83,7 +83,7 @@ const DocumentCard = ({
             {/* Rating + meta - đẩy xuống đáy của flex-1 */}
             <div className="mt-auto flex items-center justify-between">
               <div className="flex items-center gap-1">
-                <span className="text-sm text-yellow-400">★</span>
+                <span className="text-sm text-yellow-400" aria-hidden="true">★</span>
                 <span className="text-xs font-bold text-yellow-400">
                   {averageRating || 0}
                 </span>
@@ -119,7 +119,8 @@ const DocumentCard = ({
               className="cursor-pointer rounded-lg bg-linear-to-r from-purple-600 to-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90 active:scale-95"
               aria-label={`Xem tài liệu ${title}`}
             >
-              Xem ngay
+              <span className="hidden xs:inline">Xem ngay</span>
+              <span className="inline xs:hidden" aria-hidden="true">→</span>
             </button>
           </div>
         </div>
