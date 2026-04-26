@@ -28,31 +28,31 @@ export default function HowItWorks() {
       <section className="relative overflow-hidden px-6 pt-6 pb-16 text-white">
         <div className="mx-auto max-w-6xl">
           {/* section title */}
-          <div className="mb-12">
+          <div className="mb-10 sm:mb-12">
             <p className="mb-2 text-sm font-semibold text-cyan-400">
               ✦ Cách Thức Hoạt Động
             </p>
-            <h2 className="text-3xl font-bold text-white md:text-4xl">
+            <h2 className="text-2xl font-bold text-white sm:text-3xl md:text-4xl">
               Đơn Giản Chỉ Với{" "}
               <span className="bg-linear-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 3 Bước
               </span>
             </h2>
-            <p className="mt-3 w-full text-base text-gray-400">
+            <p className="mt-3 w-full text-sm text-gray-400 sm:text-base">
               Không cần kiến thức về blockchain. Mua tài liệu dễ dàng như mua
               sắm trực tuyến.
             </p>
           </div>
 
           {/* steps grid */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
             {STEPS.map((s, i) => (
               <Step key={i} step={s} index={i} />
             ))}
           </div>
 
           {/* CTA */}
-          <div className="mt-12 flex justify-center">
+          <div className="mt-10 flex justify-center sm:mt-12">
             <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium text-white transition hover:bg-purple-600">
               Bắt Đầu Ngay →
             </button>
@@ -67,26 +67,24 @@ function Step({ step, index }) {
   const Icon = step.icon;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center backdrop-blur-md transition-colors hover:bg-white/10">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-md transition-colors hover:bg-white/10 sm:p-6">
       <div className="mb-4 text-xs font-black tracking-[0.3em] text-white/20 uppercase">
         Bước {step.step}
       </div>
 
       {/* icon + pulse ring */}
-      <div className="relative mb-6 flex justify-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-purple-400/30 bg-purple-500/20 text-purple-400">
-          <Icon className="h-7 w-7" strokeWidth={1.5} />
+      <div className="relative mb-5 flex justify-center sm:mb-6">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-purple-400/30 bg-purple-500/20 text-purple-400 sm:h-16 sm:w-16">
+          <Icon className="h-6 w-6 sm:h-7 sm:w-7" strokeWidth={1.5} />
         </div>
         <div
-          className="absolute h-16 w-16 animate-ping rounded-2xl bg-purple-500/20"
+          className="absolute h-14 w-14 animate-ping rounded-2xl bg-purple-500/20 sm:h-16 sm:w-16"
           style={{ animationDuration: `${2 + index * 0.5}s` }}
         />
       </div>
 
-      <div className="mb-2 text-xl font-bold text-white">{step.title}</div>
-      <div className="mt-1 text-sm leading-relaxed text-gray-400">
-        {step.desc}
-      </div>
+      <div className="mb-2 text-lg font-bold text-white sm:text-xl">{step.title}</div>
+      <div className="mt-1 text-sm leading-relaxed text-gray-400">{step.desc}</div>
     </div>
   );
 }

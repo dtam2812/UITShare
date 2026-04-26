@@ -46,7 +46,7 @@ export default function DocumentDetail() {
   const { cartItems, addToCart } = useCart();
   const isInCart = cartItems.some((item) => item._id === doc?._id);
 
-  //  Fetch documen
+  // Fetch document
   useEffect(() => {
     const fetchDocument = async () => {
       setLoading(true);
@@ -81,7 +81,7 @@ export default function DocumentDetail() {
     fetchListing();
   }, [searchParams]);
 
-  //  Check access
+  // Check access
   const checkAccess = async () => {
     if (!doc) return;
     const token = localStorage.getItem("access_token");
@@ -174,7 +174,7 @@ export default function DocumentDetail() {
   // Render guards
   if (loading) {
     return (
-      <section className="relative px-6 py-12 text-white">
+      <section className="relative px-4 py-12 text-white sm:px-6">
         <div className="mx-auto max-w-6xl py-32 text-center text-gray-400">
           Đang tải...
         </div>
@@ -184,7 +184,7 @@ export default function DocumentDetail() {
 
   if (error || !doc) {
     return (
-      <section className="relative px-6 py-12 text-white">
+      <section className="relative px-4 py-12 text-white sm:px-6">
         <div className="mx-auto max-w-6xl py-32 text-center text-gray-400">
           {error || "Không tìm thấy tài liệu"}
         </div>
@@ -193,7 +193,7 @@ export default function DocumentDetail() {
   }
 
   return (
-    <section className="relative overflow-hidden px-6 py-12 text-white">
+    <section className="relative overflow-hidden px-4 py-8 text-white sm:px-6 sm:py-12">
       <div className="mx-auto max-w-6xl">
         {/* Background blobs */}
         <div
@@ -211,7 +211,7 @@ export default function DocumentDetail() {
 
         <button
           onClick={() => navigate(-1)}
-          className="mb-8 flex cursor-pointer items-center gap-2 text-gray-400 transition-colors hover:text-white"
+          className="mb-6 flex cursor-pointer items-center gap-2 text-gray-400 transition-colors hover:text-white"
         >
           ← <span className="text-sm">Quay lại</span>
         </button>
@@ -219,34 +219,38 @@ export default function DocumentDetail() {
         <p className="mb-2 text-sm font-semibold text-cyan-400">
           ✦ Chi tiết tài liệu
         </p>
-        <h2 className="mb-12 text-3xl font-bold md:text-4xl">{doc.title}</h2>
+        <h2 className="mb-6 text-2xl font-bold sm:mb-12 sm:text-3xl md:text-4xl">
+          {doc.title}
+        </h2>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Left column */}
-          <div className="flex flex-col gap-6 lg:col-span-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          {/* Sidebar - lên đầu trên mobile, sang phải trên desktop */}
+          <div className="order-first lg:order-last lg:col-span-1">
+            <DocumentSidebar
+              doc={doc}
+              numPages={numPages}
+              onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+              accessStatus={accessStatus}
+              isInCart={isInCart}
+              addingToCart={addingToCart}
+              cartMsg={cartMsg}
+              resellListing={resellListing}
+              onBuyNow={handleBuyNow}
+              onAddToCart={handleAddToCart}
+              onResell={() => setShowResellModal(true)}
+              onCancelListing={() => setShowCancelModal(true)}
+              onLoginRedirect={() => navigate("/login")}
+              onShowPreview={() => setShowPreview(true)}
+              onReadDocument={() => navigate(`/documentReading/${doc._id}`)}
+            />
+          </div>
+
+          {/* Left column - xuống dưới trên mobile */}
+          <div className="order-last flex flex-col gap-6 lg:order-first lg:col-span-2">
             <DocumentInfo doc={doc} reviewCount={doc.commentCount} />
             <NFTInfo nft={doc} nftHistory={nftHistory} />
             <DocumentReviews />
           </div>
-
-          {/* Right sidebar */}
-          <DocumentSidebar
-            doc={doc}
-            numPages={numPages}
-            onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-            accessStatus={accessStatus}
-            isInCart={isInCart}
-            addingToCart={addingToCart}
-            cartMsg={cartMsg}
-            resellListing={resellListing}
-            onBuyNow={handleBuyNow}
-            onAddToCart={handleAddToCart}
-            onResell={() => setShowResellModal(true)}
-            onCancelListing={() => setShowCancelModal(true)}
-            onLoginRedirect={() => navigate("/login")}
-            onShowPreview={() => setShowPreview(true)}
-            onReadDocument={() => navigate(`/documentReading/${doc._id}`)}
-          />
         </div>
 
         <FeaturedDocuments badge="✦ Liên quan" title="Tài liệu cùng chủ đề" />

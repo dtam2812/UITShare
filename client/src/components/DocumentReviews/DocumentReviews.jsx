@@ -134,7 +134,7 @@ export default function DocumentReviews() {
   return (
     <div className="flex flex-col gap-6">
       {/* Viết đánh giá */}
-      <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md sm:p-6">
         <h3 className="mb-4 text-lg font-bold text-white">Viết Đánh Giá</h3>
 
         <div className="mb-4">
@@ -157,7 +157,8 @@ export default function DocumentReviews() {
           <p className="mb-2 text-xs text-green-400">{successMsg}</p>
         )}
 
-        <div className="flex items-center justify-between">
+        {/* Footer: hint + button — xếp dọc trên mobile */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-gray-500">
             {!isReady
               ? commentRating === 0 && !commentText.trim()
@@ -171,7 +172,7 @@ export default function DocumentReviews() {
           <button
             onClick={handleSubmit}
             disabled={!isReady || submitting}
-            className={`flex cursor-pointer items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition ${
+            className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition sm:w-auto ${
               isReady && !submitting
                 ? "bg-purple-500 text-white hover:bg-purple-600"
                 : "cursor-not-allowed bg-white/5 text-gray-600"
@@ -210,7 +211,7 @@ export default function DocumentReviews() {
             {reviews.map((r) => (
               <div
                 key={r._id}
-                className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
+                className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md sm:p-6"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 text-sm font-bold text-black">
@@ -225,12 +226,12 @@ export default function DocumentReviews() {
                     )}
                   </div>
 
-                  <div className="flex-1">
-                    <div className="mb-1 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-white">
+                  <div className="flex-1 min-w-0">
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <p className="truncate text-sm font-semibold text-white">
                         {r.user?.userName || "Người dùng"}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className="shrink-0 text-xs text-gray-600">
                         {formatDate(r.createdAt)}
                       </p>
                     </div>
