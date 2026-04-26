@@ -84,58 +84,59 @@ const PurchasedDocuments = () => {
           {filtered.map((doc) => (
             <div
               key={doc._id}
-              className="flex items-center gap-4 rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10"
+              className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10 sm:flex-row sm:items-center"
             >
-              {/* Thumbnail / Icon */}
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/20">
-                <FiBookOpen className="h-5 w-5 text-purple-400" />
-              </div>
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-purple-500/20">
+                  <FiBookOpen className="h-5 w-5 text-purple-400" />
+                </div>
 
-              {/* Info */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">
-                  {doc.title}
-                </p>
-                <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
-                  {doc.author?.userName && (
-                    <span className="flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-                      {doc.author.userName}
-                    </span>
-                  )}
-                  {doc.subject && (
-                    <span className="flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                      {doc.subject}
-                    </span>
-                  )}
-                  {doc.boughtAt && (
-                    <span className="flex items-center gap-1">
-                      <FiCalendar className="h-3 w-3" />
-                      {new Date(doc.boughtAt).toLocaleDateString("vi-VN")}
-                    </span>
-                  )}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-white">
+                    {doc.title}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                    {doc.author?.userName && (
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
+                        {doc.author.userName}
+                      </span>
+                    )}
+                    {doc.subject && (
+                      <span className="flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                        {doc.subject}
+                      </span>
+                    )}
+                    {doc.boughtAt && (
+                      <span className="flex items-center gap-1">
+                        <FiCalendar className="h-3 w-3" />
+                        {new Date(doc.boughtAt).toLocaleDateString("vi-VN")}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Price + Actions */}
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex items-center justify-between gap-2 sm:justify-end">
                 <span className="text-sm font-semibold text-purple-400">
                   {doc.price} ETH
                 </span>
-                <button
-                  onClick={() => navigate(`/documentReading/${doc._id}`)}
-                  className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
-                >
-                  <FiBookOpen className="h-3.5 w-3.5" />
-                  Đọc ngay
-                </button>
-                <button
-                  onClick={() => navigate(`/documentDetail/${doc._id}`)}
-                  className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-white"
-                >
-                  Chi tiết
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate(`/documentReading/${doc._id}`)}
+                    className="flex items-center gap-1.5 rounded-lg border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-medium text-purple-300 transition-colors hover:bg-purple-500/20"
+                  >
+                    <FiBookOpen className="h-3.5 w-3.5" />
+                    Đọc ngay
+                  </button>
+                  <button
+                    onClick={() => navigate(`/documentDetail/${doc._id}`)}
+                    className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:text-white"
+                  >
+                    Chi tiết
+                  </button>
+                </div>
               </div>
             </div>
           ))}

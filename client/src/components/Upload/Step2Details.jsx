@@ -1,5 +1,5 @@
 import { FiChevronLeft } from "react-icons/fi";
-import Step2FileCard from "./Step2Filecard";
+import Step2FileCard from "./Step2FileCard";
 import { useState } from "react";
 import axios from "../../common";
 import { FiAlertTriangle, FiXCircle } from "react-icons/fi";
