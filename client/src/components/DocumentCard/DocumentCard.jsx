@@ -35,7 +35,7 @@ const DocumentCard = ({
           {/* Ảnh */}
           <div className="relative h-24 shrink-0 sm:h-32">
             <img
-              src="./default_thumbnail.png"
+              src="/default_thumbnail.png"
               alt="Ảnh bìa tài liệu"
               className="h-full w-full object-cover"
             />
@@ -95,7 +95,7 @@ const DocumentCard = ({
                 <span className="text-[10px] text-white sm:text-xs">({commentCount})</span>
               </div>
               <span className="truncate text-[10px] text-gray-400 sm:text-xs">
-                {pageCount} trang · {new Date(createdAt)?.getFullYear()}
+                {pageCount}tr · {new Date(createdAt)?.getFullYear()}
               </span>
             </div>
           </div>
