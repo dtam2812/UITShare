@@ -28,8 +28,8 @@ const addUser = async (req, res) => {
       status: status || "active",
       bio: "",
       facebookLink: "",
-      avatar: "http://localhost:8080/uploads/avatar/default.jpg",
-      coverImage: "http://localhost:8080/uploads/coverImage/default.jpg",
+      avatar: '${process.env.SERVER_URL}/uploads/avatar/default.jpg',
+      coverImage: '${process.env.SERVER_URL}/uploads/coverImage/default.jpg',
       profileCompletion: 50,
     });
 

@@ -10,7 +10,7 @@ export default function Footer({ onNavigate }) {
         {/* Top: Logo + Socials */}
         <div className="flex flex-col items-center gap-5 mb-8 sm:flex-row sm:items-center sm:justify-between">
           <img
-            src="../public/UIT-Share-Logo-2.svg"
+            src="./UIT-Share-Logo-2.svg"
             alt="UITShare Logo"
             className="h-14 sm:h-20 object-contain"
           />
