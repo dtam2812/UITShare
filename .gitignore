@@ -4,6 +4,7 @@ server/node_modules/
 blockchain/node_modules/
 .vite
 
+.env
 client/.env
 server/.env
 blockchain/.env
