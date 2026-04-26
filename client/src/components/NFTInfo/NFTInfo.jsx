@@ -16,7 +16,7 @@ const TYPE_CONFIG = {
     icon: <Coins className="h-3 w-3" />,
   },
   buy: {
-    label: "Mua",
+    label: "Buy",
     color: "text-green-400",
     bg: "bg-green-500/20",
     icon: <ShieldCheck className="h-3 w-3" />,
@@ -34,7 +34,7 @@ const TYPE_CONFIG = {
     icon: <Tag className="h-3 w-3" />,
   },
   cancel: {
-    label: "Huỷ",
+    label: "Cancel",
     color: "text-red-400",
     bg: "bg-red-500/20",
     icon: <XCircle className="h-3 w-3" />,
@@ -65,22 +65,27 @@ export default function NFTInfo({ nft }) {
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </div>
-        <h3 className="text-base font-bold text-white">Thông tin NFT</h3>
+        <h3 className="text-base font-bold text-white">NFT Information</h3>
       </div>
 
       {/* NFT Stats */}
       <div className="mb-6 grid grid-cols-3 gap-5">
         {[
-          { label: "Giá", value: `${nft.price} ETH`, highlight: true },
+          { label: "Price", value: `${nft.price} ETH`, highlight: true },
           { label: "Token ID", value: `#${nft.tokenId}` },
-          { label: "Hoa hồng tác giả", value: `${nft.royaltyPercent ?? 0}%` },
-          { label: "Tổng số bản", value: `${nft.totalSupply} bản` },
-          { label: "Số bản còn lại", value: `${nft.remainingSupply ?? 0} bản` },
+          { label: "Author Royalty", value: `${nft.royaltyPercent ?? 0}%` },
+          { label: "Total Supply", value: `${nft.totalSupply} copies` },
+          {
+            label: "Remaining Supply",
+            value: `${nft.remainingSupply ?? 0} copies`,
+          },
         ].map((item) => (
           <div key={item.label}>
             <p className="mb-1 text-xs text-gray-500">{item.label}</p>
             <p
-              className={`text-sm font-semibold ${item.highlight ? "text-lg text-purple-400" : "text-white"}`}
+              className={`text-sm font-semibold ${
+                item.highlight ? "text-lg text-purple-400" : "text-white"
+              }`}
             >
               {item.value}
             </p>
@@ -89,7 +94,7 @@ export default function NFTInfo({ nft }) {
 
         {/* Author wallet address */}
         <div className="col-span-2">
-          <p className="mb-1 text-xs text-gray-500">Địa chỉ ví tác giả</p>
+          <p className="mb-1 text-xs text-gray-500">Author Wallet Address</p>
           <div className="flex items-center gap-2">
             <p className="font-mono text-sm font-semibold text-white">
               {nft.authorWallet ? `${nft.authorWallet.slice(0, 20)}...` : "—"}
