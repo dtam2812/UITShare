@@ -353,8 +353,9 @@ export default function Cart() {
                       <button
                         onClick={() => removeFromCart(item._id)}
                         className="cursor-pointer text-gray-600 transition hover:text-red-400"
+                        aria-label={`Xóa ${item.title} khỏi giỏ hàng`}
                       >
-                        <HiX size={16} />
+                        <HiX size={16} aria-hidden="true" />
                       </button>
                     )}
                 </div>
@@ -571,8 +572,9 @@ function Modal({ children, onClose }) {
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 transition hover:text-white"
+          aria-label="Đóng"
         >
-          <HiX size={18} />
+          <HiX size={18} aria-hidden="true" />
         </button>
         {children}
       </div>

@@ -28,13 +28,13 @@ export default function Hero() {
         {/* BUTTONS */}
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <Link to="/upload">
-            <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium transition hover:bg-purple-600">
+            <button className="w-48 cursor-pointer rounded-lg bg-purple-500 px-6 py-3 font-medium transition hover:bg-purple-600" aria-label="Tải lên tài liệu">
               Tải Lên Tài Liệu
             </button>
           </Link>
 
           <Link to="/document">
-            <button className="w-48 cursor-pointer rounded-lg bg-white px-6 py-3 font-medium text-black transition hover:bg-gray-200">
+            <button className="w-48 cursor-pointer rounded-lg bg-white px-6 py-3 font-medium text-black transition hover:bg-gray-200" aria-label="Khám phá tài liệu">
               Khám Phá Tài Liệu
             </button>
           </Link>
@@ -60,8 +60,10 @@ function Stat({ icon, value, label, className = "" }) {
   return (
     <div
       className={`rounded-xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-md transition hover:bg-white/10 sm:p-6 ${className}`}
+      role="region"
+      aria-label={`${value} ${label}`}
     >
-      <div className="mb-2 flex justify-center text-purple-400">{icon}</div>
+      <div className="mb-2 flex justify-center text-purple-400" aria-hidden="true">{icon}</div>
       <div className="text-xl font-bold sm:text-2xl">{value}</div>
       <div className="mt-1 text-xs text-gray-400 sm:text-sm">{label}</div>
     </div>

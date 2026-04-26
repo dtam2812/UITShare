@@ -109,10 +109,11 @@ const Header = () => {
                         onMouseLeave={() => setCartHovered(false)}
                       >
                         <div className="relative cursor-pointer">
-                          <Link to="/cart">
+                          <Link to="/cart" aria-label="Giỏ hàng">
                             <HiOutlineShoppingCart
                               size={24}
                               className="text-white transition hover:text-purple-300"
+                              aria-hidden="true"
                             />
                           </Link>
                           {cartItems.length > 0 && (
@@ -157,15 +158,16 @@ const Header = () => {
                                       <button
                                         onClick={() => removeFromCart(item._id)}
                                         className="mt-0.5 shrink-0 text-gray-600 transition hover:text-red-400"
+                                        aria-label={`Xóa ${item.title} khỏi giỏ hàng`}
                                       >
-                                        <HiX size={14} />
+                                        <HiX size={14} aria-hidden="true" />
                                       </button>
                                     </li>
                                   ))}
                                 </ul>
                                 <div className="border-t border-white/10 px-4 py-3">
-                                  <Link to="/cart">
-                                    <button className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600">
+                                  <Link to="/cart" aria-label="Đi tới trang thanh toán">
+                                    <button className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600" aria-label="Thanh toán giỏ hàng">
                                       Thanh toán
                                     </button>
                                   </Link>
@@ -180,10 +182,15 @@ const Header = () => {
                         className="relative"
                         onMouseEnter={() => setUserHovered(true)}
                         onMouseLeave={() => setUserHovered(false)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Menu tài khoản"
+                        aria-haspopup="true"
                       >
                         <HiUser
                           size={26}
                           className="cursor-pointer text-white transition hover:text-purple-300"
+                          aria-hidden="true"
                         />
 
                         {userHovered && (
@@ -237,11 +244,17 @@ const Header = () => {
                 {/* Mobile/Tablet: cart + hamburger */}
                 <div className="flex items-center gap-3 lg:hidden">
                   {accessToken && (
-                    <div className="relative cursor-pointer">
+                    <div
+                      className="relative cursor-pointer"
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Mở giỏ hàng"
+                      onClick={() => setDrawerOpen(true)}
+                    >
                       <HiOutlineShoppingCart
                         size={22}
                         className="text-white"
-                        onClick={() => setDrawerOpen(true)}
+                        aria-hidden="true"
                       />
                       {cartItems.length > 0 && (
                         <span className="absolute -top-2 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-purple-500 text-[10px] font-bold text-white">
@@ -254,8 +267,10 @@ const Header = () => {
                   <button
                     onClick={() => setDrawerOpen(true)}
                     className="p-1 text-white"
+                    aria-label="Mở menu điều hướng"
+                    aria-expanded={drawerOpen}
                   >
-                    <HiMenu size={24} />
+                    <HiMenu size={24} aria-hidden="true" />
                   </button>
                 </div>
               </>
@@ -286,8 +301,9 @@ const Header = () => {
           <button
             onClick={() => setDrawerOpen(false)}
             className="text-gray-400 transition hover:text-white"
+            aria-label="Đóng menu"
           >
-            <HiX size={22} />
+            <HiX size={22} aria-hidden="true" />
           </button>
         </div>
 

@@ -25,16 +25,17 @@ export default function Footer({ onNavigate }) {
 
           <div className="flex flex-wrap items-center justify-center gap-2">
             {[
-              { icon: <FaDiscord size={16} /> },
-              { icon: <FaFacebookF size={16} /> },
-              { icon: <FaTiktok size={16} /> },
-              { icon: <FaYoutube size={16} /> },
-              { icon: <FaThreads size={16} /> },
-              { icon: <FaInstagram size={16} /> },
+              { icon: <FaDiscord size={16} aria-hidden="true" />, label: "Discord" },
+              { icon: <FaFacebookF size={16} aria-hidden="true" />, label: "Facebook" },
+              { icon: <FaTiktok size={16} aria-hidden="true" />, label: "TikTok" },
+              { icon: <FaYoutube size={16} aria-hidden="true" />, label: "YouTube" },
+              { icon: <FaThreads size={16} aria-hidden="true" />, label: "Threads" },
+              { icon: <FaInstagram size={16} aria-hidden="true" />, label: "Instagram" },
             ].map((item, i) => (
               <a
                 key={i}
                 href="#"
+                aria-label={`UITShare trên ${item.label}`}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1c1e2f] text-white transition-colors hover:bg-gray-600 hover:text-purple-300 sm:h-10 sm:w-10"
               >
                 {item.icon}

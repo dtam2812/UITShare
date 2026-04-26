@@ -155,6 +155,7 @@ export default function SearchBar({ open, setOpen }) {
           type="text"
           placeholder="Bạn muốn tìm kiếm tài liệu gì?"
           className={`bg-transparent text-white placeholder-gray-400 transition-all duration-300 focus:outline-none ${open ? "flex-1 px-4 py-2 opacity-100" : "w-0 border-none px-0 py-0 opacity-0"}`}
+          aria-label="Tìm kiếm tài liệu"
           autoFocus={open}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -176,12 +177,13 @@ export default function SearchBar({ open, setOpen }) {
               setOpen(true);
             }
           }}
+          aria-label={open ? "Đóng tìm kiếm" : "Mở tìm kiếm"}
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-transparent transition duration-200 hover:bg-white/10 ${open ? "mr-1" : ""}`}
         >
           {open ? (
-            <X size={18} className="text-gray-400 hover:text-white" />
+            <X size={18} className="text-gray-400 hover:text-white" aria-hidden="true" />
           ) : (
-            <Search size={20} className="text-white hover:text-purple-300" />
+            <Search size={20} className="text-white hover:text-purple-300" aria-hidden="true" />
           )}
         </button>
       </form>
