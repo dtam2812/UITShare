@@ -55,7 +55,6 @@ const Header = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Khóa scroll khi drawer mở
   useEffect(() => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => {
@@ -199,7 +198,7 @@ const Header = () => {
                                 </Link>
                               </li>
 
-                              {decodePayload.role === "admin" ? (
+                              {decodePayload?.role === "admin" && (
                                 <li>
                                   <Link to="/admin">
                                     <button className="w-full cursor-pointer px-4 py-2 text-left transition hover:bg-white/5 hover:text-red-400">
@@ -207,8 +206,6 @@ const Header = () => {
                                     </button>
                                   </Link>
                                 </li>
-                              ) : (
-                                <div></div>
                               )}
 
                               <li>
@@ -308,9 +305,32 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Cart section (chỉ khi đã login) */}
+        {/* Đã login: Trang cá nhân -> Quản lý (admin) -> Giỏ hàng */}
         {accessToken && (
           <div className="flex flex-1 flex-col overflow-hidden">
+
+            {/* Trang cá nhân */}
+            <Link
+              to={`/profile/${userId}`}
+              onClick={() => setDrawerOpen(false)}
+              className="flex items-center gap-3 border-b border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
+            >
+              <HiUser size={18} />
+              <span className="text-sm font-medium">Trang cá nhân</span>
+            </Link>
+
+            {/* Quản lý - chỉ admin */}
+            {decodePayload?.role === "admin" && (
+              <Link
+                to="/admin"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-3 border-b border-white/10 px-5 py-3 text-white transition hover:bg-white/5"
+              >
+                <span className="text-sm font-medium">Quản lý</span>
+              </Link>
+            )}
+
+            {/* Giỏ hàng */}
             <div className="border-b border-white/10 px-5 py-3">
               <p className="text-sm font-semibold text-white">
                 Giỏ hàng ({cartItems.length})
@@ -351,7 +371,7 @@ const Header = () => {
                 </ul>
                 <div className="border-t border-white/10 px-5 py-3">
                   <button
-                    onClick={() => navigate("/cart")}
+                    onClick={() => { navigate("/cart"); setDrawerOpen(false); }}
                     className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
                   >
                     Thanh toán
@@ -366,17 +386,22 @@ const Header = () => {
         <div className="mt-auto border-t border-white/10 px-5 py-4">
           {!accessToken ? (
             <button
-              onClick={() => {
-                setDrawerOpen(false);
-              }}
+              onClick={() => { setDrawerOpen(false); navigate("/login"); }}
               className="w-full rounded-full bg-linear-to-r from-purple-600 to-indigo-600 py-2.5 font-medium text-white transition hover:opacity-90"
             >
               Đăng nhập
             </button>
           ) : (
-            <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-white transition hover:bg-white/5">
-              <HiUser size={20} />
-              <span className="text-sm font-medium">Trang cá nhân</span>
+            <button
+              onClick={() => {
+                localStorage.removeItem("access_token");
+                navigate("/login");
+                setDrawerOpen(false);
+                reloadCartForCurrentUser();
+              }}
+              className="w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-400 transition hover:bg-white/5"
+            >
+              Đăng xuất
             </button>
           )}
         </div>

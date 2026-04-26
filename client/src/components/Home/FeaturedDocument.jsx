@@ -39,11 +39,11 @@ export default function FeaturedDocuments({
   }, []);
 
   return (
-    <section className="relative overflow-hidden px-6 py-12 text-white">
-      <div className="mx-auto mb-12 max-w-6xl">
+    <section className="relative overflow-hidden px-4 py-10 text-white sm:px-6 sm:py-12">
+      <div className="mx-auto mb-8 max-w-6xl sm:mb-12">
         <p className="mb-2 text-sm font-semibold text-cyan-400">{badge}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="text-3xl font-bold md:text-4xl">{title}</h2>
+          <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">{title}</h2>
           <Link to="/document">
             <button className="cursor-pointer text-sm text-cyan-400 hover:underline">
               {showAll}
@@ -52,7 +52,7 @@ export default function FeaturedDocuments({
         </div>
       </div>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {documents.slice(0, 4).map((doc) => (
           <DocumentCard key={doc._id} {...doc} />
         ))}

@@ -490,7 +490,7 @@ const AuthorDetail = () => {
                   Chưa có tài liệu nào.
                 </p>
               ) : (
-                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
+                <div className="mx-auto grid w-11/12 grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
                   {documents.map((doc) => (
                     <DocumentCard key={doc._id} {...doc} />
                   ))}
@@ -508,7 +508,7 @@ const AuthorDetail = () => {
                   Chưa có tài liệu nào đang bán lại.
                 </p>
               ) : (
-                <div className="mx-auto flex w-11/12 flex-wrap gap-4">
+                <div className="mx-auto grid w-11/12 grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
                   {resellListings.map((listing) => (
                     <div
                       key={listing._id}

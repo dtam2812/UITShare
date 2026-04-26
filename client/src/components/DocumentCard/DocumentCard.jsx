@@ -1,5 +1,4 @@
 import { Link, useNavigate } from "react-router";
-import pic2 from "../../assets/pic2.jpg";
 import logouit from "../../assets/logouit.png";
 
 const DocumentCard = ({
@@ -31,7 +30,7 @@ const DocumentCard = ({
   return (
     <Link to={`/documentDetail/${documentId}`}>
       <div className="pt-4 pl-4">
-        <div className="flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl xl:w-64">
+        <div className="w- flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/10 bg-linear-to-br from-[#12121f] to-[#1a1a2e] shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl xl:w-64">
           {/* Ảnh */}
           <div className="relative h-32 shrink-0">
             <img
