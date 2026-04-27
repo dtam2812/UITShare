@@ -34,6 +34,7 @@ import DocumentReading from "./pages/DocumentReading.jsx";
 import PurchasedDocuments from "./pages/Profile/PurchasedDocs.jsx";
 import ResellDocuments from "./pages/Profile/ResellDocuments.jsx";
 import ResetPassword from "./pages/Auth/ResetPassword.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -96,6 +97,7 @@ const router = createBrowserRouter([
             ],
           },
           { path: "upload", element: <UploadPage /> },
+          { path: "*", element: <NotFound /> },
         ],
       },
       { path: "login", element: <Login /> },
