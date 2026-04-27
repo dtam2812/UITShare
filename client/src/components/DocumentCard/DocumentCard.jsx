@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router";
 import logouit from "../../assets/logouit.png";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const DocumentCard = ({
   _id,
@@ -36,6 +37,7 @@ const DocumentCard = ({
           <div className="relative h-24 shrink-0 sm:h-32">
             <img
               src="/default_thumbnail.png"
+              onError={(e) => { e.currentTarget.src = "/default_thumbnail.png"; }}
               alt="Ảnh bìa tài liệu"
               className="h-full w-full object-cover"
             />
@@ -71,7 +73,8 @@ const DocumentCard = ({
               <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-400 to-pink-500 sm:h-5 sm:w-5">
                 <img
                   className="h-full w-full rounded-full object-cover"
-                  src={author?.avatar}
+                  src={getImageUrl(author?.avatar, "/default.jpg")}
+                  onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
                   alt={`Ảnh đại diện của ${author?.userName}`}
                 />
               </div>
