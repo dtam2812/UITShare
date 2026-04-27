@@ -7,6 +7,12 @@ axios.interceptors.request.use(
     const configUrl = config.url;
     config.headers["Authorization"] =
       `Bearer ${localStorage.getItem("access_token")}`;
+    
+    // Don't set Content-Type for FormData - let the browser set it automatically with boundary
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
+    
     return config;
   },
   (error) => {
