@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { FileText, BookOpen, ExternalLink, AlertTriangle, User } from "lucide-react";
 import { Document, Page } from "react-pdf";
 import ActionButtons, { ACCESS_STATUS } from "./ActionButtons";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const CART_MSG_MAP = {
   added: { text: "Đã thêm vào giỏ hàng ✓", color: "text-green-400" },
@@ -171,9 +172,12 @@ export default function DocumentSidebar({
       {/* Author card */}
       <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-blue-500 font-bold text-white">
-            {doc.author?.userName?.[0]?.toUpperCase() || "?"}
-          </div>
+          <img
+            src={getImageUrl(doc.author?.avatar, "/default.jpg")}
+            onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
+            alt={`Ảnh đại diện của ${doc.author?.userName}`}
+            className="h-10 w-10 shrink-0 rounded-full object-cover"
+          />
           <div>
             <p className="text-sm font-bold text-white">{doc.author?.userName || "—"}</p>
             <p className="text-xs text-gray-500">{doc.author?.email || ""}</p>
