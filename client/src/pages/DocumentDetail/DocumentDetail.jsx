@@ -46,6 +46,11 @@ export default function DocumentDetail() {
   const { cartItems, addToCart } = useCart();
   const isInCart = cartItems.some((item) => item._id === doc?._id);
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [documentId]);
+
   // Fetch document
   useEffect(() => {
     const fetchDocument = async () => {
