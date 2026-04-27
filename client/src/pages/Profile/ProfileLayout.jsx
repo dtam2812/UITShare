@@ -86,7 +86,7 @@ const ProfileLayout = () => {
             ${openSidebar ? "translate-x-0" : "-translate-x-full"}`}
         >
           <ProfileSidebar
-            avatar={profileInfo.avatar}
+            avatar={profileInfo.avatar || "/default.jpg"}
             userName={profileInfo.userName}
             email={profileInfo.email}
             onClose={() => setOpenSidebar(false)} 
