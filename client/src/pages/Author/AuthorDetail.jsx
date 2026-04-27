@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { parseEther } from "viem";
 import {
   useWriteContract,
-  useWaitForTransactionReceipt,
   useAccount,
 } from "wagmi";
 import {
@@ -21,6 +20,7 @@ import {
 } from "react-icons/fi";
 import DocumentCard from "../../components/DocumentCard/DocumentCard";
 import axios from "../../common";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const MARKETPLACE_ADDRESS = import.meta.env.VITE_MARKETPLACE_CONTRACT_ADDRESS;
 
@@ -96,7 +96,6 @@ const DonateModal = ({ author, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#0d0d1a] shadow-2xl">
-        {/* Close */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 rounded-full p-1 text-gray-500 transition-colors hover:text-white"
@@ -105,7 +104,6 @@ const DonateModal = ({ author, onClose }) => {
         </button>
 
         <div className="p-6">
-          {/* Header */}
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-500/20">
               <FiHeart className="h-5 w-5 text-pink-400" />
@@ -116,14 +114,12 @@ const DonateModal = ({ author, onClose }) => {
             </div>
           </div>
 
-          {/* States */}
           {step === "input" && (
             <>
               <p className="mb-4 text-sm text-gray-400">
                 Chọn hoặc nhập số ETH bạn muốn gửi:
               </p>
 
-              {/* Preset amounts */}
               <div className="mb-3 grid grid-cols-4 gap-2">
                 {presets.map((p) => (
                   <button
@@ -140,7 +136,6 @@ const DonateModal = ({ author, onClose }) => {
                 ))}
               </div>
 
-              {/* Custom input */}
               <div className="mb-6 flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
                 <input
                   type="number"
@@ -154,7 +149,6 @@ const DonateModal = ({ author, onClose }) => {
                 <span className="text-sm font-medium text-gray-400">ETH</span>
               </div>
 
-              {/* Message */}
               <div className="mb-6">
                 <label className="mb-1.5 block text-xs font-medium text-gray-400">
                   Lời nhắn <span className="text-gray-600">(tuỳ chọn)</span>
@@ -202,9 +196,7 @@ const DonateModal = ({ author, onClose }) => {
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <FiCheckCircle className="h-10 w-10 text-green-400" />
               <div>
-                <p className="font-semibold text-white">
-                  Donate thành công! 🎉
-                </p>
+                <p className="font-semibold text-white">Donate thành công! 🎉</p>
                 <p className="mt-1 text-sm text-gray-400">
                   Cảm ơn bạn đã ủng hộ {author.userName}
                 </p>
@@ -315,27 +307,19 @@ const AuthorDetail = () => {
         <div className="mb-10 overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm backdrop-blur-md">
           {/* Cover */}
           <div className="relative h-48 border-b border-white/10 sm:h-56">
-            {author.coverImage ? (
-              <img
-                src={author.coverImage}
-                alt="cover"
-                className="h-full w-full object-cover opacity-60"
-              />
-            ) : (
-              <div className="h-full w-full bg-linear-to-br from-purple-900/60 to-blue-900/60" />
-            )}
+            <img
+              src={getImageUrl(author.coverImage, "/cover_default.jpg")}
+              onError={(e) => { e.currentTarget.src = "/cover_default.jpg"; }}
+              alt="cover"
+              className="h-full w-full object-cover opacity-60"
+            />
             <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
-              {author.avatar ? (
-                <img
-                  src={author.avatar}
-                  alt="avatar"
-                  className="h-28 w-28 rounded-full border-4 border-[#050816] object-cover shadow-md"
-                />
-              ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-[#050816] bg-linear-to-br from-purple-400 to-blue-500 text-4xl font-bold text-white shadow-md">
-                  {author.userName?.[0]?.toUpperCase() || "?"}
-                </div>
-              )}
+              <img
+                src={getImageUrl(author.avatar, "/default.jpg")}
+                onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
+                alt="avatar"
+                className="h-28 w-28 rounded-full border-4 border-[#050816] object-cover shadow-md"
+              />
             </div>
           </div>
 
@@ -389,7 +373,6 @@ const AuthorDetail = () => {
                 </a>
               )}
 
-              {/* Donate button — chỉ hiện khi tác giả đã liên kết ví */}
               {author.walletAddress &&
                 currentWallet?.toLowerCase() !==
                   author.walletAddress?.toLowerCase() && (
@@ -410,31 +393,21 @@ const AuthorDetail = () => {
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiFileText className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">
-                  Tài liệu
-                </span>
+                <span className="text-sm font-medium text-gray-400">Tài liệu</span>
               </div>
-              <span className="text-xl font-bold text-white">
-                {stats.totalDocs}
-              </span>
+              <span className="text-xl font-bold text-white">{stats.totalDocs}</span>
             </div>
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiDownload className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">
-                  Downloads
-                </span>
+                <span className="text-sm font-medium text-gray-400">Downloads</span>
               </div>
-              <span className="text-xl font-bold text-white">
-                {stats.totalDownloads}
-              </span>
+              <span className="text-xl font-bold text-white">{stats.totalDownloads}</span>
             </div>
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiStar className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">
-                  Đánh giá
-                </span>
+                <span className="text-sm font-medium text-gray-400">Đánh giá</span>
               </div>
               <span className="text-xl font-bold text-white">
                 {stats.overallRating ?? "—"}
@@ -486,9 +459,7 @@ const AuthorDetail = () => {
           {activeTab === "shared" && (
             <>
               {documents.length === 0 ? (
-                <p className="text-center text-gray-500">
-                  Chưa có tài liệu nào.
-                </p>
+                <p className="text-center text-gray-500">Chưa có tài liệu nào.</p>
               ) : (
                 <div className="mx-auto grid w-11/12 grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
                   {documents.map((doc) => (
