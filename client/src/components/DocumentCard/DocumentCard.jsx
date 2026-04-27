@@ -62,7 +62,7 @@ const DocumentCard = ({
             </div>
 
             {/* Title */}
-            <h2 className="line-clamp-2 text-xs leading-snug font-bold text-white sm:line-clamp-1 sm:text-sm">
+            <h2 className="line-clamp-1 text-xs leading-snug font-bold text-white sm:line-clamp-1 sm:text-sm">
               {title?.split(".")[0]}
             </h2>
 
