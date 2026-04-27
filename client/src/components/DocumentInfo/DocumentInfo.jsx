@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 function StarRating({ value }) {
   return (
@@ -44,9 +45,12 @@ export default function DocumentInfo({ doc, reviewCount }) {
       <div className="mb-5 flex flex-wrap items-center gap-6">
         {/* Tác giả */}
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-blue-500 text-sm font-bold text-white">
-            {doc.author?.userName?.[0]?.toUpperCase() || "?"}
-          </div>
+          <img
+            src={getImageUrl(doc.author?.avatar, "/default.jpg")}
+            onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
+            alt={`Ảnh đại diện của ${doc.author?.userName}`}
+            className="h-8 w-8 rounded-full object-cover"
+          />
           <div>
             <p className="text-xs text-gray-500">Tác Giả</p>
             <p className="text-sm font-semibold text-white">
