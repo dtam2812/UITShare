@@ -138,7 +138,7 @@ const PersonalInfo = () => {
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm backdrop-blur-md">
       <div className="relative h-48 rounded-t-2xl bg-white/10">
         <img
-          src={img.coverImagePreview || img.coverImage || "/default.jpg"}
+          src={img.coverImagePreview || img.coverImage || "/cover_default.jpg"}
           alt="Cover"
           className="h-full w-full object-cover"
         />
@@ -152,7 +152,7 @@ const PersonalInfo = () => {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="relative">
             <img
-              src={img.avatarPreview || img.avatar || "/cover_default.jpg"}
+              src={img.avatarPreview || img.avatar || "/default.jpg"}
               alt="Profile avatar"
               className="h-24 w-24 rounded-full border-4 border-[#050816] object-cover shadow-md hover:cursor-pointer"
               onClick={() => handleClick("avatar")}
