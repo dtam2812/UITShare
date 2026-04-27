@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { FiImage, FiEdit2, FiBook, FiShield } from "react-icons/fi";
+import { FiImage, FiEdit2, FiBook } from "react-icons/fi";
 import Input from "../../components/UI/Input";
 import { useParams } from "react-router";
 import axios from "../../common";
 import toast from "react-hot-toast";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const PersonalInfo = () => {
   const [user, setUser] = useState(null);
@@ -81,19 +82,19 @@ const PersonalInfo = () => {
       );
 
       if (response.status === 200) {
-      if (response.data.newToken) {
-        localStorage.setItem("access_token", response.data.newToken);
-        window.dispatchEvent(new Event("token-updated"));
+        if (response.data.newToken) {
+          localStorage.setItem("access_token", response.data.newToken);
+          window.dispatchEvent(new Event("token-updated"));
+        }
+        setUser(response.data);
+        setImg((prev) => ({
+          avatar: response.data.avatar,
+          coverImage: response.data.coverImage,
+          avatarPreview: prev.avatarPreview || "",
+          coverImagePreview: prev.coverImagePreview || "",
+        }));
+        toast.success("Cập nhật thành công");
       }
-      setUser(response.data);
-      setImg((prev) => ({
-        avatar: response.data.avatar,
-        coverImage: response.data.coverImage,
-        avatarPreview: prev.avatarPreview || "",
-        coverImagePreview: prev.coverImagePreview || "",
-      }));
-      toast.success("Cập nhật thành công");
-    }
     } catch (error) {
       console.log(error);
     }
@@ -131,14 +132,15 @@ const PersonalInfo = () => {
       [`${typeUpload.current}Preview`]: URL.createObjectURL(file),
     }));
 
-    e.target.value = null
+    e.target.value = null;
   };
 
   return (
     <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-sm backdrop-blur-md">
       <div className="relative h-48 rounded-t-2xl bg-white/10">
         <img
-          src={img.coverImagePreview || img.coverImage || "/cover_default.jpg"}
+          src={img.coverImagePreview || getImageUrl(img.coverImage, "/cover_default.jpg")}
+          onError={(e) => { e.currentTarget.src = "/cover_default.jpg"; }}
           alt="Cover"
           className="h-full w-full object-cover"
         />
@@ -152,7 +154,8 @@ const PersonalInfo = () => {
         <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
           <div className="relative">
             <img
-              src={img.avatarPreview || img.avatar || "/default.jpg"}
+              src={img.avatarPreview || getImageUrl(img.avatar, "/default.jpg")}
+              onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
               alt="Profile avatar"
               className="h-24 w-24 rounded-full border-4 border-[#050816] object-cover shadow-md hover:cursor-pointer"
               onClick={() => handleClick("avatar")}

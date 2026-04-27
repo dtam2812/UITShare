@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { NavLink, useNavigate, useParams } from "react-router";
 import { useCart } from "../../context/CartContext";
+import { getImageUrl } from "../../utils/getImageUrl";
 
 const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
   const navLinkClass = ({ isActive }) =>
@@ -32,7 +33,8 @@ const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
     <div className="flex h-full flex-col bg-white/5 px-4 py-6 backdrop-blur-md">
       <div className="mb-8 flex items-center gap-3 border-b border-white/10 pb-6">
         <img
-          src={avatar}
+          src={getImageUrl(avatar, "/default.jpg")}
+          onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
           alt="Avatar"
           className="h-12 w-12 rounded-full border border-white/20 object-cover"
         />
