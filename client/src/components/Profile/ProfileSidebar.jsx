@@ -46,7 +46,7 @@ const ProfileSidebar = ({ avatar, userName, email, onClose }) => {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-1.5 overflow-y-auto">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
         <p className="mt-2 mb-4 flex justify-center px-4 text-xs font-bold tracking-wider text-gray-500 uppercase">
           Quản lý tài khoản
         </p>
