@@ -44,14 +44,14 @@ export default function PDFPreviewModal({ file, onClose }) {
         <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
           <div className="flex items-center gap-3">
             <p className="text-sm font-semibold text-white">
-              Document Preview
+              Xem trước tài liệu
             </p>
 
             {numPages && (
               <span className="text-xs text-gray-500">
-                {previewPages} preview pages
+                {previewPages} trang xem trước
                 <span className="ml-1 text-purple-400">
-                  / {numPages} pages
+                  / {numPages} trang
                 </span>
               </span>
             )}
@@ -100,14 +100,14 @@ export default function PDFPreviewModal({ file, onClose }) {
               <div className="flex flex-col items-center justify-center gap-3 py-24">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
                 <p className="text-sm text-gray-400">
-                  Loading document...
+                  Đang tải tài liệu...
                 </p>
               </div>
             }
             error={
               <div className="flex flex-col items-center justify-center gap-2 py-24">
                 <p className="text-sm text-gray-500">
-                  Unable to load document
+                  Không thể tải tài liệu
                 </p>
               </div>
             }
@@ -133,16 +133,16 @@ export default function PDFPreviewModal({ file, onClose }) {
             >
               <p className="text-center text-sm text-gray-400">
                 <span className="font-semibold text-white">
-                  {numPages - previewPages} more pages
+                  Còn {numPages - previewPages} trang
                 </span>{" "}
-                remaining — purchase to unlock full access
+                — mua ngay để xem toàn bộ nội dung
               </p>
 
               <button
                 onClick={onClose}
                 className="cursor-pointer rounded-lg bg-purple-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
               >
-                Buy Now
+                Mua ngay
               </button>
             </div>
           )}
@@ -151,14 +151,14 @@ export default function PDFPreviewModal({ file, onClose }) {
         {/* Footer */}
         <div className="flex shrink-0 items-center justify-between border-t border-white/10 px-5 py-4">
           <p className="text-xs text-gray-500">
-            Scroll down to read • Press Esc to close
+            Cuộn xuống để đọc • Nhấn Esc để đóng
           </p>
 
           <button
             onClick={onClose}
             className="cursor-pointer rounded-lg bg-purple-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-600"
           >
-            Buy Now
+            Mua ngay
           </button>
         </div>
       </div>

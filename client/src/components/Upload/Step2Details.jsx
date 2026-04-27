@@ -125,7 +125,7 @@ const Step2Detail = ({ file, prevStep, onSubmit, onReset }) => {
             <p className="mt-0.5 opacity-80">{uploadError.message}</p>
             {uploadError.type === "duplicate" && (
               <button
-                onClick={onReset()}
+                onClick={() => onReset()}
                 className="mt-1.5 inline-block text-xs font-medium text-yellow-400 underline hover:text-yellow-300"
               >
                 Tải lên tài liệu khác

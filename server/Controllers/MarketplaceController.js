@@ -382,18 +382,7 @@ const buyDocument = async (req, res) => {
       blockNumber: receipt.blockNumber,
       status: "success",
     });
-
-    // ============================================================
-    // 16. [FIX] Re-create order on-chain nếu còn hàng
-    //
-    // Vấn đề: smart contract đánh dấu orderId là "inactive" sau
-    // MỖI lần executeOrder. Nếu còn copies (newAmount > 0) và đây
-    // là listing của original creator (backend wallet là signer),
-    // ta tự động gọi addOrder mới và cập nhật orderId trong DB.
-    //
-    // Resell listing (isOriginalCreator=false) thường amount=1,
-    // nên newAmount=0 và không cần xử lý.
-    // ============================================================
+    
     if (newAmount > 0 && listing.isOriginalCreator) {
       await recreateOrderOnChain(listing, newAmount);
     }
