@@ -13,6 +13,8 @@ const getUserDetail = async (req, res) => {
   }
 };
 
+const { uploadToCloudinary } = require("../Services/CloudinaryService");
+
 const updateUserInfo = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -24,11 +26,18 @@ const updateUserInfo = async (req, res) => {
       updateData.studentId = studentId;
     }
 
+    // Thay phần lưu file cũ bằng upload lên Cloudinary
     if (req.files?.avatar) {
-      updateData.avatar = `${process.env.SERVER_URL}/uploads/avatar/${req.files.avatar[0].filename}`;
+      updateData.avatar = await uploadToCloudinary(
+        req.files.avatar[0].buffer,
+        "uitshare/avatars"
+      );
     }
     if (req.files?.coverImage) {
-      updateData.coverImage = `${process.env.SERVER_URL}/uploads/coverImage/${req.files.coverImage[0].filename}`;
+      updateData.coverImage = await uploadToCloudinary(
+        req.files.coverImage[0].buffer,
+        "uitshare/covers"
+      );
     }
 
     const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, { new: true });
