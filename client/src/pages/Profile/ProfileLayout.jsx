@@ -64,7 +64,7 @@ const ProfileLayout = () => {
       document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = ""; 
+      document.body.style.overflow = "";
     };
   }, [openSidebar]);
 
@@ -89,11 +89,14 @@ const ProfileLayout = () => {
             avatar={profileInfo.avatar || "/default.jpg"}
             userName={profileInfo.userName}
             email={profileInfo.email}
-            onClose={() => setOpenSidebar(false)} 
+            onClose={() => setOpenSidebar(false)}
           />
         </aside>
 
-        <main className={`flex h-screen w-full flex-1 flex-col ${openSidebar ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+        <main
+          className={`flex h-screen w-full flex-1 flex-col ${openSidebar ? "overflow-hidden" : "overflow-y-auto"}`}
+          style={{ scrollbarWidth: "none" }}
+        >
           <div className="md:hidden px-6 pt-4">
             <button
               onClick={handleClick}
