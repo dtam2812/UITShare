@@ -120,6 +120,28 @@ export default function Cart() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
 
+      // Kiểm tra đúng network Sepolia chưa
+      const network = await provider.getNetwork();
+      const SEPOLIA_CHAIN_ID = 11155111n;
+
+      if (network.chainId !== SEPOLIA_CHAIN_ID) {
+        try {
+          // Tự động yêu cầu đổi sang Sepolia
+          await provider.send("wallet_switchEthereumChain", [
+            { chainId: "0xaa36a7" }
+          ]);
+        } catch (err) {
+          setCheckoutStep(CHECKOUT_STEP.IDLE);
+          setBalanceInfo({
+            balance: "—",
+            required: total.toFixed(4),
+            error: "Vui lòng chuyển MetaMask sang mạng Sepolia Testnet!",
+          });
+          setBalanceModal(true);
+          return;
+        }
+      }
+
       // 2. Lấy account đang active từ MetaMask
       const accounts = await provider.send("eth_accounts", []);
       const signerAddress = accounts[0];
