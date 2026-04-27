@@ -87,16 +87,18 @@ const PersonalInfo = () => {
           window.dispatchEvent(new Event("token-updated"));
         }
         setUser(response.data);
-        setImg((prev) => ({
-          avatar: response.data.avatar,
-          coverImage: response.data.coverImage,
-          avatarPreview: prev.avatarPreview || "",
-          coverImagePreview: prev.coverImagePreview || "",
-        }));
+        // Reset hoàn toàn: dùng URL mới từ server, xoá preview và File cũ
+        setImg({
+          avatar: response.data.avatar || "",
+          coverImage: response.data.coverImage || "",
+          avatarPreview: "",
+          coverImagePreview: "",
+        });
         toast.success("Cập nhật thành công");
       }
     } catch (error) {
       console.log(error);
+      toast.error("Cập nhật thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -110,6 +112,8 @@ const PersonalInfo = () => {
     setImg({
       avatar: user?.avatar || "",
       coverImage: user?.coverImage || "",
+      avatarPreview: "",
+      coverImagePreview: "",
     });
   };
 
