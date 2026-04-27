@@ -10,12 +10,3 @@
 body {
   background-color: #050816;
 }
-
-/* Ẩn scrollbar toàn bộ trang - giữ scroll được */
-* {
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE/Edge */
-}
-*::-webkit-scrollbar {
-  display: none;               /* Chrome, Safari */
-}
