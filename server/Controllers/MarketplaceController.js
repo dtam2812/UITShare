@@ -6,6 +6,10 @@ const transactionModel = require("../Models/TransactionModel");
 const userModel = require("../Models/UserModel");
 
 //ABI
+const NFT_ABI = [
+  "function balanceOf(address account, uint256 id) view returns (uint256)",
+];
+
 const MARKETPLACE_ABI = [
   "function addOrder(uint256 tokenId_, uint256 amount_, uint256 price_) external",
   "function cancelOrder(uint256 orderId_) external",
@@ -62,6 +66,81 @@ const getReceiptWithRetry = async (
   return null;
 };
 
+// ============================================================
+// recreateOrderOnChain
+// Sau mỗi lần mua thành công (isOriginalCreator), smart contract
+// đánh dấu orderId cũ là "inactive".
+//
+// Vì contract dùng ESCROW MODEL: addOrder lock tokens vào contract,
+// executeOrder trả token về wallet trước rồi gửi cho buyer — hoặc
+// không trả về, tuỳ implementation. Nên ta luôn kiểm tra balanceOf
+// thực tế để tránh "Insufficient balance".
+// ============================================================
+const recreateOrderOnChain = async (listing, newAmount) => {
+  try {
+    const provider = getProvider();
+    const signer = getBackendSigner();
+    const marketplace = getMarketplaceContract(signer);
+
+    const nftContract = new ethers.Contract(
+      process.env.NFT_CONTRACT_ADDRESS,
+      NFT_ABI,
+      provider,
+    );
+
+    // Kiểm tra balance thực tế của backend wallet
+    const actualBalance = await nftContract.balanceOf(
+      signer.address,
+      listing.tokenId,
+    );
+    const actualAmount = Number(actualBalance);
+
+    if (actualAmount === 0) {
+      console.warn(
+        `[recreateOrderOnChain] Balance = 0 cho tokenId=${listing.tokenId}. Tokens bị kẹt trong contract (escrow). Bỏ qua re-listing.`,
+      );
+      return null;
+    }
+
+    // Dùng min(newAmount, actualAmount) để an toàn
+    const orderAmount = Math.min(newAmount, actualAmount);
+    if (orderAmount !== newAmount) {
+      console.warn(
+        `[recreateOrderOnChain] DB amount=${newAmount} > chain balance=${actualAmount}. Dùng ${orderAmount}.`,
+      );
+      await listingModel.updateOne(
+        { _id: listing._id },
+        { $set: { amount: orderAmount } },
+      );
+    }
+
+    const priceInWei = ethers.parseEther(String(listing.price));
+    // Luôn tạo order amount=1 — contract chuyển toàn bộ order.amount cho buyer
+    const tx = await marketplace.addOrder(listing.tokenId, 1, priceInWei);
+    const receipt = await tx.wait();
+
+    const orderAddedArgs = parseEventFromReceipt(receipt, "OrderAdded");
+    if (!orderAddedArgs) {
+      console.error("[recreateOrderOnChain] Không parse được OrderAdded event");
+      return null;
+    }
+
+    const newOrderId = orderAddedArgs.orderId.toString();
+    await listingModel.updateOne(
+      { _id: listing._id },
+      { $set: { orderId: newOrderId } },
+    );
+
+    console.log(
+      `[recreateOrderOnChain] ✅ orderId mới=${newOrderId}, amount=${orderAmount}`,
+    );
+    return newOrderId;
+  } catch (err) {
+    console.error("[recreateOrderOnChain] Lỗi khi tạo lại order:", err.message);
+    return null;
+  }
+};
+
 //  createListing
 const createListing = async ({
   sellerId,
@@ -80,8 +159,13 @@ const createListing = async ({
     signer,
   );
 
+  // QUAN TRỌNG: Luôn tạo order với amount=1 trên chain.
+  // Contract executeOrder() chuyển TOÀN BỘ order.amount cho 1 buyer.
+  // Nếu amount=150 → buyer đầu tiên nhận 150 tokens chỉ trả giá 1 copy!
+  // → Mỗi order chỉ đại diện cho 1 copy. Backend wallet giữ phần còn lại.
+  // Sau mỗi lần bán, recreateOrderOnChain() tạo order mới amount=1.
   const priceInWei = ethers.parseEther(String(price));
-  const tx = await marketplace.addOrder(tokenId, amount, priceInWei);
+  const tx = await marketplace.addOrder(tokenId, 1, priceInWei);
   const receipt = await tx.wait();
 
   const iface = new ethers.Interface(MARKETPLACE_ABI);
@@ -105,7 +189,7 @@ const createListing = async ({
     sellerAddress,
     document: documentId,
     tokenId,
-    amount,
+    amount, // DB lưu tổng số copy còn lại để hiển thị
     price,
     isOriginalCreator,
     status: "active",
@@ -298,6 +382,21 @@ const buyDocument = async (req, res) => {
       blockNumber: receipt.blockNumber,
       status: "success",
     });
+
+    // ============================================================
+    // 16. [FIX] Re-create order on-chain nếu còn hàng
+    //
+    // Vấn đề: smart contract đánh dấu orderId là "inactive" sau
+    // MỖI lần executeOrder. Nếu còn copies (newAmount > 0) và đây
+    // là listing của original creator (backend wallet là signer),
+    // ta tự động gọi addOrder mới và cập nhật orderId trong DB.
+    //
+    // Resell listing (isOriginalCreator=false) thường amount=1,
+    // nên newAmount=0 và không cần xử lý.
+    // ============================================================
+    if (newAmount > 0 && listing.isOriginalCreator) {
+      await recreateOrderOnChain(listing, newAmount);
+    }
 
     return res.status(200).json({
       message: "Mua tài liệu thành công",
