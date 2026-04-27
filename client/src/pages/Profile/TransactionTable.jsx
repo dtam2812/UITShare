@@ -26,7 +26,7 @@ const TypeBadge = ({ type }) => {
 
 const TransactionTable = ({ transactions }) => {
   return (
-    <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm backdrop-blur-md">
+    <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm backdrop-blur-md overflow-hidden">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-bold text-white">Giao dịch gần đây</h3>
         <Link
