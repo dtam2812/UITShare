@@ -43,7 +43,7 @@ export default function DocumentReading() {
 
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.2);
+  const [scale, setScale] = useState(1.0);
   const [containerWidth, setContainerWidth] = useState(null);
 
   const [showSellModal, setShowSellModal] = useState(false);
@@ -230,55 +230,57 @@ export default function DocumentReading() {
     );
   }
 
-  // Compute PDF width: fit container with some padding, respect manual zoom
-  const pdfWidth = containerWidth
-    ? Math.floor(containerWidth * scale)
-    : undefined;
+  // Base = container width measured by ResizeObserver, or viewport width as fallback.
+  // scale=1.0 → fits exactly; scale>1 → zoomed (horizontally scrollable).
+  const basePdfWidth = containerWidth ?? (typeof window !== "undefined" ? window.innerWidth : 390);
+  const pdfWidth = Math.floor(basePdfWidth * scale);
 
   return (
     <div className="min-h-screen bg-[#080812] text-white">
-      {/* ── Header ── */}
+      {/* ── Header ── always single row ── */}
       <div className="sticky top-0 z-30 border-b border-white/10 bg-[#080812]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
-          {/* Left: back + title */}
+        <div className="flex items-center justify-between gap-2 px-3 py-2">
+          {/* Left: back button + truncated title */}
           <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => navigate(-1)}
               className="flex shrink-0 cursor-pointer items-center gap-1 text-sm text-gray-400 transition hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden xs:inline">Quay lại</span>
+              <span className="hidden sm:inline">Quay lại</span>
             </button>
-            <span className="hidden text-gray-700 xs:inline">|</span>
-            <p className="min-w-0 truncate text-sm font-semibold text-white">
+            <span className="hidden text-gray-700 sm:inline">|</span>
+            <p className="min-w-0 truncate text-xs font-semibold text-white sm:text-sm">
               {doc.title}
             </p>
           </div>
 
-          {/* Right: action buttons */}
-          <div className="flex shrink-0 items-center gap-2">
+          {/* Right: action buttons — icon-only on mobile, labeled on sm+ */}
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               onClick={handleDownload}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:py-2 sm:text-sm"
+              title="Tải tài liệu"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:py-2 sm:text-sm"
             >
               <Download className="h-4 w-4 shrink-0" />
-              <span>Tải tài liệu</span>
+              <span className="hidden sm:inline">Tải tài liệu</span>
             </button>
             <button
               onClick={() => setShowSellModal(true)}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-purple-700 sm:px-4 sm:py-2 sm:text-sm"
+              title="Bán tài liệu"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-purple-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-purple-700 sm:px-4 sm:py-2 sm:text-sm"
             >
               <Tag className="h-4 w-4 shrink-0" />
-              <span>Bán tài liệu</span>
+              <span className="hidden sm:inline">Bán tài liệu</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* ── PDF Viewer ── */}
-      <div className="mx-auto max-w-4xl px-2 py-4 sm:px-4 sm:py-8">
+      <div className="mx-auto max-w-4xl px-0 py-4 sm:px-4 sm:py-8">
         {/* Page controls */}
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md sm:px-4 sm:py-2.5">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-none border-b border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md sm:mx-0 sm:rounded-xl sm:border sm:px-4 sm:py-2.5">
           {/* Pagination */}
           <div className="flex items-center gap-1">
             <button
