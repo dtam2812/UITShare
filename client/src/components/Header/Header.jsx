@@ -33,6 +33,7 @@ const Header = () => {
     try {
       decodePayload = jwtDecode(accessToken);
       userId = decodePayload?._id;
+      const isExpired = decodePayload.exp * 1000 < Date.now();
     } catch (error) {
       console.log("Invalid token");
     }
@@ -47,11 +48,30 @@ const Header = () => {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const checkToken = () => {
       const token = localStorage.getItem("access_token");
-      setAccessToken(token);
-    }, 1000);
+      if (!token || token === "undefined") {
+        setAccessToken(null);
+        return;
+      }
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.exp * 1000 < Date.now()) {
+          localStorage.removeItem("access_token");
+          setAccessToken(null);
+          reloadCartForCurrentUser();
+          navigate("/login");
+        } else {
+          setAccessToken(token);
+        }
+      } catch {
+        localStorage.removeItem("access_token");
+        setAccessToken(null);
+      }
+    };
 
+    checkToken();
+    const interval = setInterval(checkToken, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -166,8 +186,14 @@ const Header = () => {
                                   ))}
                                 </ul>
                                 <div className="border-t border-white/10 px-4 py-3">
-                                  <Link to="/cart" aria-label="Đi tới trang thanh toán">
-                                    <button className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600" aria-label="Thanh toán giỏ hàng">
+                                  <Link
+                                    to="/cart"
+                                    aria-label="Đi tới trang thanh toán"
+                                  >
+                                    <button
+                                      className="w-full cursor-pointer rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
+                                      aria-label="Thanh toán giỏ hàng"
+                                    >
                                       Thanh toán
                                     </button>
                                   </Link>
@@ -324,7 +350,6 @@ const Header = () => {
         {/* Đã login: Trang cá nhân -> Quản lý (admin) -> Giỏ hàng */}
         {accessToken && (
           <div className="flex flex-1 flex-col overflow-hidden">
-
             {/* Trang cá nhân */}
             <Link
               to={`/profile/${userId}`}
@@ -387,7 +412,10 @@ const Header = () => {
                 </ul>
                 <div className="border-t border-white/10 px-5 py-3">
                   <button
-                    onClick={() => { navigate("/cart"); setDrawerOpen(false); }}
+                    onClick={() => {
+                      navigate("/cart");
+                      setDrawerOpen(false);
+                    }}
                     className="w-full rounded-lg bg-purple-500 py-2.5 text-sm font-semibold text-white transition hover:bg-purple-600"
                   >
                     Thanh toán
@@ -402,7 +430,10 @@ const Header = () => {
         <div className="mt-auto border-t border-white/10 px-5 py-4">
           {!accessToken ? (
             <button
-              onClick={() => { setDrawerOpen(false); navigate("/login"); }}
+              onClick={() => {
+                setDrawerOpen(false);
+                navigate("/login");
+              }}
               className="w-full rounded-full bg-linear-to-r from-purple-600 to-indigo-600 py-2.5 font-medium text-white transition hover:opacity-90"
             >
               Đăng nhập

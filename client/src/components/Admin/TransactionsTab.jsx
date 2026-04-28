@@ -74,7 +74,7 @@ export default function TransactionsTab({ transactions, loading, onRefresh }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-3xl font-bold text-white">Giao dịch</h2>
         <button
           onClick={onRefresh}

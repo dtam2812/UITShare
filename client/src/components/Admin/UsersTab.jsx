@@ -126,7 +126,7 @@ export default function UsersTab({ users, setUsers, loading, onRefresh }) {
     {
       header: "Tên người dùng",
       accessor: (row) => (
-        <span className="font-medium text-white">{row.userName}</span>
+        <span className=" whitespace-nowrap font-medium text-white">{row.userName}</span>
       ),
     },
     { header: "Email", accessor: "email" },
@@ -134,7 +134,7 @@ export default function UsersTab({ users, setUsers, loading, onRefresh }) {
       header: "Vai trò",
       accessor: (row) => (
         <span
-          className={`rounded-md px-2 py-1 text-xs font-medium ${
+          className={`whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium ${
             row.role === "admin"
               ? "bg-purple-100 text-purple-700"
               : "bg-blue-100 text-blue-700"
@@ -148,7 +148,7 @@ export default function UsersTab({ users, setUsers, loading, onRefresh }) {
       header: "Trạng thái",
       accessor: (row) => (
         <span
-          className={`rounded-md px-2 py-1 text-xs font-medium ${
+          className={`whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium ${
             row.status === "active"
               ? "bg-green-100 text-green-700"
               : "bg-red-100 text-red-700"
@@ -191,26 +191,26 @@ export default function UsersTab({ users, setUsers, loading, onRefresh }) {
         onChange={(e) => setRoleFilter(e.target.value)}
         className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
-        <option>All Roles</option>
-        <option>User</option>
-        <option>Admin</option>
+        <option>Tất cả vai trò</option>
+        <option>Người dùng</option>
+        <option>Quản trị viên</option>
       </select>
       <select
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
         className="rounded-md border border-gray-800 bg-[#1c1e2f] px-4 py-2 text-sm text-gray-300 outline-none focus:border-purple-500"
       >
-        <option>All Status</option>
-        <option>Active</option>
-        <option>Banned</option>
+        <option>Tất cả hoạt động</option>
+        <option>Hoạt động</option>
+        <option>Cấm</option>
       </select>
     </>
   );
 
   return (
     <div className="space-y-6">
-      {/* Header: title + 2 buttons side by side */}
-      <div className="flex items-center justify-between">
+      {/* Header: tiêu đề + 2 nút cạnh nhau */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-3xl font-bold text-white">Người dùng</h2>
         <div className="flex items-center gap-2">
           <button
