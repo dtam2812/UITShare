@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ZoomIn, ZoomOut } from "lucide-react";
 import { Document, Page } from "react-pdf";
 
@@ -7,6 +7,8 @@ const MAX_PREVIEW_PAGES = 5;
 export default function PDFPreviewModal({ file, onClose }) {
   const [numPages, setNumPages] = useState(null);
   const [scale, setScale] = useState(1.2);
+  const [containerWidth, setContainerWidth] = useState(null);
+  const containerRef = useRef(null);
 
   const previewPages = Math.min(numPages || 0, MAX_PREVIEW_PAGES);
 
@@ -14,7 +16,6 @@ export default function PDFPreviewModal({ file, onClose }) {
     function handleKey(e) {
       if (e.key === "Escape") onClose();
     }
-
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
@@ -26,13 +27,30 @@ export default function PDFPreviewModal({ file, onClose }) {
     };
   }, []);
 
+  useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   function onLoadSuccess({ numPages }) {
     setNumPages(numPages);
   }
 
+  // Khi màn < 450px thì dùng width để PDF tự co vừa container
+  // Lớn hơn thì dùng scale như bình thường
+  const pageWidth =
+    containerWidth && containerWidth < 450
+      ? containerWidth - 16
+      : undefined;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-2 py-2 backdrop-blur-sm sm:px-4"
       onClick={onClose}
     >
       <div
@@ -41,23 +59,24 @@ export default function PDFPreviewModal({ file, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-4">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-semibold text-white">
+        <div className="flex shrink-0 items-center justify-between border-b border-white/10 px-3 py-3 sm:px-5 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <p className="hidden text-sm font-semibold text-white sm:block">
               Xem trước tài liệu
             </p>
 
             {numPages && (
               <span className="text-xs text-gray-500">
-                {previewPages} trang xem trước
-                <span className="ml-1 text-purple-400">
-                  / {numPages} trang
+                <span className="font-semibold text-white">{previewPages}</span>{" "}
+                / {numPages} trang
+                <span className="ml-1 hidden text-purple-400 sm:inline">
+                  xem trước
                 </span>
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() =>
                 setScale((s) => Math.max(0.6, +(s - 0.2).toFixed(1)))
@@ -91,33 +110,36 @@ export default function PDFPreviewModal({ file, onClose }) {
           </div>
         </div>
 
-        {/* PDF Viewer */}
-        <div className="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-4 py-6">
+        {/* PDF Viewer — ref đặt ở đây để đo width chính xác */}
+        <div
+          ref={containerRef}
+          className="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-2 py-4 sm:px-4 sm:py-6"
+        >
           <Document
             file={file}
             onLoadSuccess={onLoadSuccess}
             loading={
               <div className="flex flex-col items-center justify-center gap-3 py-24">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
-                <p className="text-sm text-gray-400">
-                  Đang tải tài liệu...
-                </p>
+                <p className="text-sm text-gray-400">Đang tải tài liệu...</p>
               </div>
             }
             error={
               <div className="flex flex-col items-center justify-center gap-2 py-24">
-                <p className="text-sm text-gray-500">
-                  Không thể tải tài liệu
-                </p>
+                <p className="text-sm text-gray-500">Không thể tải tài liệu</p>
               </div>
             }
           >
             {Array.from({ length: previewPages }, (_, i) => (
               <div
                 key={i + 1}
-                className="overflow-hidden rounded-lg shadow-xl"
+                className="w-full overflow-hidden rounded-lg shadow-xl"
               >
-                <Page pageNumber={i + 1} scale={scale} />
+                <Page
+                  pageNumber={i + 1}
+                  scale={pageWidth ? undefined : scale}
+                  width={pageWidth || undefined}
+                />
               </div>
             ))}
           </Document>
@@ -149,14 +171,14 @@ export default function PDFPreviewModal({ file, onClose }) {
         </div>
 
         {/* Footer */}
-        <div className="flex shrink-0 items-center justify-between border-t border-white/10 px-5 py-4">
-          <p className="text-xs text-gray-500">
+        <div className="flex shrink-0 flex-col gap-2 border-t border-white/10 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+          <p className="text-center text-xs text-gray-500 sm:text-left">
             Cuộn xuống để đọc • Nhấn Esc để đóng
           </p>
 
           <button
             onClick={onClose}
-            className="cursor-pointer rounded-lg bg-purple-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-600"
+            className="w-full cursor-pointer rounded-lg bg-purple-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-600 sm:w-auto"
           >
             Mua ngay
           </button>
