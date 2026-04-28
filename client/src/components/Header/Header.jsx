@@ -95,7 +95,7 @@ const Header = () => {
             />
           </Link>
 
-          {/* Menu - chỉ hiện trên desktop */}
+          {/* Nav menu - desktop only */}
           {!searchOpen && (
             <nav className="absolute left-1/2 hidden -translate-x-1/2 gap-10 font-medium text-white lg:flex">
               {NAV_LINKS.map((link) => (
@@ -118,11 +118,11 @@ const Header = () => {
 
             {!searchOpen && (
               <>
-                {/* Desktop: đăng ký / cart / user */}
+                {/* Desktop: sign-in / cart / user */}
                 <div className="hidden items-center gap-6 lg:flex">
                   {accessToken ? (
                     <>
-                      {/* Cart với dropdown */}
+                      {/* Cart with dropdown */}
                       <div
                         className="relative"
                         onMouseEnter={() => setCartHovered(true)}
@@ -347,10 +347,10 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Đã login: Trang cá nhân -> Quản lý (admin) -> Giỏ hàng */}
+        {/* Logged in: Profile -> Admin panel (admin only) -> Cart */}
         {accessToken && (
           <div className="flex flex-1 flex-col overflow-hidden">
-            {/* Trang cá nhân */}
+            {/* Profile */}
             <Link
               to={`/profile/${userId}`}
               onClick={() => setDrawerOpen(false)}
@@ -360,7 +360,7 @@ const Header = () => {
               <span className="text-sm font-medium">Trang cá nhân</span>
             </Link>
 
-            {/* Quản lý - chỉ admin */}
+            {/* Admin panel - admins only */}
             {decodePayload?.role === "admin" && (
               <Link
                 to="/admin"
@@ -371,7 +371,7 @@ const Header = () => {
               </Link>
             )}
 
-            {/* Giỏ hàng */}
+            {/* Cart */}
             <div className="border-b border-white/10 px-5 py-3">
               <p className="text-sm font-semibold text-white">
                 Giỏ hàng ({cartItems.length})

@@ -132,17 +132,17 @@ export default function TransactionsTab({ transactions, loading, onRefresh }) {
                     const typeInfo = TYPE_COLORS[tx.type] || { label: tx.type, cls: "bg-gray-100 text-gray-600" };
                     return (
                       <tr key={tx.txHash ?? i} className="border-b border-gray-800 transition-colors hover:bg-[#1c1e2f]">
-                        {/* STT */}
+                        {/* # */}
                         <td className="px-4 py-4 text-gray-400">
                           {(safePage - 1) * ITEMS_PER_PAGE + i + 1}
                         </td>
-                        {/* Loại */}
+                        {/* Type */}
                         <td className="px-4 py-4">
                           <span className={`inline-block whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium ${typeInfo.cls}`}>
                             {typeInfo.label}
                           </span>
                         </td>
-                        {/* Tài liệu */}
+                        {/* Document */}
                         <td className="px-4 py-4">
                           <span
                             className="block max-w-[180px] truncate text-white"
@@ -151,7 +151,7 @@ export default function TransactionsTab({ transactions, loading, onRefresh }) {
                             {tx.document?.title ?? "—"}
                           </span>
                         </td>
-                        {/* Người gửi */}
+                        {/* Sender */}
                         <td className="px-4 py-4">
                           <span
                             className="block max-w-[120px] truncate text-gray-300"
@@ -160,7 +160,7 @@ export default function TransactionsTab({ transactions, loading, onRefresh }) {
                             {tx.fromUser?.userName ?? "—"}
                           </span>
                         </td>
-                        {/* Người nhận */}
+                        {/* Receiver */}
                         <td className="px-4 py-4">
                           <span
                             className="block max-w-[120px] truncate text-gray-300"
@@ -169,23 +169,23 @@ export default function TransactionsTab({ transactions, loading, onRefresh }) {
                             {tx.toUser?.userName ?? "—"}
                           </span>
                         </td>
-                        {/* Giá */}
+                        {/* Price */}
                         <td className="px-4 py-4">
                           <span className="whitespace-nowrap font-medium text-green-400">
                             {tx.price > 0 ? `${tx.price} ETH` : "—"}
                           </span>
                         </td>
-                        {/* Phí GD */}
+                        {/* Tx fee */}
                         <td className="px-4 py-4 text-xs text-gray-400">
                           {tx.marketplaceFee > 0 ? `${tx.marketplaceFee} ETH` : "—"}
                         </td>
-                        {/* Ngày */}
+                        {/* Date */}
                         <td className="whitespace-nowrap px-4 py-4 text-xs text-gray-400">
                           {tx.createdAt
                             ? new Date(tx.createdAt).toLocaleDateString("vi-VN")
                             : "—"}
                         </td>
-                        {/* Trạng thái */}
+                        {/* Status */}
                         <td className="px-4 py-4">
                           <span className={`inline-block whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium ${STATUS_COLORS[tx.status] ?? "bg-gray-100 text-gray-600"}`}>
                             {STATUS_LABELS[tx.status] ?? tx.status ?? "—"}

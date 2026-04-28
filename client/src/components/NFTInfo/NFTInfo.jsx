@@ -50,7 +50,7 @@ const TYPE_CONFIG = {
 export default function NFTInfo({ nft }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-      {/* Tiêu đề */}
+      {/* Title */}
       <div className="mb-5 flex items-center gap-2">
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-500/20">
           <svg
@@ -68,7 +68,7 @@ export default function NFTInfo({ nft }) {
         <h3 className="text-base font-bold text-white">Thông Tin NFT</h3>
       </div>
 
-      {/* Thông số NFT */}
+      {/* NFT stats */}
       <div className="mb-6 grid grid-cols-3 gap-5">
         {[
           { label: "Giá", value: `${nft.price} ETH`, highlight: true },
@@ -92,7 +92,7 @@ export default function NFTInfo({ nft }) {
           </div>
         ))}
 
-        {/* Địa chỉ ví tác giả */}
+        {/* Author wallet address */}
         <div className="col-span-2">
           <p className="mb-1 text-xs text-gray-500">Địa Chỉ Ví Tác Giả</p>
           <div className="flex items-center gap-2">

@@ -41,8 +41,7 @@ export default function PDFPreviewModal({ file, onClose }) {
     setNumPages(numPages);
   }
 
-  // Khi màn < 450px thì dùng width để PDF tự co vừa container
-  // Lớn hơn thì dùng scale như bình thường
+  // Below 450px use explicit width so the PDF shrinks to fit the container; otherwise use scale as normal
   const pageWidth =
     containerWidth && containerWidth < 450
       ? containerWidth - 16

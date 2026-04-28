@@ -1,24 +1,25 @@
-# --- Giai đoạn 1: Build React app ---
+# --- Stage 1: Build React app ---
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install dependencies first (leverages Docker layer caching)
 COPY package*.json ./
 RUN npm install
 
-# Copy code vào
+# Copy source code
 COPY . .
 
-# Build ra thư mục dist/
+# Build production bundle into dist/
 RUN npm run build
 
-# --- Giai đoạn 2: Serve bằng Nginx ---
+# --- Stage 2: Serve with Nginx ---
 FROM nginx:alpine
 
-# Copy kết quả build từ giai đoạn 1 vào Nginx
+# Copy build output from stage 1 into Nginx's web root
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy config Nginx (tạo ở bước tiếp)
+# Copy custom Nginx config (created separately)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

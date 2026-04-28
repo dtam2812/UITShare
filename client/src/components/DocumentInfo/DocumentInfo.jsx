@@ -28,7 +28,7 @@ const CATEGORY_LABELS = {
 export default function DocumentInfo({ doc, reviewCount }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-      {/* Nhãn danh mục + loại truy cập */}
+      {/* Category and access type badges */}
       <div className="mb-4 flex flex-wrap gap-2">
         {doc.category && (
           <span className="rounded-full border border-purple-400/30 bg-purple-500/20 px-3 py-1 text-xs text-purple-300">
@@ -43,7 +43,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
       </div>
 
       <div className="mb-5 flex flex-wrap items-center gap-6">
-        {/* Tác giả */}
+        {/* Author */}
         <div className="flex items-center gap-2">
           <img
             src={getImageUrl(doc.author?.avatar, "/default.jpg")}
@@ -61,7 +61,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Số trang */}
+        {/* Page count */}
         <div>
           <p className="text-xs text-gray-500">Số Trang</p>
           <p className="text-sm font-semibold text-white">
@@ -71,7 +71,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Năm đăng */}
+        {/* Upload year */}
         <div>
           <p className="text-xs text-gray-500">Năm Đăng</p>
           <p className="text-sm font-semibold text-white">
@@ -81,7 +81,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
 
         <div className="h-8 w-px bg-white/10" />
 
-        {/* Bản quyền */}
+        {/* Royalty */}
         <div>
           <p className="text-xs text-gray-500">Bản Quyền</p>
           <p className="text-sm font-semibold text-white">
@@ -90,7 +90,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
         </div>
       </div>
 
-      {/* Đánh giá */}
+      {/* Rating */}
       {reviewCount !== undefined && (
         <div className="mb-5 flex items-center gap-3">
           <StarRating value={doc.averageRating || 0} />
@@ -103,7 +103,7 @@ export default function DocumentInfo({ doc, reviewCount }) {
         </div>
       )}
 
-      {/* Mô tả */}
+      {/* Description */}
       <p className="text-sm leading-relaxed text-gray-400">
         {doc.description || "Không có mô tả."}
       </p>

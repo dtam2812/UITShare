@@ -133,7 +133,7 @@ export default function DocumentReviews() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Viết đánh giá */}
+      {/* Write a review */}
       <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md sm:p-6">
         <h3 className="mb-4 text-lg font-bold text-white">Viết Đánh Giá</h3>
 
@@ -157,7 +157,7 @@ export default function DocumentReviews() {
           <p className="mb-2 text-xs text-green-400">{successMsg}</p>
         )}
 
-        {/* Footer: hint + button — xếp dọc trên mobile */}
+        {/* Footer: hint + button — stacked on mobile */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-gray-500">
             {!isReady
@@ -188,7 +188,7 @@ export default function DocumentReviews() {
         </div>
       </div>
 
-      {/* Danh sách đánh giá */}
+      {/* Review list */}
       <div>
         <h3 className="mb-4 text-lg font-bold text-white">
           Đánh Giá{" "}

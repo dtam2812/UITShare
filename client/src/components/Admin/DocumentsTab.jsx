@@ -39,7 +39,7 @@ export default function DocumentsTab({
     return matchSearch && matchCategory && matchAccess;
   });
 
-  // Thêm số thứ tự
+  // Add sequential row numbers
   const dataWithIndex = filteredDocs.map((d, index) => ({
     ...d,
     no: index + 1,

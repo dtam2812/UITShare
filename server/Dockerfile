@@ -1,23 +1,23 @@
-# Lấy image Node.js phiên bản 20, bản alpine (nhẹ hơn)
+# Use Node.js 20 alpine image (lightweight)
 FROM node:20-alpine
 
-# Tạo thư mục làm việc bên trong container
+# Set working directory inside the container
 WORKDIR /app
 
-# Copy file package.json vào trước (để tận dụng cache)
+# Copy package.json first to leverage Docker layer caching
 COPY package*.json ./
 
-# Cài dependencies
+# Install dependencies
 RUN npm install
 
-# Copy toàn bộ code server vào
+# Copy all server source code
 COPY . .
 
-# Tạo thư mục uploads (server cần thư mục này để lưu file)
+# Create upload directories required by the server
 RUN mkdir -p uploads/avatar uploads/coverImage uploads/temp
 
-# Mở cổng 8080
+# Expose port 8080
 EXPOSE 8080
 
-# Lệnh chạy khi container khởi động
+# Start the server when the container launches
 CMD ["node", "server.js"]
