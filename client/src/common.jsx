@@ -1,21 +1,27 @@
 import axios from "axios";
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+axios.defaults.baseURL =
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 axios.interceptors.request.use(
   (config) => {
     const configUrl = config.url;
     config.headers["Authorization"] =
-      `Bearer ${localStorage.getItem("access_token")}`;
-    
-    // Don't set Content-Type for FormData - let the browser set it automatically with boundary
-    if (config.data instanceof FormData) {
-      delete config.headers["Content-Type"];
-    }
-    
+        `Bearer ${localStorage.getItem("access_token")}`;
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  },
+);
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access_token");
+      window.location.href = "/login";
+    }
     return Promise.reject(error);
   },
 );
