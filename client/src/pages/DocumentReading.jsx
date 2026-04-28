@@ -44,11 +44,22 @@ export default function DocumentReading() {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.2);
+  const [containerWidth, setContainerWidth] = useState(null);
 
   const [showSellModal, setShowSellModal] = useState(false);
   const [sellStep, setSellStep] = useState("idle");
   const [sellError, setSellError] = useState("");
   const [sellTxHash, setSellTxHash] = useState("");
+
+  // Measure container width for responsive PDF rendering
+  const containerRef = useCallback((node) => {
+    if (!node) return;
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const fetchDoc = async () => {
@@ -219,49 +230,57 @@ export default function DocumentReading() {
     );
   }
 
+  // Compute PDF width: fit container with some padding, respect manual zoom
+  const pdfWidth = containerWidth
+    ? Math.floor(containerWidth * scale)
+    : undefined;
+
   return (
     <div className="min-h-screen bg-[#080812] text-white">
-      {/* Header */}
+      {/* ── Header ── */}
       <div className="sticky top-0 z-30 border-b border-white/10 bg-[#080812]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4 sm:py-3">
+          {/* Left: back + title */}
+          <div className="flex min-w-0 items-center gap-2">
             <button
               onClick={() => navigate(-1)}
-              className="flex cursor-pointer items-center gap-1.5 text-sm text-gray-400 transition hover:text-white"
+              className="flex shrink-0 cursor-pointer items-center gap-1 text-sm text-gray-400 transition hover:text-white"
             >
               <ArrowLeft className="h-4 w-4" />
-              Quay lại
+              <span className="hidden xs:inline">Quay lại</span>
             </button>
-            <span className="text-gray-700">|</span>
-            <p className="line-clamp-1 max-w-xs text-sm font-semibold text-white">
+            <span className="hidden text-gray-700 xs:inline">|</span>
+            <p className="min-w-0 truncate text-sm font-semibold text-white">
               {doc.title}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Right: action buttons */}
+          <div className="flex shrink-0 items-center gap-2">
             <button
               onClick={handleDownload}
-              className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:py-2 sm:text-sm"
             >
-              <Download className="h-4 w-4" />
-              Tải tài liệu
+              <Download className="h-4 w-4 shrink-0" />
+              <span>Tải tài liệu</span>
             </button>
             <button
               onClick={() => setShowSellModal(true)}
-              className="flex cursor-pointer items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-700"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-purple-700 sm:px-4 sm:py-2 sm:text-sm"
             >
-              <Tag className="h-4 w-4" />
-              Bán tài liệu
+              <Tag className="h-4 w-4 shrink-0" />
+              <span>Bán tài liệu</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* PDF Viewer */}
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      {/* ── PDF Viewer ── */}
+      <div className="mx-auto max-w-4xl px-2 py-4 sm:px-4 sm:py-8">
         {/* Page controls */}
-        <div className="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 backdrop-blur-md">
-          <div className="flex items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md sm:px-4 sm:py-2.5">
+          {/* Pagination */}
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
@@ -269,8 +288,9 @@ export default function DocumentReading() {
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="text-sm text-gray-300">
-              Trang <span className="font-bold text-white">{currentPage}</span>
+            <span className="whitespace-nowrap text-sm text-gray-300">
+              Trang{" "}
+              <span className="font-bold text-white">{currentPage}</span>
               {" / "}
               <span className="text-gray-400">{numPages || "—"}</span>
             </span>
@@ -285,14 +305,15 @@ export default function DocumentReading() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Zoom */}
+          <div className="flex items-center gap-1">
             <button
-              onClick={() => setScale((s) => Math.max(0.6, s - 0.2))}
+              onClick={() => setScale((s) => Math.max(0.4, s - 0.2))}
               className="cursor-pointer rounded-lg p-1.5 text-gray-400 transition hover:bg-white/10 hover:text-white"
             >
               <ZoomOut className="h-4 w-4" />
             </button>
-            <span className="min-w-[48px] text-center text-sm text-gray-400">
+            <span className="min-w-[44px] text-center text-sm text-gray-400">
               {Math.round(scale * 100)}%
             </span>
             <button
@@ -304,42 +325,47 @@ export default function DocumentReading() {
           </div>
         </div>
 
-        {/* PDF pages */}
-        <div className="flex flex-col items-center gap-4">
-          <Document
-            file={doc.fileUrl}
-            onLoadSuccess={onLoadSuccess}
-            loading={
-              <div className="flex h-96 w-xl flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5">
-                <FileText className="h-12 w-12 text-purple-400 opacity-50" />
-                <p className="text-sm text-gray-400">Đang tải tài liệu...</p>
+        {/* PDF pages — horizontally scrollable on small screens */}
+        <div
+          ref={containerRef}
+          className="w-full overflow-x-auto"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <Document
+              file={doc.fileUrl}
+              onLoadSuccess={onLoadSuccess}
+              loading={
+                <div className="flex h-96 w-full flex-col items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/5">
+                  <FileText className="h-12 w-12 text-purple-400 opacity-50" />
+                  <p className="text-sm text-gray-400">Đang tải tài liệu...</p>
+                </div>
+              }
+              error={
+                <div className="flex h-96 w-full flex-col items-center justify-center gap-3 rounded-xl border border-red-500/20 bg-red-500/5">
+                  <FileText className="h-12 w-12 text-red-400 opacity-50" />
+                  <p className="text-sm text-gray-400">Không thể tải tài liệu</p>
+                </div>
+              }
+            >
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-white shadow-2xl">
+                <Page
+                  pageNumber={currentPage}
+                  width={pdfWidth}
+                  renderAnnotationLayer={true}
+                  renderTextLayer={true}
+                />
               </div>
-            }
-            error={
-              <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-xl border border-red-500/20 bg-red-500/5">
-                <FileText className="h-12 w-12 text-red-400 opacity-50" />
-                <p className="text-sm text-gray-400">Không thể tải tài liệu</p>
-              </div>
-            }
-          >
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-white shadow-2xl">
-              <Page
-                pageNumber={currentPage}
-                scale={scale}
-                renderAnnotationLayer={true}
-                renderTextLayer={true}
-              />
-            </div>
-          </Document>
+            </Document>
+          </div>
         </div>
 
         {/* Bottom page nav */}
         {numPages && numPages > 1 && (
-          <div className="mt-6 flex items-center justify-center gap-3">
+          <div className="mt-4 flex items-center justify-center gap-2 sm:mt-6 sm:gap-3">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
             >
               <ChevronLeft className="h-4 w-4" />
               Trang trước
@@ -347,7 +373,7 @@ export default function DocumentReading() {
             <button
               onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
               disabled={currentPage >= numPages}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40 sm:px-4"
             >
               Trang sau
               <ChevronRight className="h-4 w-4" />
@@ -356,14 +382,14 @@ export default function DocumentReading() {
         )}
       </div>
 
-      {/* Sell Modal */}
+      {/* ── Sell Modal ── */}
       {showSellModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={sellStep !== "processing" ? closeSellModal : undefined}
           />
-          <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0f0f1a] p-6 shadow-2xl">
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#0f0f1a] p-5 shadow-2xl sm:p-6">
             {sellStep !== "processing" && (
               <button
                 onClick={closeSellModal}
@@ -374,22 +400,22 @@ export default function DocumentReading() {
             )}
 
             {sellStep === "idle" && (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 sm:gap-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/15 ring-1 ring-purple-500/30">
-                    <Tag className="h-6 w-6 text-purple-400" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-purple-500/15 ring-1 ring-purple-500/30 sm:h-12 sm:w-12">
+                    <Tag className="h-5 w-5 text-purple-400 sm:h-6 sm:w-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-white">
+                    <h3 className="text-base font-bold text-white sm:text-lg">
                       Bán tài liệu
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs text-gray-500 sm:text-sm">
                       Đăng bán NFT lên marketplace
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+                <div className="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-3 sm:p-4">
                   <div className="flex items-start gap-2.5">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
                     <div className="text-sm leading-relaxed text-yellow-300/80">
@@ -416,7 +442,6 @@ export default function DocumentReading() {
                   </div>
                 </div>
 
-                {/* ✅ Hiển thị giá cố định, không cho nhập */}
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-gray-300">
                     Giá bán (ETH)
