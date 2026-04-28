@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useConnect, useAccount } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +23,7 @@ const Financials = () => {
   const { mutate: connect } = useConnect();
   const { address } = useAccount();
   const queryClient = useQueryClient();
+  const prevAddressRef = useRef(address);
 
   const [walletError, setWalletError] = useState(null);
   const [isLinking, setIsLinking] = useState(false);
@@ -58,7 +59,7 @@ const Financials = () => {
     : "Chưa kết nối";
 
   useEffect(() => {
-    if (!address || !isLinking) return;
+    if (!address || !isLinking || address === prevAddressRef.current) return;
 
     const linkWallet = async () => {
       try {
@@ -76,6 +77,7 @@ const Financials = () => {
         );
       } finally {
         setIsLinking(false);
+        prevAddressRef.current = address;
       }
     };
 
@@ -83,6 +85,8 @@ const Financials = () => {
   }, [address, isLinking, userId, queryClient]);
 
   const handleConnect = () => {
+    setWalletError(null);
+    prevAddressRef.current = address;
     setIsLinking(true);
     connect({ connector: injected() });
   };
