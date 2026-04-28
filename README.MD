@@ -2,7 +2,7 @@
 
 Đây là đồ án môn **IE213 – Kỹ thuật Phát triển Hệ thống Web** tại Trường Đại học Công nghệ Thông tin – ĐHQG TP.HCM.
 
-UITShare là một web app cho phép sinh viên UIT mua, bán và chia sẻ tài liệu học tập. Điểm khác biệt so với Google Drive hay Facebook Group là mỗi tài liệu được mint thành **NFT ERC-1155** trên Ethereum, lưu file trên **IPFS**, và mọi giao dịch mua bán đều đi qua **smart contract** — tác giả tự động nhận royalty mỗi khi tài liệu được bán lại mà không cần làm gì cả.
+UITShare là một web app cho phép sinh viên UIT mua, bán và chia sẻ tài liệu học tập. Điểm khác biệt so với Google Drive hay Facebook Group là mỗi tài liệu được upload dựa trên tiêu chuẩn **NFT ERC-1155** trên Ethereum, lưu file trên **IPFS**, và mọi giao dịch mua bán đều đi qua **smart contract** — tác giả tự động nhận royalty mỗi khi tài liệu được bán lại mà không cần làm gì cả.
 
 ## Nhóm phát triển
 
@@ -15,7 +15,7 @@ GVHD: **ThS. Võ Tấn Khoa**
 | Đỗ Tấn Tường | 23521749 | 
 | Trần Thành Vinh | 23521799 | 
 
-**Phân chia công việc:** [Video](https://docs.google.com/spreadsheets/d/1CVuuZOVJI4OK7uQ3pJH9mm-Dp9ddJGYK/edit?gid=2103729592#gid=2103729592)<br>
+**Phân chia công việc:** [Sheet Phân công](https://docs.google.com/spreadsheets/d/1CVuuZOVJI4OK7uQ3pJH9mm-Dp9ddJGYK/edit?gid=2103729592#gid=2103729592)<br>
 **Video trình bày và hướng dẫn sử dụng:** [Video](https://www.youtube.com/watch?si=BzXBPw3y8wR4x1cQ&fbclid=IwY2xjawRdfmRleHRuA2FlbQIxMABicmlkETE5dlFRVnQ0MG9pbW9kS2pPc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHusty5VNbzwLnsbl7PbYf3YaH1gFR9gJj8LB6UgvlO0ic02w2rJ69SI2cam9_aem_UpQYuEsYUadMyJoadlz_JA&v=Wamlx2SXIL8&feature=youtu.be)<br>
 **Link Web Demo:** [uit-share-36.vercel.app](https://uit-share-36.vercel.app)
 
@@ -46,7 +46,7 @@ GVHD: **ThS. Võ Tấn Khoa**
 ## Tính năng chính
 
 - Đăng ký / đăng nhập bằng email hoặc ví Ethereum
-- Upload tài liệu PDF → tự động pin lên IPFS → mint NFT → đặt giá bán
+- Upload tài liệu PDF → tự động pin lên IPFS → mint tokenId → đặt giá bán
 - Mua tài liệu bằng ETH qua MetaMask, đọc ngay sau khi giao dịch confirm
 - Bán lại tài liệu đã mua (secondary market), tác giả gốc nhận royalty tự động (ERC-2981)
 - Donate ETH trực tiếp cho tác giả
@@ -62,7 +62,6 @@ GVHD: **ThS. Võ Tấn Khoa**
 **Web3:** wagmi v3, ethers.js v6, MetaMask  
 **Backend:** Node.js, Express 5, MongoDB (Mongoose), JWT  
 **Blockchain:** Solidity ^0.8.24, Hardhat, OpenZeppelin (ERC-1155, ERC-2981)  
-**Storage:** IPFS qua Pinata  
 **PDF:** pdf-lib, pdf-parse, pdfjs-dist, react-pdf, sharp
 
 ---
