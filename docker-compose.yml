@@ -2,36 +2,41 @@ services:
 
   # --- MongoDB ---
   mongo:
-    image: mongo:7          # Dùng image MongoDB có sẵn, không cần Dockerfile
+    image: mongo:7          # Use official MongoDB image, no Dockerfile needed
     container_name: uitshare_mongo
     ports:
-      - "27017:27017"       # cổng máy thật : cổng trong container
+      - "27017:27017"       # host port : container port
     volumes:
-      - mongo_data:/data/db # Lưu data MongoDB vào volume, tránh mất khi restart
+      - mongo_data:/data/db # Persist MongoDB data in a volume to prevent data loss on restart
 
-  # --- Server Node.js ---
+  # --- Node.js Server ---
   server:
-    build: ./server         # Đọc Dockerfile trong thư mục server/
+    build: ./server         # Build from Dockerfile in the server/ directory
     container_name: uitshare_server
     ports:
       - "8080:8080"
     env_file:
-      - ./server/.env              # Đọc biến môi trường từ file .env ở root
+      - ./server/.env       # Load environment variables from the .env file in server directory
     volumes:
-      - ./server/uploads:/app/uploads   # Lưu file upload ra ngoài container
+      - ./server/uploads:/app/uploads   # Map uploads directory to the host machine
     depends_on:
-      - mongo               # Đợi mongo chạy xong mới chạy server
+      - mongo               # Wait for mongo to start before starting the server
 
-  # --- Client React ---
+  # --- React Client ---
   client:
-    build: ./client
+    build: 
+      context: ./client
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+        - VITE_MARKETPLACE_CONTRACT_ADDRESS=${VITE_MARKETPLACE_CONTRACT_ADDRESS}
+        - VITE_NFT_CONTRACT_ADDRESS=${VITE_NFT_CONTRACT_ADDRESS}
     container_name: uitshare_client
     ports:
       - "80:80"
     depends_on:
       - server
 
-# Khai báo volumes dùng chung
+# Declare shared volumes
 volumes:
   mongo_data:
   uploads_data:
