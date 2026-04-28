@@ -57,7 +57,7 @@ const policyData = [
 export default function Privacy({ onNavigate }) {
   const [activeSection, setActiveSection] = useState(policyData[0].id);
 
-  // Tự động cuộn lên đầu trang 
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

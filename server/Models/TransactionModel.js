@@ -118,14 +118,14 @@ const TransactionSchema = new mongoose.Schema({
 });
 TransactionSchema.index({ document: 1, createdAt: -1 });
 
-// Lịch sử giao dịch của 1 user (từ cả hai phía mua và bán)
+// Transaction history for a single user (both buyer and seller sides)
 TransactionSchema.index({ fromUser: 1, createdAt: -1 });
 TransactionSchema.index({ toUser: 1, createdAt: -1 });
 
-// Lọc theo type + status — dùng cho admin dashboard
+// Filter by type + status — used for the admin dashboard
 TransactionSchema.index({ type: 1, status: 1, createdAt: -1 });
 
-// Tính doanh thu của author theo tài liệu
+// Calculate author revenue by document
 // → DonateModel.aggregate / TransactionModel.aggregate
 TransactionSchema.index({ document: 1, type: 1, status: 1 });
 

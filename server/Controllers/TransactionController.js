@@ -1,7 +1,7 @@
 const transactionModel = require("../Models/TransactionModel");
 const mongoose = require("mongoose");
 
-// ─── Lịch sử giao dịch của 1 user (endpoint hiện tại) ───────────────────────
+// ─── Transaction history for a single user (current endpoint) ───────────────
 const getUserTransactions = async (req, res) => {
   try {
     const userId = req.userId;
@@ -98,7 +98,7 @@ const getUserTransactions = async (req, res) => {
   }
 };
 
-// ─── Admin: toàn bộ giao dịch ─────────────────────────────────────────────────
+// ─── Admin: all transactions ──────────────────────────────────────────────────
 const getAllTransactions = async (req, res) => {
   try {
     const transactions = await transactionModel

@@ -11,13 +11,13 @@ export default function AdminGuard({ children }) {
   try {
     const decoded = jwtDecode(token);
 
-    // Kiểm tra token hết hạn
+    // Check if token is expired
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
       localStorage.removeItem("access_token");
       return <Navigate to="/login" replace />;
     }
 
-    // Kiểm tra role admin
+    // Check for admin role
     if (decoded.role !== "admin") {
       return <Navigate to="/" replace />;
     }

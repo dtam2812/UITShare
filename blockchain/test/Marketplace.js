@@ -37,7 +37,7 @@ describe("UITShare Marketplace Hardened Suite", function () {
     return decoded.args.id;
   }
 
-  // Helper: tính phí
+  // Helper: calculate fees
   function calcFees(totalPrice, feeRateBps, royaltyBps) {
     const mktFee = (totalPrice * BigInt(feeRateBps)) / 10000n;
     const royalty = (totalPrice * BigInt(royaltyBps)) / 10000n;

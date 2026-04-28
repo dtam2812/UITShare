@@ -70,7 +70,7 @@ const getWalletInfo = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // 1. Lấy wallet address từ DB
+    // 1. Retrieve wallet address from DB
     const user = await User.findById(userId).select("walletAddress");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -83,7 +83,7 @@ const getWalletInfo = async (req, res) => {
     const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY;
     const ETHERSCAN_BASE = "https://api.etherscan.io/v2/api";
 
-    //  2. Kiểm tra API key
+    // 2. Check API key
     if (!ETHERSCAN_API_KEY) {
       return res.status(200).json({
         connected: true,
@@ -96,7 +96,7 @@ const getWalletInfo = async (req, res) => {
       });
     }
 
-    // 3. Gọi tuần tự cách nhau 400ms
+    // 3. Call sequentially with 400ms delay between each
     const delay = (ms) => new Promise((r) => setTimeout(r, ms));
     const BASE_PARAMS = { chainid: 11155111, apikey: ETHERSCAN_API_KEY };
 
@@ -141,7 +141,7 @@ const getWalletInfo = async (req, res) => {
       sort: "desc",
     });
 
-    //4. Xử lý Balance
+    // 4. Process balance
     let balanceEth = "0";
     {
       const { status, result, message } = balanceRes.data;
@@ -152,7 +152,7 @@ const getWalletInfo = async (req, res) => {
       }
     }
 
-    // 5. Xử lý Transactions
+    // 5. Process transactions
     let transactions = [];
     {
       const { status, result, message } = txListRes.data;
@@ -179,7 +179,7 @@ const getWalletInfo = async (req, res) => {
       }
     }
 
-    // 6. Xử lý NFTs
+    // 6. Process NFTs
     let nftCount = 0;
     let nfts = [];
     {

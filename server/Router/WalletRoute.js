@@ -4,21 +4,21 @@ const authMiddleware = require("../Middleware/AuthMiddleware");
 
 const router = express.Router();
 
-// Lưu wallet address khi kết nối MetaMask
+// Save wallet address when connecting MetaMask
 router.put(
   "/updateWallet/:userId",
   authMiddleware.isAuthentication,
   walletController.updateWallet,
 );
 
-// Xoá wallet address khi ngắt kết nối
+// Remove wallet address when disconnecting
 router.delete(
   "/disconnectWallet/:userId",
   authMiddleware.isAuthentication,
   walletController.disconnectWallet,
 );
 
-// Lấy thông tin ví (balance, NFT, transactions)
+// Get wallet info (balance, NFTs, transactions)
 router.get(
   "/walletInfo/:userId",
   authMiddleware.isAuthentication,

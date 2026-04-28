@@ -87,7 +87,7 @@ const PersonalInfo = () => {
           window.dispatchEvent(new Event("token-updated"));
         }
         setUser(response.data);
-        // Reset hoàn toàn: dùng URL mới từ server, xoá preview và File cũ
+        // Full reset: use new URLs from server, clear old preview and File objects
         setImg({
           avatar: response.data.avatar || "",
           coverImage: response.data.coverImage || "",

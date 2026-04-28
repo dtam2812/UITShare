@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const userModel = require("../Models/UserModel");
 
-// Tạo transporter gửi mail (dùng Gmail hoặc bất kỳ SMTP nào)
+// Create mail transporter (using Gmail or any SMTP service)
 const createTransporter = () => {
   return nodemailer.createTransport({
     service: process.env.EMAIL_SERVICE || "gmail",
@@ -25,30 +25,30 @@ const forgotPassword = async (req, res) => {
 
     const user = await userModel.findOne({ email: email.toLowerCase().trim() });
 
-    // Luôn trả về 200 để không lộ thông tin user có tồn tại hay không
+    // Always return 200 to avoid revealing whether the user exists
     if (!user) {
       return res.status(200).json({
         message: "Nếu email tồn tại, chúng tôi đã gửi link đặt lại mật khẩu.",
       });
     }
 
-    // Tạo token ngẫu nhiên
+    // Generate a random token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // Lưu token (hash) và thời hạn 1 giờ vào DB
+    // Save the hashed token and 1-hour expiry to the DB
     user.resetPasswordToken = hashedToken;
-    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 giờ
+    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save();
 
-    // Tạo link reset
+    // Build the reset link
     const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
     const resetUrl = `${clientUrl}/reset-password/${resetToken}`;
 
-    // Gửi email
+    // Send the email
     const transporter = createTransporter();
     await transporter.sendMail({
       from: `"UITShare" <${process.env.EMAIL_USER}>`,
@@ -101,7 +101,7 @@ const resetPassword = async (req, res) => {
         .json({ message: "Mật khẩu phải có ít nhất 6 ký tự." });
     }
 
-    // Hash lại token để so sánh với DB
+    // Re-hash the token for comparison with the DB
     const hashedToken = crypto
       .createHash("sha256")
       .update(token)
@@ -109,7 +109,7 @@ const resetPassword = async (req, res) => {
 
     const user = await userModel.findOne({
       resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() }, // chưa hết hạn
+      resetPasswordExpires: { $gt: Date.now() }, // not yet expired
     });
 
     if (!user) {
@@ -118,7 +118,7 @@ const resetPassword = async (req, res) => {
         .json({ message: "Link không hợp lệ hoặc đã hết hạn." });
     }
 
-    // Cập nhật mật khẩu mới và xóa token
+    // Update the new password and clear the token
     user.password = bcrypt.hashSync(password, 10);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
@@ -133,7 +133,7 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// GET /api/auth/validate-reset-token/:token  (kiểm tra token còn hợp lệ không)
+// GET /api/auth/validate-reset-token/:token  (check whether the token is still valid)
 const validateResetToken = async (req, res) => {
   try {
     const { token } = req.params;

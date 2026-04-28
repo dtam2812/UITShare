@@ -50,7 +50,7 @@ const updateUser = async (req, res) => {
     if (email) updateData.email = email;
     if (role) updateData.role = role;
     if (status) updateData.status = status;
-    // Chỉ hash password nếu client gửi lên (không để trống)
+    // Only hash password if the client sends one (i.e. non-empty)
     if (password && password.trim() !== "") {
       updateData.password = bcrypt.hashSync(password, 10);
     }

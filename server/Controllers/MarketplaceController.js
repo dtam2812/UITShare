@@ -49,7 +49,7 @@ const parseEventFromReceipt = (receipt, eventName) => {
   return null;
 };
 
-// maxAttempts=8, delay=2s → chờ tối đa ~14s
+// maxAttempts=8, delay=2s → waits up to ~14s
 const getReceiptWithRetry = async (
   provider,
   txHash,
@@ -68,13 +68,13 @@ const getReceiptWithRetry = async (
 
 // ============================================================
 // recreateOrderOnChain
-// Sau mỗi lần mua thành công (isOriginalCreator), smart contract
-// đánh dấu orderId cũ là "inactive".
+// After each successful purchase (isOriginalCreator), the smart contract
+// marks the old orderId as "inactive".
 //
-// Vì contract dùng ESCROW MODEL: addOrder lock tokens vào contract,
-// executeOrder trả token về wallet trước rồi gửi cho buyer — hoặc
-// không trả về, tuỳ implementation. Nên ta luôn kiểm tra balanceOf
-// thực tế để tránh "Insufficient balance".
+// The contract uses an ESCROW MODEL: addOrder locks tokens in the contract,
+// executeOrder returns tokens to the wallet first then sends them to the buyer — or
+// does not return them, depending on the implementation. Always check the
+// actual balanceOf to avoid "Insufficient balance".
 // ============================================================
 const recreateOrderOnChain = async (listing, newAmount) => {
   try {
@@ -88,7 +88,7 @@ const recreateOrderOnChain = async (listing, newAmount) => {
       provider,
     );
 
-    // Kiểm tra balance thực tế của backend wallet
+    // Check the actual balance of the backend wallet
     const actualBalance = await nftContract.balanceOf(
       signer.address,
       listing.tokenId,
@@ -102,7 +102,7 @@ const recreateOrderOnChain = async (listing, newAmount) => {
       return null;
     }
 
-    // Dùng min(newAmount, actualAmount) để an toàn
+    // Use min(newAmount, actualAmount) for safety
     const orderAmount = Math.min(newAmount, actualAmount);
     if (orderAmount !== newAmount) {
       console.warn(
@@ -115,7 +115,7 @@ const recreateOrderOnChain = async (listing, newAmount) => {
     }
 
     const priceInWei = ethers.parseEther(String(listing.price));
-    // Luôn tạo order amount=1 — contract chuyển toàn bộ order.amount cho buyer
+    // Always create order with amount=1 — contract transfers entire order.amount to buyer
     const tx = await marketplace.addOrder(listing.tokenId, 1, priceInWei);
     const receipt = await tx.wait();
 
@@ -159,11 +159,11 @@ const createListing = async ({
     signer,
   );
 
-  // QUAN TRỌNG: Luôn tạo order với amount=1 trên chain.
-  // Contract executeOrder() chuyển TOÀN BỘ order.amount cho 1 buyer.
-  // Nếu amount=150 → buyer đầu tiên nhận 150 tokens chỉ trả giá 1 copy!
-  // → Mỗi order chỉ đại diện cho 1 copy. Backend wallet giữ phần còn lại.
-  // Sau mỗi lần bán, recreateOrderOnChain() tạo order mới amount=1.
+  // IMPORTANT: Always create orders on-chain with amount=1.
+  // Contract executeOrder() transfers THE ENTIRE order.amount to a single buyer.
+  // If amount=150 → the first buyer receives 150 tokens but pays for only 1 copy!
+  // → Each order represents only 1 copy. The backend wallet holds the remainder.
+  // After each sale, recreateOrderOnChain() creates a new order with amount=1.
   const priceInWei = ethers.parseEther(String(price));
   const tx = await marketplace.addOrder(tokenId, 1, priceInWei);
   const receipt = await tx.wait();
@@ -189,7 +189,7 @@ const createListing = async ({
     sellerAddress,
     document: documentId,
     tokenId,
-    amount, // DB lưu tổng số copy còn lại để hiển thị
+    amount, // DB stores the total remaining copies for display
     price,
     isOriginalCreator,
     status: "active",
@@ -206,13 +206,13 @@ const buyDocument = async (req, res) => {
       return res.status(400).json({ message: "Thiếu orderId hoặc txHash" });
     }
 
-    // 1. Chống replay
+    // 1. Replay protection
     const existingTx = await transactionModel.findOne({ txHash });
     if (existingTx) {
       return res.status(409).json({ message: "Transaction này đã được xử lý" });
     }
 
-    // 2. Kiểm tra listing
+    // 2. Validate listing
     const listing = await listingModel
       .findOne({ orderId, status: "active" })
       .populate("document");
@@ -222,7 +222,7 @@ const buyDocument = async (req, res) => {
         .json({ message: "Listing không tồn tại hoặc đã hết hàng" });
     }
 
-    // 3. Kiểm tra buyer có ví chưa
+    // 3. Check that buyer has a wallet
     const buyer = await userModel.findById(buyerId);
     if (!buyer?.walletAddress) {
       return res
@@ -230,7 +230,7 @@ const buyDocument = async (req, res) => {
         .json({ message: "Bạn cần liên kết ví trước khi mua" });
     }
 
-    // 4. Không cho seller tự mua
+    // 4. Prevent seller from buying their own listing
     if (
       listing.sellerAddress.toLowerCase() === buyer.walletAddress.toLowerCase()
     ) {
@@ -239,7 +239,7 @@ const buyDocument = async (req, res) => {
         .json({ message: "Bạn không thể mua listing của chính mình" });
     }
 
-    // 5. Kiểm tra đã sở hữu NFT này chưa
+    // 5. Check if buyer already owns this NFT
     const existingNFT = await nftModel.findOne({
       user: buyerId,
       tokenId: listing.tokenId,
@@ -250,7 +250,7 @@ const buyDocument = async (req, res) => {
         .json({ message: "Bạn đã sở hữu tài liệu này rồi" });
     }
 
-    // 6. Verify transaction trên blockchain (retry để tránh RPC chưa index kịp)
+    // 6. Verify transaction on-chain (retry to handle RPC indexing delays)
     const provider = getProvider();
     const receipt = await getReceiptWithRetry(provider, txHash);
     if (!receipt) {
@@ -265,7 +265,7 @@ const buyDocument = async (req, res) => {
         .json({ message: "Transaction đã thất bại trên blockchain" });
     }
 
-    // 7. Verify tx gọi đúng marketplace contract
+    // 7. Verify tx was sent to the correct marketplace contract
     if (
       receipt.to?.toLowerCase() !==
       process.env.MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()
@@ -275,7 +275,7 @@ const buyDocument = async (req, res) => {
       });
     }
 
-    // 8. Verify tx được gửi từ đúng ví của buyer
+    // 8. Verify tx was sent from the buyer's registered wallet
     const txData = await provider.getTransaction(txHash);
     if (txData?.from?.toLowerCase() !== buyer.walletAddress.toLowerCase()) {
       return res
@@ -308,7 +308,7 @@ const buyDocument = async (req, res) => {
     const document = listing.document;
     const quantityBought = 1;
 
-    // 10. Cập nhật listing amount
+    // 10. Update listing amount
     const newAmount = listing.amount - quantityBought;
     const updateData =
       newAmount <= 0
@@ -320,7 +320,7 @@ const buyDocument = async (req, res) => {
     listing.amount = newAmount;
     listing.status = updateData.status ?? listing.status;
 
-    // 11. Giảm remainingSupply + tăng downloadCount trong document
+    // 11. Decrement remainingSupply and increment downloadCount on the document
     if (listing.isOriginalCreator) {
       await documentModel.findByIdAndUpdate(document._id, {
         $inc: {
@@ -334,20 +334,20 @@ const buyDocument = async (req, res) => {
       });
     }
 
-    // 12. Giảm NFT của seller
+    // 12. Decrement seller NFT balance
     await nftModel.findOneAndUpdate(
       { user: listing.seller, tokenId: listing.tokenId },
       { $inc: { amount: -quantityBought } },
     );
 
-    // 13. Xóa NFT seller nếu amount về 0
+    // 13. Delete seller NFT record if amount drops to zero
     await nftModel.deleteOne({
       user: listing.seller,
       tokenId: listing.tokenId,
       amount: { $lte: 0 },
     });
 
-    // 14. Tăng NFT của buyer
+    // 14. Increment buyer NFT balance
     await nftModel.findOneAndUpdate(
       { user: buyerId, tokenId: listing.tokenId },
       {
@@ -362,7 +362,7 @@ const buyDocument = async (req, res) => {
       { upsert: true, new: true },
     );
 
-    // 15. Lưu transaction
+    // 15. Record the transaction
     await transactionModel.create({
       fromUser: listing.seller,
       toUser: buyerId,
@@ -407,7 +407,7 @@ const cancelListing = async (req, res) => {
       return res.status(400).json({ message: "Thiếu orderId" });
     }
 
-    // 1. Kiểm tra listing trong DB
+    // 1. Validate listing in DB
     const listing = await listingModel.findOne({ orderId, status: "active" });
     if (!listing) {
       return res
@@ -415,14 +415,14 @@ const cancelListing = async (req, res) => {
         .json({ message: "Listing không tồn tại hoặc đã không còn active" });
     }
 
-    // 2. Chỉ seller mới được hủy
+    // 2. Only the seller can cancel
     if (listing.seller.toString() !== userId) {
       return res
         .status(403)
         .json({ message: "Bạn không có quyền hủy listing này" });
     }
 
-    // Luồng resell: user đã ký cancelOrder từ ví, gửi txHash để verify
+    // Resell flow: user signed cancelOrder from their wallet, sends txHash for verification
     if (!listing.isOriginalCreator) {
       if (!txHash) {
         return res
@@ -430,7 +430,7 @@ const cancelListing = async (req, res) => {
           .json({ message: "Thiếu txHash để xác minh giao dịch huỷ" });
       }
 
-      // Chống replay
+      // Replay protection
       const existingTx = await transactionModel.findOne({ txHash });
       if (existingTx) {
         return res
@@ -461,7 +461,7 @@ const cancelListing = async (req, res) => {
         });
       }
 
-      // Parse event OrderCancelled để đảm bảo đúng orderId
+      // Parse OrderCancelled event to confirm the correct orderId
       const iface = new ethers.Interface(MARKETPLACE_ABI);
       let cancelledOrderId = null;
       for (const log of receipt.logs) {
@@ -480,7 +480,7 @@ const cancelListing = async (req, res) => {
         });
       }
 
-      // Cập nhật DB
+      // Update DB
       listing.status = "cancelled";
       listing.cancelledAt = new Date();
       await listing.save();
@@ -511,7 +511,7 @@ const cancelListing = async (req, res) => {
       });
     }
 
-    // Luồng original: backend wallet tự cancel on-chain
+    // Original creator flow: backend wallet cancels on-chain directly
     const signer = getBackendSigner();
     const marketplace = getMarketplaceContract(signer);
     const onChainOrder = await marketplace.orders(orderId);
@@ -573,7 +573,7 @@ const transferNFT = async (req, res) => {
       return res.status(400).json({ message: "Thiếu thông tin transfer" });
     }
 
-    // 1. Chống replay
+    // 1. Replay protection
     const existingTx = await transactionModel.findOne({ txHash });
     if (existingTx) {
       return res.status(409).json({ message: "Transaction này đã được xử lý" });
@@ -596,7 +596,7 @@ const transferNFT = async (req, res) => {
         .json({ message: "Transaction đã thất bại trên blockchain" });
     }
 
-    // 3. Verify tx gọi đúng contract marketplace
+    // 3. Verify tx was sent to the correct marketplace contract
     if (
       receipt.to?.toLowerCase() !==
       process.env.MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()
@@ -636,7 +636,7 @@ const transferNFT = async (req, res) => {
     const royaltyPaid = eventArgs.royaltyAmount ?? 0n;
     const fromAddress = eventArgs.from.toLowerCase();
 
-    // 5. Verify fromAddress khớp với user đang request
+    // 5. Verify fromAddress matches the requesting user
     const fromUser = await userModel.findById(fromUserId);
     if (!fromUser?.walletAddress) {
       return res.status(400).json({ message: "Tài khoản chưa liên kết ví" });
@@ -647,7 +647,7 @@ const transferNFT = async (req, res) => {
       });
     }
 
-    // 6. Kiểm tra DB: fromUser có đủ NFT không
+    // 6. Check DB: does fromUser have sufficient NFT balance
     const fromNFT = await nftModel.findOne({
       user: fromUserId,
       tokenId: String(tokenId),
@@ -658,14 +658,14 @@ const transferNFT = async (req, res) => {
         .json({ message: "Bạn không có đủ NFT để transfer" });
     }
 
-    // 7. Tìm toUser theo địa chỉ ví
+    // 7. Look up toUser by wallet address
     const toUser = await userModel.findOne({
       walletAddress: toAddress.toLowerCase(),
     });
 
     const document = await documentModel.findOne({ tokenId: String(tokenId) });
 
-    // 8. Cập nhật NFT ownership
+    // 8. Update NFT ownership
     if (fromNFT.amount === Number(amount)) {
       await nftModel.deleteOne({ user: fromUserId, tokenId: String(tokenId) });
     } else {
@@ -691,7 +691,7 @@ const transferNFT = async (req, res) => {
       );
     }
 
-    // 9. Lưu transaction
+    // 9. Record the transaction
     await transactionModel.create({
       fromUser: fromUserId,
       toUser: toUser?._id ?? null,
@@ -768,13 +768,13 @@ const donateToAuthor = async (req, res) => {
       return res.status(400).json({ message: "Thiếu txHash hoặc toAddress" });
     }
 
-    // 1. Chống replay
+    // 1. Replay protection
     const existingTx = await transactionModel.findOne({ txHash });
     if (existingTx) {
       return res.status(409).json({ message: "Transaction này đã được xử lý" });
     }
 
-    // 2. Verify transaction on-chain (retry để tránh RPC chưa index kịp)
+    // 2. Verify transaction on-chain (retry to handle RPC indexing delays)
     const provider = getProvider();
     const receipt = await getReceiptWithRetry(provider, txHash);
 
@@ -790,7 +790,7 @@ const donateToAuthor = async (req, res) => {
         .json({ message: "Transaction đã thất bại trên blockchain" });
     }
 
-    // 3. Verify tx gọi đúng marketplace contract
+    // 3. Verify tx was sent to the correct marketplace contract
     if (
       receipt.to?.toLowerCase() !==
       process.env.MARKETPLACE_CONTRACT_ADDRESS.toLowerCase()
@@ -823,7 +823,7 @@ const donateToAuthor = async (req, res) => {
       });
     }
 
-    // 5. Verify donor khớp với ví của user đang request
+    // 5. Verify donor matches the requesting user's wallet
     const fromUser = await userModel.findById(fromUserId);
     if (!fromUser?.walletAddress) {
       return res.status(400).json({ message: "Tài khoản chưa liên kết ví" });
@@ -836,12 +836,12 @@ const donateToAuthor = async (req, res) => {
       });
     }
 
-    // 6. Tìm user nhận donate theo walletAddress
+    // 6. Look up the donation recipient by wallet address
     const toUser = await userModel.findOne({
       walletAddress: toAddress.toLowerCase(),
     });
 
-    // 7. Lưu transaction
+    // 7. Record the transaction
     const donatedAmountEth = Number(ethers.formatEther(donatedArgs.amount));
 
     await transactionModel.create({
@@ -889,7 +889,7 @@ const resellDocument = async (req, res) => {
       });
     }
 
-    // Kiểm tra seller có NFT không
+    // Check that the seller owns this NFT
     const nft = await nftModel.findOne({ user: sellerId, tokenId });
     if (!nft || nft.amount < 1) {
       return res.status(400).json({ message: "Bạn không sở hữu NFT này" });

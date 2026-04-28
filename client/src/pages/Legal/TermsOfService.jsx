@@ -56,7 +56,7 @@ const termsData = [
 export default function TermsOfService({ onNavigate }) {
   const [activeSection, setActiveSection] = useState(termsData[0].id);
 
-  // Tự động cuộn lên đầu trang khi component mount
+  // Scroll to top when the component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

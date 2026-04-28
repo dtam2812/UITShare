@@ -71,7 +71,7 @@ export default function FAQ({ onNavigate }) {
   const [activeTab, setActiveTab] = useState("Sản phẩm");
   const [activeFaq, setActiveFaq] = useState(1);
 
-  // Tự động cuộn lên đầu trang
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

@@ -209,7 +209,7 @@ export default function UsersTab({ users, setUsers, loading, onRefresh }) {
 
   return (
     <div className="space-y-6">
-      {/* Header: tiêu đề + 2 nút cạnh nhau */}
+      {/* Header: title + 2 buttons side by side */}
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-white">Người dùng</h2>
         <div className="flex items-center gap-2">

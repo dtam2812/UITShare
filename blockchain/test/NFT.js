@@ -100,7 +100,7 @@ describe("UIT Share NFT (Edge Cases & Standards Audit)", function () {
   describe("setRoyalty()", function () {
     it("Should allow creator to update royalty", async function () {
       await uitShare.connect(studentA).mint(10, "ipfs://royalty", 1000, "0x");
-      await uitShare.connect(studentA).setRoyalty(1, studentA.address, 2000); // update lên 20%
+      await uitShare.connect(studentA).setRoyalty(1, studentA.address, 2000); // update to 20%
 
       const [receiver, amount] = await uitShare.royaltyInfo(1, ethers.parseEther("1"));
       expect(receiver).to.equal(studentA.address);

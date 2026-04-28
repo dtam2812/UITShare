@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export default function Contact({ onNavigate }) {
   const navigate = useNavigate();
 
-  // Tự động cuộn lên đầu trang 
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);  

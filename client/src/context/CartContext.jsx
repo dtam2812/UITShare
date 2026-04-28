@@ -47,11 +47,11 @@ export function CartProvider({ children }) {
         const newUserId = getCurrentUserId();
 
         if (!e.newValue) {
-          // Đăng xuất: xóa giỏ hàng hiện tại, reset userId
+          // Logout: clear current cart and reset userId
           setCartItems([]);
           setUserId(null);
         } else if (newUserId !== userId) {
-          // Đăng nhập tài khoản khác: load giỏ hàng của user mới
+          // Login with a different account: load the new user's cart
           setUserId(newUserId);
           try {
             const stored = localStorage.getItem(getCartKey(newUserId));
@@ -93,7 +93,7 @@ export function CartProvider({ children }) {
           }
         }
       } catch {
-        // Nếu API lỗi thì vẫn cho thêm vào giỏ, backend sẽ check lúc mua
+        // If API fails, still allow adding to cart — backend will validate at purchase
       }
 
       setCartItems((prev) => [

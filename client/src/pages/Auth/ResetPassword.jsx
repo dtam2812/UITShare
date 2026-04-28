@@ -20,7 +20,7 @@ const ResetPassword = () => {
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
 
-  // Kiểm tra token còn hợp lệ không khi vào trang
+  // Validate the token when the page loads
   useEffect(() => {
     const validate = async () => {
       try {
@@ -66,7 +66,7 @@ const ResetPassword = () => {
     }
   };
 
-  // --- Loading kiểm tra token ---
+  // --- Loading: validating token ---
   if (validating) {
     return (
       <div className="flex h-screen items-center justify-center bg-[#050816]">

@@ -6,7 +6,7 @@ const forgotPasswordController = require("../Controllers/ForgotPasswordControlle
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 
-// Quên mật khẩu
+// Forgot password
 router.post("/forgot-password", forgotPasswordController.forgotPassword);
 router.get("/validate-reset-token/:token", forgotPasswordController.validateResetToken);
 router.post("/reset-password/:token", forgotPasswordController.resetPassword);

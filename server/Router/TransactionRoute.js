@@ -3,14 +3,14 @@ const router = express.Router();
 const transactionController = require("../Controllers/TransactionController");
 const authMiddleware = require("../Middleware/AuthMiddleware");
 
-// User: lịch sử giao dịch của chính mình
+// User: own transaction history
 router.get(
   "/history",
   authMiddleware.isAuthentication,
   transactionController.getUserTransactions
 );
 
-// Admin: toàn bộ giao dịch hệ thống
+// Admin: all system transactions
 router.get(
   "/admin/all",
   authMiddleware.isAuthentication,

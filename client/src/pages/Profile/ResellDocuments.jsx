@@ -186,7 +186,7 @@ const ResellDocuments = () => {
     }
 
     try {
-      // Bước 1: User ký cancelOrder trên MetaMask
+      // Step 1: User signs cancelOrder via MetaMask
       setCancelStep("metamask");
       const txHash = await writeContractAsync({
         address: MARKETPLACE_ADDRESS,
@@ -195,14 +195,14 @@ const ResellDocuments = () => {
         args: [BigInt(cancelTarget.orderId)],
       });
 
-      // Bước 2: Gửi txHash lên backend để verify & cập nhật DB
+      // Step 2: Send txHash to backend for verification and DB update
       setCancelStep("recording");
       await axios.post("/api/marketplace/cancel", {
         orderId: cancelTarget.orderId,
         txHash,
       });
 
-      // Xoá khỏi danh sách
+      // Remove from the list
       setListings((prev) => prev.filter((l) => l._id !== cancelTarget._id));
       setCancelStep("success");
     } catch (err) {

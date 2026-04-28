@@ -80,13 +80,13 @@ export default function Cart() {
 
   const fetchOrderId = async (documentId, listingId = null) => {
     if (listingId) {
-      // Resell item: lấy orderId từ listingId
+      // Resell item: get orderId from listingId
       const res = await axios.get(`/api/marketplace/listing/${listingId}`);
       if (!res.data?.orderId) throw new Error("Không có listing active");
       return { orderId: res.data.orderId, price: res.data.price };
     }
 
-    // Item thường
+    // Regular item
     const res = await axios.get(`/api/listing/active/${documentId}`);
     if (!res.data?.orderId) throw new Error("Không có listing active");
     return { orderId: res.data.orderId, price: res.data.price };
@@ -95,7 +95,7 @@ export default function Cart() {
   const handleCheckout = async () => {
     setCheckoutStep(CHECKOUT_STEP.CHECKING);
 
-    // 1. Lấy ví từ DB trước tiên
+    // 1. Fetch wallet address from DB first
     let walletAddress = null;
     try {
       const { data } = await axios.get(`/api/wallet/walletInfo/${userId}`);
@@ -120,13 +120,13 @@ export default function Cart() {
       const provider = new ethers.BrowserProvider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
 
-      // Kiểm tra đúng network Sepolia chưa
+      // Verify the correct Sepolia network is selected
       const network = await provider.getNetwork();
       const SEPOLIA_CHAIN_ID = 11155111n;
 
       if (network.chainId !== SEPOLIA_CHAIN_ID) {
         try {
-          // Tự động yêu cầu đổi sang Sepolia
+          // Automatically prompt the user to switch to Sepolia
           await provider.send("wallet_switchEthereumChain", [
             { chainId: "0xaa36a7" }
           ]);
@@ -142,11 +142,11 @@ export default function Cart() {
         }
       }
 
-      // 2. Lấy account đang active từ MetaMask
+      // 2. Get the currently active MetaMask account
       const accounts = await provider.send("eth_accounts", []);
       const signerAddress = accounts[0];
 
-      // 3. So sánh với DB
+      // 3. Compare with the wallet stored in DB
       if (signerAddress?.toLowerCase() !== walletAddress?.toLowerCase()) {
         setCheckoutStep(CHECKOUT_STEP.IDLE);
         setBalanceInfo({
@@ -158,7 +158,7 @@ export default function Cart() {
         return;
       }
 
-      // 4. Check số dư
+      // 4. Check balance
       const balanceWei = await provider.getBalance(signerAddress);
       const balanceEth = parseFloat(ethers.formatEther(balanceWei));
       if (balanceEth < total) {

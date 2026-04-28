@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
  
 const SubjectSchema = new mongoose.Schema({
   _id: {
-    type: String, // Dùng mã môn làm _id luôn, VD: "MA006", "IT003"
+    type: String, // Use the subject code as _id directly, e.g. "MA006", "IT003"
   },
   name: {
     type: String,

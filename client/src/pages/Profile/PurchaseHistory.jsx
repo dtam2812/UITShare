@@ -23,11 +23,11 @@ const PurchaseHistory = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Debounce search 400ms để tránh gọi API liên tục
+  // Debounce search by 400ms to avoid excessive API calls
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchTerm);
-      setCurrentPage(1); // Reset về trang 1 khi search
+      setCurrentPage(1); // Reset to page 1 on search
     }, 400);
     return () => clearTimeout(timer);
   }, [searchTerm]);

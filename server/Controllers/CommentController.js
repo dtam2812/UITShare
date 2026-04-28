@@ -48,8 +48,8 @@ const createComment = async (req, res) => {
   }
 };
 
-// GET /api/comments/author/reviews  (cần isAuthentication)
-// Lấy tất cả comments trên tài liệu của author đang đăng nhập
+// GET /api/comments/author/reviews  (requires isAuthentication)
+// Fetch all comments on documents belonging to the currently logged-in author
 const getCommentsForAuthor = async (req, res) => {
   try {
     const userId = req.userId;

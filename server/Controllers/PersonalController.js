@@ -26,7 +26,7 @@ const updateUserInfo = async (req, res) => {
       updateData.studentId = studentId;
     }
 
-    // Thay phần lưu file cũ bằng upload lên Cloudinary
+    // Replace old file-save logic with Cloudinary upload
     if (req.files?.avatar) {
       updateData.avatar = await uploadToCloudinary(
         req.files.avatar[0].buffer,
@@ -75,7 +75,7 @@ const updateWallet = async (req, res) => {
       return res.status(400).json({ message: "Không có địa chỉ ví" });
     }
 
-    // Kiểm tra ví đã được dùng bởi user khác chưa
+    // Check if the wallet is already linked to another user
     const existingUser = await userModel.findOne({
       walletAddress: walletAddress.toLowerCase(),
     });

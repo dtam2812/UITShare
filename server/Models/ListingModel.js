@@ -89,19 +89,19 @@ const ListingSchema = new mongoose.Schema({
   },
 });
 
-// Tìm tất cả listing đang active của 1 tài liệu
-// → Dùng ở trang DocumentDetail để hiển thị danh sách người đang bán
+// Find all active listings for a single document
+// → Used on the DocumentDetail page to display current sellers
 ListingSchema.index({ document: 1, status: 1 });
 
-// Tìm tất cả listing đang active của 1 seller
-// → Dùng ở trang Profile > "Tài liệu đang bán"
+// Find all active listings for a single seller
+// → Used on the Profile page under "Documents for Sale"
 ListingSchema.index({ seller: 1, status: 1 });
 
-// Tìm listing theo tokenId đang active
-// → Dùng khi cần đồng bộ với blockchain theo tokenId
+// Find active listing by tokenId
+// → Used when syncing with the blockchain by tokenId
 ListingSchema.index({ tokenId: 1, status: 1 });
 
-// Tìm listing mới nhất (trang marketplace, sắp xếp theo thời gian)
+// Find the most recent listings (marketplace page, sorted by time)
 ListingSchema.index({ status: 1, listedAt: -1 });
 
 module.exports = mongoose.model("Listing", ListingSchema);

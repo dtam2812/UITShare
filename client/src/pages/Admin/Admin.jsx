@@ -89,7 +89,7 @@ export default function Admin() {
     }
   };
 
-  // Fetch tất cả ngay khi mount → Overview có đủ số liệu ngay
+  // Fetch everything on mount so Overview has complete data immediately
   useEffect(() => {
     getListUser();
     getListDocuments();

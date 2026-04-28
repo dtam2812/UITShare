@@ -29,15 +29,15 @@ const DocumentSchema = new mongoose.Schema({
     required: true,
   },
 
-  // Content Identifier trên IPFS — unique để tránh upload trùng file
+  // IPFS Content Identifier — unique to prevent duplicate file uploads
   cid: {
     type: String,
     required: true,
     unique: true,
   },
 
-  // SHA-256 hash của file gốc — check trùng trước khi upload lên IPFS
-  // Giúp phát hiện file giống nhau dù rename
+  // SHA-256 hash of the original file — duplicate check before uploading to IPFS
+  // Detects identical files even if they are renamed
   fileHash: {
     type: String,
     index: true,

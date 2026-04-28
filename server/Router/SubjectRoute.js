@@ -3,10 +3,10 @@ const router = express.Router();
 const subjectController = require("../Controllers/SubjectController");
 const authMiddleware = require("../Middleware/AuthMiddleware");
 
-// Public — dùng cho dropdown upload/filter
+// Public — used for the upload/filter dropdowns
 router.get("/", subjectController.getSubjects);
 
-// Admin — yêu cầu xác thực + quyền admin
+// Admin — requires authentication and admin role
 router.post(
   "/",
   authMiddleware.isAuthentication,
