@@ -2,7 +2,7 @@
 
 Đây là đồ án môn **IE213 – Kỹ thuật Phát triển Hệ thống Web** tại Trường Đại học Công nghệ Thông tin – ĐHQG TP.HCM.
 
-UITShare là một web app cho phép sinh viên UIT mua, bán và chia sẻ tài liệu học tập. Điểm khác biệt so với Google Drive hay Facebook Group là mỗi tài liệu được upload dựa trên tiêu chuẩn **NFT ERC-1155** trên Ethereum, lưu file trên **IPFS**, và mọi giao dịch mua bán đều đi qua **smart contract** — tác giả tự động nhận royalty mỗi khi tài liệu được bán lại mà không cần làm gì cả.
+UITShare là một web app cho phép sinh viên UIT mua, bán và chia sẻ tài liệu học tập. Điểm khác biệt so với Google Drive hay Facebook Group là mỗi tài liệu được upload dựa trên tiêu chuẩn **ERC-1155** trên Ethereum, lưu file trên **IPFS**, và mọi giao dịch mua bán đều đi qua **smart contract** — tác giả tự động nhận royalty mỗi khi tài liệu được bán lại mà không cần làm gì cả.
 
 ## Nhóm phát triển
 
@@ -80,6 +80,11 @@ UITShare/
 ## Smart contracts
 
 Có 2 contract chính, deploy trên Sepolia:
+
+| Contract | Address | Explorer |
+|---|---|---|
+| `UITShareNFT` | `0x93Cd8eE09f76DB3BfC87e8cCe237782Cdc51d132` | [Xem trên Etherscan](https://sepolia.etherscan.io/address/0x93Cd8eE09f76DB3BfC87e8cCe237782Cdc51d132) |
+| `UITShareMarketplace` | `0x5b5C51507c62530667a8af3457D968029D983595` | [Xem trên Etherscan](https://sepolia.etherscan.io/address/0x5b5C51507c62530667a8af3457D968029D983595) |
 
 **`UITShareNFT`** — Quản lý NFT tài liệu (ERC-1155 + ERC-2981)
 - Mỗi tài liệu = 1 tokenId, tối đa 1.000 bản
