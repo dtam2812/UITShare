@@ -4,7 +4,10 @@ import { parseEther } from "viem";
 import {
   useWriteContract,
   useAccount,
+  useChainId,
+  useSwitchChain,
 } from "wagmi";
+import { sepolia } from "wagmi/chains";
 import {
   FiBook,
   FiShield,
@@ -41,6 +44,8 @@ const DonateModal = ({ author, onClose }) => {
   const [message, setMessage] = useState("");
   const [step, setStep] = useState("input");
   const [errorMsg, setErrorMsg] = useState("");
+  const chainId = useChainId();
+  const { switchChainAsync } = useSwitchChain();
 
   const { writeContractAsync } = useWriteContract();
 
@@ -57,6 +62,17 @@ const DonateModal = ({ author, onClose }) => {
       setStep("error");
       return;
     }
+
+    if (chainId !== sepolia.id) {
+      try {
+        await switchChainAsync({ chainId: sepolia.id });
+      } catch {
+        setErrorMsg("Vui lòng chuyển MetaMask sang mạng Sepolia Testnet!");
+        setStep("error");
+        return;
+      }
+    }
+
     const parsed = parseFloat(amount);
     if (!parsed || parsed <= 0) {
       setErrorMsg("Số lượng ETH không hợp lệ.");
@@ -196,7 +212,9 @@ const DonateModal = ({ author, onClose }) => {
             <div className="flex flex-col items-center gap-4 py-6 text-center">
               <FiCheckCircle className="h-10 w-10 text-green-400" />
               <div>
-                <p className="font-semibold text-white">Donate thành công! 🎉</p>
+                <p className="font-semibold text-white">
+                  Donate thành công! 🎉
+                </p>
                 <p className="mt-1 text-sm text-gray-400">
                   Cảm ơn bạn đã ủng hộ {author.userName}
                 </p>
@@ -309,14 +327,18 @@ const AuthorDetail = () => {
           <div className="relative h-48 border-b border-white/10 sm:h-56">
             <img
               src={getImageUrl(author.coverImage, "/cover_default.jpg")}
-              onError={(e) => { e.currentTarget.src = "/cover_default.jpg"; }}
+              onError={(e) => {
+                e.currentTarget.src = "/cover_default.jpg";
+              }}
               alt="cover"
               className="h-full w-full object-cover opacity-60"
             />
             <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
               <img
                 src={getImageUrl(author.avatar, "/default.jpg")}
-                onError={(e) => { e.currentTarget.src = "/default.jpg"; }}
+                onError={(e) => {
+                  e.currentTarget.src = "/default.jpg";
+                }}
                 alt="avatar"
                 className="h-28 w-28 rounded-full border-4 border-[#050816] object-cover shadow-md"
               />
@@ -393,21 +415,31 @@ const AuthorDetail = () => {
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiFileText className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">Tài liệu</span>
+                <span className="text-sm font-medium text-gray-400">
+                  Tài liệu
+                </span>
               </div>
-              <span className="text-xl font-bold text-white">{stats.totalDocs}</span>
+              <span className="text-xl font-bold text-white">
+                {stats.totalDocs}
+              </span>
             </div>
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiDownload className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">Downloads</span>
+                <span className="text-sm font-medium text-gray-400">
+                  Downloads
+                </span>
               </div>
-              <span className="text-xl font-bold text-white">{stats.totalDownloads}</span>
+              <span className="text-xl font-bold text-white">
+                {stats.totalDownloads}
+              </span>
             </div>
             <div className="py-5 text-center">
               <div className="mb-1 flex items-center justify-center gap-2">
                 <FiStar className="h-4 w-4 text-purple-400" />
-                <span className="text-sm font-medium text-gray-400">Đánh giá</span>
+                <span className="text-sm font-medium text-gray-400">
+                  Đánh giá
+                </span>
               </div>
               <span className="text-xl font-bold text-white">
                 {stats.overallRating ?? "—"}
@@ -459,7 +491,9 @@ const AuthorDetail = () => {
           {activeTab === "shared" && (
             <>
               {documents.length === 0 ? (
-                <p className="text-center text-gray-500">Chưa có tài liệu nào.</p>
+                <p className="text-center text-gray-500">
+                  Chưa có tài liệu nào.
+                </p>
               ) : (
                 <div className="mx-auto grid w-11/12 grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
                   {documents.map((doc) => (
