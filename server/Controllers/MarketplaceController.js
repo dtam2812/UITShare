@@ -5,7 +5,33 @@ const nftModel = require("../Models/NFTModel");
 const transactionModel = require("../Models/TransactionModel");
 const userModel = require("../Models/UserModel");
 
-//ABI
+// RPC Logger
+const createLoggingProvider = (rpcUrl, label) => {
+  const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, {
+    polling: true,
+    pollingInterval: 6000,
+  });
+
+  let callCount = 0;
+
+  // Override send() để hook mọi RPC call
+  const originalSend = provider.send.bind(provider);
+  provider.send = async (method, params) => {
+    callCount++;
+    console.log(`[RPC-${label}] #${callCount} method=${method}`);
+    return originalSend(method, params);
+  };
+
+  provider.resetCount = () => {
+    callCount = 0;
+  };
+
+  provider.getCount = () => callCount;
+
+  return provider;
+};
+
+// ABI
 const NFT_ABI = [
   "function balanceOf(address account, uint256 id) view returns (uint256)",
 ];
@@ -24,12 +50,12 @@ const MARKETPLACE_ABI = [
   "event Donated(address indexed donor, address indexed recipient, uint256 amount)",
 ];
 
-//  Helpers
+// Helpers
 const getProvider = () =>
-  new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
+  createLoggingProvider(process.env.SEPOLIA_RPC_URL, "Marketplace");
 
-const getBackendSigner = () =>
-  new ethers.Wallet(process.env.PRIVATE_KEY, getProvider());
+const getBackendSigner = (provider) =>
+  new ethers.Wallet(process.env.PRIVATE_KEY, provider);
 
 const getMarketplaceContract = (signerOrProvider) =>
   new ethers.Contract(
@@ -66,56 +92,16 @@ const getReceiptWithRetry = async (
   return null;
 };
 
-// ============================================================
 // recreateOrderOnChain
-// After each successful purchase (isOriginalCreator), the smart contract
-// marks the old orderId as "inactive".
-//
-// The contract uses an ESCROW MODEL: addOrder locks tokens in the contract,
-// executeOrder returns tokens to the wallet first then sends them to the buyer — or
-// does not return them, depending on the implementation. Always check the
-// actual balanceOf to avoid "Insufficient balance".
-// ============================================================
 const recreateOrderOnChain = async (listing, newAmount) => {
   try {
     const provider = getProvider();
-    const signer = getBackendSigner();
+    const signer = getBackendSigner(provider);
     const marketplace = getMarketplaceContract(signer);
 
-    const nftContract = new ethers.Contract(
-      process.env.NFT_CONTRACT_ADDRESS,
-      NFT_ABI,
-      provider,
-    );
-
-    // Check the actual balance of the backend wallet
-    const actualBalance = await nftContract.balanceOf(
-      signer.address,
-      listing.tokenId,
-    );
-    const actualAmount = Number(actualBalance);
-
-    if (actualAmount === 0) {
-      console.warn(
-        `[recreateOrderOnChain] Balance = 0 cho tokenId=${listing.tokenId}. Tokens bị kẹt trong contract (escrow). Bỏ qua re-listing.`,
-      );
-      return null;
-    }
-
-    // Use min(newAmount, actualAmount) for safety
-    const orderAmount = Math.min(newAmount, actualAmount);
-    if (orderAmount !== newAmount) {
-      console.warn(
-        `[recreateOrderOnChain] DB amount=${newAmount} > chain balance=${actualAmount}. Dùng ${orderAmount}.`,
-      );
-      await listingModel.updateOne(
-        { _id: listing._id },
-        { $set: { amount: orderAmount } },
-      );
-    }
-
+    const orderAmount = newAmount;
     const priceInWei = ethers.parseEther(String(listing.price));
-    // Always create order with amount=1 — contract transfers entire order.amount to buyer
+
     const tx = await marketplace.addOrder(listing.tokenId, 1, priceInWei);
     const receipt = await tx.wait();
 
@@ -128,20 +114,35 @@ const recreateOrderOnChain = async (listing, newAmount) => {
     const newOrderId = orderAddedArgs.orderId.toString();
     await listingModel.updateOne(
       { _id: listing._id },
-      { $set: { orderId: newOrderId } },
+      { $set: { orderId: newOrderId, amount: orderAmount } },
     );
 
     console.log(
-      `[recreateOrderOnChain] ✅ orderId mới=${newOrderId}, amount=${orderAmount}`,
+      `[recreateOrderOnChain]  orderId mới=${newOrderId}, amount=${orderAmount}`,
+    );
+    console.log(
+      `[recreateOrderOnChain] Tổng RPC calls: ${provider.getCount()}`,
     );
     return newOrderId;
   } catch (err) {
-    console.error("[recreateOrderOnChain] Lỗi khi tạo lại order:", err.message);
+    if (
+      err.message?.includes("Insufficient balance") ||
+      err.message?.includes("insufficient")
+    ) {
+      console.warn(
+        `[recreateOrderOnChain] Token bị kẹt trong escrow cho tokenId=${listing.tokenId}. Bỏ qua re-listing.`,
+      );
+    } else {
+      console.error(
+        "[recreateOrderOnChain] Lỗi khi tạo lại order:",
+        err.message,
+      );
+    }
     return null;
   }
 };
 
-//  createListing
+// createListing
 const createListing = async ({
   sellerId,
   sellerAddress,
@@ -151,19 +152,14 @@ const createListing = async ({
   price,
   isOriginalCreator,
 }) => {
-  const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
-  const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
-  const marketplace = new ethers.Contract(
-    process.env.MARKETPLACE_CONTRACT_ADDRESS,
-    MARKETPLACE_ABI,
-    signer,
+  const provider = createLoggingProvider(
+    process.env.SEPOLIA_RPC_URL,
+    "Listing",
   );
+  const signer = getBackendSigner(provider);
+  const marketplace = getMarketplaceContract(signer);
 
-  // IMPORTANT: Always create orders on-chain with amount=1.
-  // Contract executeOrder() transfers THE ENTIRE order.amount to a single buyer.
-  // If amount=150 → the first buyer receives 150 tokens but pays for only 1 copy!
-  // → Each order represents only 1 copy. The backend wallet holds the remainder.
-  // After each sale, recreateOrderOnChain() creates a new order with amount=1.
+  // Always create orders on-chain with amount=1.
   const priceInWei = ethers.parseEther(String(price));
   const tx = await marketplace.addOrder(tokenId, 1, priceInWei);
   const receipt = await tx.wait();
@@ -194,10 +190,17 @@ const createListing = async ({
     isOriginalCreator,
     status: "active",
   });
+
+  console.log(
+    `[createListing] ✅ orderId=${orderId}. Tổng RPC calls: ${provider.getCount()}`,
+  );
 };
 
-//  buyDocument
+// buyDocument
 const buyDocument = async (req, res) => {
+  const provider = getProvider();
+  provider.resetCount();
+
   try {
     const { orderId, txHash } = req.body;
     const buyerId = req.userId;
@@ -251,7 +254,6 @@ const buyDocument = async (req, res) => {
     }
 
     // 6. Verify transaction on-chain (retry to handle RPC indexing delays)
-    const provider = getProvider();
     const receipt = await getReceiptWithRetry(provider, txHash);
     if (!receipt) {
       return res.status(400).json({
@@ -275,9 +277,9 @@ const buyDocument = async (req, res) => {
       });
     }
 
-    // 8. Verify tx was sent from the buyer's registered wallet
-    const txData = await provider.getTransaction(txHash);
-    if (txData?.from?.toLowerCase() !== buyer.walletAddress.toLowerCase()) {
+    // 8. receipt.from
+    const txFrom = receipt.from;
+    if (txFrom?.toLowerCase() !== buyer.walletAddress.toLowerCase()) {
       return res
         .status(403)
         .json({ message: "Transaction không được gửi từ ví của bạn" });
@@ -382,7 +384,9 @@ const buyDocument = async (req, res) => {
       blockNumber: receipt.blockNumber,
       status: "success",
     });
-    
+
+    console.log(`[buyDocument] Tổng RPC calls: ${provider.getCount()}`);
+
     if (newAmount > 0 && listing.isOriginalCreator) {
       await recreateOrderOnChain(listing, newAmount);
     }
@@ -399,6 +403,9 @@ const buyDocument = async (req, res) => {
 
 // cancelListing
 const cancelListing = async (req, res) => {
+  const provider = getProvider();
+  provider.resetCount();
+
   try {
     const { orderId, txHash } = req.body;
     const userId = req.userId;
@@ -422,7 +429,7 @@ const cancelListing = async (req, res) => {
         .json({ message: "Bạn không có quyền hủy listing này" });
     }
 
-    // Resell flow: user signed cancelOrder from their wallet, sends txHash for verification
+    // Resell flow: user signed cancelOrder
     if (!listing.isOriginalCreator) {
       if (!txHash) {
         return res
@@ -439,7 +446,6 @@ const cancelListing = async (req, res) => {
       }
 
       // Verify on-chain
-      const provider = getProvider();
       const receipt = await getReceiptWithRetry(provider, txHash);
       if (!receipt) {
         return res.status(400).json({
@@ -461,7 +467,7 @@ const cancelListing = async (req, res) => {
         });
       }
 
-      // Parse OrderCancelled event to confirm the correct orderId
+      // Parse OrderCancelled event để xác nhận đúng orderId
       const iface = new ethers.Interface(MARKETPLACE_ABI);
       let cancelledOrderId = null;
       for (const log of receipt.logs) {
@@ -505,14 +511,18 @@ const cancelListing = async (req, res) => {
         status: "success",
       });
 
+      console.log(
+        `[cancelListing-resell] Tổng RPC calls: ${provider.getCount()}`,
+      );
+
       return res.status(200).json({
         message: "Hủy listing thành công",
         txHash,
       });
     }
 
-    // Original creator flow: backend wallet cancels on-chain directly
-    const signer = getBackendSigner();
+    //  backend wallet cancels on-chain
+    const signer = getBackendSigner(provider);
     const marketplace = getMarketplaceContract(signer);
     const onChainOrder = await marketplace.orders(orderId);
 
@@ -553,6 +563,10 @@ const cancelListing = async (req, res) => {
       status: "success",
     });
 
+    console.log(
+      `[cancelListing-original] Tổng RPC calls: ${provider.getCount()}`,
+    );
+
     return res.status(200).json({
       message: "Hủy listing thành công",
       txHash: receipt.hash,
@@ -565,6 +579,9 @@ const cancelListing = async (req, res) => {
 
 // transferNFT
 const transferNFT = async (req, res) => {
+  const provider = getProvider();
+  provider.resetCount();
+
   try {
     const { toAddress, tokenId, amount, txHash } = req.body;
     const fromUserId = req.userId;
@@ -580,16 +597,13 @@ const transferNFT = async (req, res) => {
     }
 
     // 2. Verify transaction on-chain
-    const provider = getProvider();
     const receipt = await getReceiptWithRetry(provider, txHash);
-
     if (!receipt) {
       return res.status(400).json({
         message:
           "Không tìm thấy transaction trên blockchain. Vui lòng thử lại sau.",
       });
     }
-
     if (receipt.status !== 1) {
       return res
         .status(400)
@@ -707,6 +721,8 @@ const transferNFT = async (req, res) => {
       status: "success",
     });
 
+    console.log(`[transferNFT] Tổng RPC calls: ${provider.getCount()}`);
+
     return res.status(200).json({ message: "Transfer NFT thành công" });
   } catch (error) {
     console.error("[transferNFT]", error);
@@ -760,6 +776,9 @@ const checkAccess = async (req, res) => {
 
 // donateToAuthor
 const donateToAuthor = async (req, res) => {
+  const provider = getProvider();
+  provider.resetCount();
+
   try {
     const { txHash, toAddress, message } = req.body;
     const fromUserId = req.userId;
@@ -774,10 +793,8 @@ const donateToAuthor = async (req, res) => {
       return res.status(409).json({ message: "Transaction này đã được xử lý" });
     }
 
-    // 2. Verify transaction on-chain (retry to handle RPC indexing delays)
-    const provider = getProvider();
+    // 2. Verify transaction on-chain
     const receipt = await getReceiptWithRetry(provider, txHash);
-
     if (!receipt) {
       return res.status(400).json({
         message:
@@ -858,6 +875,8 @@ const donateToAuthor = async (req, res) => {
       ...(message?.trim() && { donateMessage: message.trim() }),
     });
 
+    console.log(`[donateToAuthor] Tổng RPC calls: ${provider.getCount()}`);
+
     return res.status(200).json({
       message: "Donate thành công",
       txHash,
@@ -869,6 +888,7 @@ const donateToAuthor = async (req, res) => {
   }
 };
 
+// resellDocument
 const resellDocument = async (req, res) => {
   try {
     const { documentId, tokenId, amount, price, orderId, txHash } = req.body;
@@ -932,6 +952,7 @@ const resellDocument = async (req, res) => {
   }
 };
 
+// getDonationsReceived
 const getDonationsReceived = async (req, res) => {
   try {
     const userId = req.userId;
@@ -961,6 +982,7 @@ const getDonationsReceived = async (req, res) => {
   }
 };
 
+// getAuthorResellListings
 const getAuthorResellListings = async (req, res) => {
   try {
     const { authorId } = req.params;
@@ -983,6 +1005,7 @@ const getAuthorResellListings = async (req, res) => {
   }
 };
 
+// getPurchasedDocuments
 const getPurchasedDocuments = async (req, res) => {
   try {
     const userId = req.userId;
@@ -1015,6 +1038,7 @@ const getPurchasedDocuments = async (req, res) => {
   }
 };
 
+// getListingById
 const getListingById = async (req, res) => {
   try {
     const { listingId } = req.params;

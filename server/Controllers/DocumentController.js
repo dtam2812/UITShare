@@ -16,14 +16,76 @@ const pinata = new PinataSDK(
   process.env.PINATA_SECRET_KEY,
 );
 
+// RPC Logger
+const createLoggingProvider = (rpcUrl, label) => {
+  const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, {
+    polling: true,
+    pollingInterval: 6000,
+  });
+
+  let callCount = 0;
+
+  const originalSend = provider.send.bind(provider);
+  provider.send = async (method, params) => {
+    callCount++;
+    console.log(`[RPC-Document] #${callCount} method=${method}`);
+    return originalSend(method, params);
+  };
+
+  provider.resetCount = () => {
+    callCount = 0;
+  };
+
+  provider.getCount = () => callCount;
+
+  return provider;
+};
+
+let _isBackendApproved = false;
+
+const ensureMarketplaceApproval = async (nftContract, signerAddress) => {
+  if (_isBackendApproved) {
+    console.log(
+      "[ensureApproval] Cache hit — bỏ qua isApprovedForAll check (tiết kiệm 2+ RPC calls)",
+    );
+    return;
+  }
+
+  const isApproved = await nftContract.isApprovedForAll(
+    signerAddress,
+    process.env.MARKETPLACE_CONTRACT_ADDRESS,
+  );
+
+  if (isApproved) {
+    _isBackendApproved = true;
+    console.log("[ensureApproval] Đã approved sẵn, set cache = true");
+    return;
+  }
+
+  console.log(
+    "[ensureApproval] Chưa approved, đang gửi setApprovalForAll tx...",
+  );
+  const approveTx = await nftContract.setApprovalForAll(
+    process.env.MARKETPLACE_CONTRACT_ADDRESS,
+    true,
+  );
+  await approveTx.wait();
+
+  _isBackendApproved = true;
+  console.log(
+    "[ensureApproval]  setApprovalForAll thành công, set cache = true",
+  );
+};
+
+// ABI
 const NFT_ABI = [
   "function mint(uint256 amount_, string memory tokenURI_, uint96 royaltyBps_, bytes memory data_) public returns (uint256)",
-  "function getCurrentTokenId() view returns (uint256)",
   "function setApprovalForAll(address operator, bool approved) external",
   "function isApprovedForAll(address account, address operator) view returns (bool)",
   "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)",
 ];
 
+// Helpers
 const cleanupTempFile = (path) => {
   if (path && fs.existsSync(path)) {
     try {
@@ -50,8 +112,15 @@ const uploadMetadataToPinata = async (metadata, name) => {
   return `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`;
 };
 
+// uploadDocument
 const uploadDocument = async (req, res) => {
   const tempFilePath = req.files?.file?.[0]?.path;
+
+  const provider = createLoggingProvider(
+    process.env.SEPOLIA_RPC_URL,
+    "Document",
+  );
+  provider.resetCount();
 
   try {
     if (!req.files?.file?.[0]) {
@@ -150,7 +219,6 @@ const uploadDocument = async (req, res) => {
       `${title?.trim() || mainFile.originalname}_metadata`,
     );
 
-    const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL);
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
     const nftContract = new ethers.Contract(
       process.env.NFT_CONTRACT_ADDRESS,
@@ -159,20 +227,9 @@ const uploadDocument = async (req, res) => {
     );
 
     if (parsedPrice > 0) {
-      const isApproved = await nftContract.isApprovedForAll(
-        signer.address,
-        process.env.MARKETPLACE_CONTRACT_ADDRESS,
-      );
-      if (!isApproved) {
-        const approveTx = await nftContract.setApprovalForAll(
-          process.env.MARKETPLACE_CONTRACT_ADDRESS,
-          true,
-        );
-        await approveTx.wait();
-      }
+      await ensureMarketplaceApproval(nftContract, signer.address);
     }
 
-    const currentId = await nftContract.getCurrentTokenId();
     const tx = await nftContract.mint(
       parsedAmount,
       metadataUri,
@@ -182,7 +239,8 @@ const uploadDocument = async (req, res) => {
     const receipt = await tx.wait();
 
     const iface = new ethers.Interface(NFT_ABI);
-    let tokenId = Number(currentId) + 1;
+    let tokenId = null;
+
     for (const log of receipt.logs) {
       try {
         const parsed = iface.parseLog(log);
@@ -192,6 +250,15 @@ const uploadDocument = async (req, res) => {
         }
       } catch (_) {}
     }
+
+    if (!tokenId) {
+      throw new Error(
+        "Không parse được tokenId từ TransferSingle event. Mint có thể đã thất bại.",
+      );
+    }
+
+    console.log(`[uploadDocument] Mint thành công, tokenId=${tokenId}`);
+    console.log(`[uploadDocument] RPC calls sau mint: ${provider.getCount()}`);
 
     const newDocument = await documentModel.create({
       title: title?.trim() || mainFile.originalname,
@@ -222,6 +289,10 @@ const uploadDocument = async (req, res) => {
       ownerAddress: user.walletAddress,
     });
 
+    console.log(
+      `[uploadDocument]  Hoàn tất. Tổng RPC calls (mint): ${provider.getCount()}`,
+    );
+
     if (parsedPrice > 0) {
       await createListing({
         sellerId: req.userId,
@@ -246,6 +317,7 @@ const uploadDocument = async (req, res) => {
   }
 };
 
+// getListDocument
 const getListDocument = async (req, res) => {
   try {
     const documents = await documentModel
@@ -286,6 +358,7 @@ const getListDocument = async (req, res) => {
   }
 };
 
+// searchDocuments
 const searchDocuments = async (req, res) => {
   try {
     const q = req.query.q?.trim();
@@ -341,6 +414,7 @@ const searchDocuments = async (req, res) => {
   }
 };
 
+// deleteDocument
 const deleteDocument = async (req, res) => {
   try {
     const { documentId } = req.params;
@@ -360,6 +434,7 @@ const deleteDocument = async (req, res) => {
   }
 };
 
+// getDocumentDetail
 const getDocumentDetail = async (req, res) => {
   try {
     const { documentId } = req.params;
